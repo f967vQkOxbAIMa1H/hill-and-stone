@@ -1,0 +1,506 @@
+// Hill & Stone — database schema
+// Money is always stored as integer cents. Quote totals are computed server-side
+// from line items; never trust totals sent from the client.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ServiceCategory {
+  GENERAL_REPAIRS
+  CARPENTRY_DOORS_TRIM
+  DRYWALL_PAINTING
+  FLOORING_FIXTURES_HARDWARE
+  EXTERIOR_REPAIRS
+  RENOVATIONS_CUSTOM
+  OTHER
+}
+
+enum ContactMethod {
+  PHONE
+  TEXT
+  EMAIL
+}
+
+enum ProjectTimeline {
+  ASAP
+  WITHIN_2_WEEKS
+  WITHIN_A_MONTH
+  FLEXIBLE
+}
+
+enum BudgetRange {
+  UNDER_500
+  FROM_500_TO_1500
+  FROM_1500_TO_5000
+  FROM_5000_TO_15000
+  OVER_15000
+  NOT_SURE
+}
+
+enum LeadStatus {
+  PENDING_REVIEW
+  CONTACTED
+  SITE_VISIT_SCHEDULED
+  QUOTE_SENT
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  ARCHIVED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  PAID
+  EXPIRED
+  VOID
+}
+
+enum LineItemType {
+  LABOR
+  MATERIALS
+  TRIP_FEE
+  OTHER
+  DISCOUNT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+enum AttachmentKind {
+  PHOTO
+  VIDEO
+  DOCUMENT
+}
+
+enum QuoteEventType {
+  CREATED
+  UPDATED
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  PAYMENT_STARTED
+  PAID
+  PAYMENT_FAILED
+  EXPIRED
+  VOIDED
+}
+
+enum EmailType {
+  LEAD_CONFIRMATION // to customer after quote request
+  LEAD_NOTIFICATION // to contractor: new lead
+  QUOTE_SENT // to customer: tokenized quote link
+  QUOTE_ACCEPTED_NOTICE // to contractor
+  QUOTE_DECLINED_NOTICE // to contractor
+  PAYMENT_RECEIPT // to customer
+  CAREER_APPLICATION_NOTICE // to contractor
+  COI_REQUEST_NOTICE // to contractor: certificate of insurance request
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  BOUNCED
+  FAILED
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum ApplicationStatus {
+  RECEIVED
+  REVIEWING
+  INTERVIEW
+  HIRED
+  REJECTED
+}
+
+// ─── People ──────────────────────────────────────────────────────────────────
+
+/// Staff/admin accounts, and (later) customer-portal logins.
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  role         UserRole  @default(STAFF)
+  passwordHash String?
+  customerId   String?   @unique
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  notes      LeadNote[]
+  quotesMade Quote[]    @relation("QuoteCreatedBy")
+  sessions   Session[]
+}
+
+/// Admin sign-in sessions. Only a SHA-256 hash of the cookie token is stored.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Customer {
+  id               String        @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String        @unique
+  phone            String?
+  preferredContact ContactMethod @default(PHONE)
+  marketingOptIn   Boolean       @default(false)
+  /// External CRM id (e.g. HubSpot/Jobber) once synced.
+  crmExternalId    String?       @unique
+  stripeCustomerId String?       @unique
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user      User?
+  addresses Address[]
+  leads     Lead[]
+  quotes    Quote[]
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  line1       String
+  line2       String?
+  city        String
+  state       String   @default("AR")
+  postalCode  String
+  /// Normalized service-zone slug (e.g. "bentonville"); null = outside listed zones.
+  serviceArea String?
+  createdAt   DateTime @default(now())
+
+  leads  Lead[]
+  quotes Quote[]
+
+  @@index([customerId])
+  @@index([serviceArea])
+}
+
+// ─── Leads (quote requests) & CRM ───────────────────────────────────────────
+
+model Lead {
+  id         String   @id @default(cuid())
+  /// Human-friendly number shown in emails/admin (e.g. #1042).
+  number     Int      @unique @default(autoincrement())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  addressId  String
+  address    Address  @relation(fields: [addressId], references: [id])
+
+  category         ServiceCategory
+  description      String
+  timeline         ProjectTimeline @default(FLEXIBLE)
+  budgetRange      BudgetRange     @default(NOT_SURE)
+  preferredContact ContactMethod   @default(PHONE)
+  status           LeadStatus      @default(PENDING_REVIEW)
+
+  // Attribution / conversion tracking, captured at submission.
+  source           String? // e.g. "google", "referral", "facebook"
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  utmTerm          String?
+  utmContent       String?
+  gclid            String?
+  fbclid           String?
+  landingPage      String?
+  referrer         String?
+  analyticsSession String?
+
+  crmExternalId String?   @unique
+  crmSyncedAt   DateTime?
+  contactedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  attachments Attachment[]
+  notes       LeadNote[]
+  quotes      Quote[]
+  emails      EmailLog[]
+
+  @@index([status, createdAt])
+  @@index([customerId])
+}
+
+model Attachment {
+  id         String         @id @default(cuid())
+  leadId     String?
+  lead       Lead?          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind       AttachmentKind
+  /// Object-storage key (S3/R2/Supabase Storage); the URL is derived/signed at read time.
+  storageKey String         @unique
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  width      Int?
+  height     Int?
+  createdAt  DateTime       @default(now())
+
+  @@index([leadId])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
+
+// ─── Quotes & payments ──────────────────────────────────────────────────────
+
+model Quote {
+  id          String   @id @default(cuid())
+  number      Int      @unique @default(autoincrement())
+  /// Unguessable token used in the public /quote/[token] URL. Never expose `id` publicly.
+  publicToken String   @unique
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  addressId   String?
+  address     Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  createdById String?
+  createdBy   User?    @relation("QuoteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  title       String
+  scopeOfWork String
+  /// Items explicitly not included, shown on the quote.
+  exclusions  String?
+  status      QuoteStatus @default(DRAFT)
+
+  subtotalCents     Int    @default(0)
+  taxRateBps        Int    @default(0) // basis points, 975 = 9.75%
+  taxCents          Int    @default(0)
+  totalCents        Int    @default(0)
+  /// Deposit required at acceptance, in basis points of total (e.g. 5000 = 50%). 0 = pay in full.
+  depositBps        Int    @default(0)
+  /// Fixed deposit in cents. When set, it takes precedence over depositBps (capped at the total).
+  depositFixedCents Int?
+  currency          String @default("usd")
+
+  validUntil    DateTime?
+  sentAt        DateTime?
+  firstViewedAt DateTime?
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  declineReason String?
+  declineNote   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  lineItems QuoteLineItem[]
+  payments  Payment[]
+  events    QuoteEvent[]
+  emails    EmailLog[]
+
+  @@index([status, createdAt])
+  @@index([customerId])
+}
+
+model QuoteLineItem {
+  id             String       @id @default(cuid())
+  quoteId        String
+  quote          Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  type           LineItemType
+  description    String
+  /// Quantity in thousandths to allow e.g. 2.5 hours without floats (2500 = 2.5).
+  quantityMilli  Int          @default(1000)
+  unitPriceCents Int
+  totalCents     Int
+  sortOrder      Int          @default(0)
+
+  @@index([quoteId])
+}
+
+model Payment {
+  id                      String        @id @default(cuid())
+  quoteId                 String
+  quote                   Quote         @relation(fields: [quoteId], references: [id])
+  amountCents             Int
+  currency                String        @default("usd")
+  status                  PaymentStatus @default(PENDING)
+  isDeposit               Boolean       @default(false)
+  /// card, apple_pay, cashapp, link, etc. as reported by Stripe.
+  method                  String?
+  cardBrand               String?
+  cardLast4               String?
+  stripeCheckoutSessionId String?       @unique
+  stripePaymentIntentId   String?       @unique
+  receiptUrl              String?
+  paidAt                  DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  @@index([quoteId])
+}
+
+/// Audit trail for every state change on a quote (views, accept/decline, payments).
+model QuoteEvent {
+  id        String         @id @default(cuid())
+  quoteId   String
+  quote     Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  type      QuoteEventType
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime       @default(now())
+
+  @@index([quoteId, createdAt])
+}
+
+// ─── Email & analytics ──────────────────────────────────────────────────────
+
+model EmailLog {
+  id                String      @id @default(cuid())
+  type              EmailType
+  status            EmailStatus @default(QUEUED)
+  to                String
+  subject           String
+  provider          String      @default("resend")
+  providerMessageId String?     @unique
+  error             String?
+  leadId            String?
+  lead              Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  quoteId           String?
+  quote             Quote?      @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([leadId])
+  @@index([quoteId])
+}
+
+/// First-party conversion events (quote_form_started, quote_submitted, quote_viewed, quote_accepted, call_clicked…).
+/// Complements GA4/Ads tags so conversions can be reconciled server-side.
+model ConversionEvent {
+  id         String   @id @default(cuid())
+  name       String
+  sessionId  String?
+  path       String?
+  leadId     String?
+  quoteId    String?
+  valueCents Int?
+  properties Json?
+  createdAt  DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([sessionId])
+}
+
+// ─── Content & careers ──────────────────────────────────────────────────────
+
+/// Portfolio entries for Our Work and the before/after sliders.
+model Project {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  title        String
+  category     ServiceCategory
+  city         String
+  summary      String
+  scopeOfWork  String
+  /// Outcome shown in the project detail view.
+  results      String?
+  materials    String[]
+  durationDays Int?
+  featured     Boolean         @default(false)
+  published    Boolean         @default(false)
+  completedAt  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  images       ProjectImage[]
+  testimonials Testimonial[]
+
+  @@index([published, category])
+}
+
+model ProjectImage {
+  id         String  @id @default(cuid())
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  storageKey String
+  alt        String
+  /// Pairs with the matching "after" image for comparison sliders.
+  isBefore   Boolean @default(false)
+  pairKey    String?
+  sortOrder  Int     @default(0)
+
+  @@index([projectId])
+}
+
+model Testimonial {
+  id         String    @id @default(cuid())
+  projectId  String?
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  authorName String
+  city       String
+  body       String
+  rating     Int       @default(5)
+  source     String    @default("google") // google, facebook, direct
+  sourceUrl  String?
+  featured   Boolean   @default(false)
+  published  Boolean   @default(true)
+  reviewedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model CareerApplication {
+  id                String            @id @default(cuid())
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  position          String
+  yearsExperience   Int?
+  trades            String[]
+  hasOwnTools       Boolean           @default(false)
+  hasDriversLicense Boolean           @default(false)
+  message           String?
+  resumeKey         String?
+  status            ApplicationStatus @default(RECEIVED)
+  createdAt         DateTime          @default(now())
+
+  @@index([status, createdAt])
+}

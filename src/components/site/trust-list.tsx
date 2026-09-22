@@ -1,0 +1,44 @@
+import { BadgeCheck, FileCheck2, ShieldCheck, UserCheck } from "lucide-react";
+import { site } from "@/lib/site";
+import { cn } from "@/lib/utils";
+
+// Each commitment carries a specific, checkable detail rather than a slogan.
+export const commitments = [
+  {
+    icon: FileCheck2,
+    title: "Licensed and insured",
+    body: `Arkansas home improvement license ${site.licenseNumber}. ${site.insuredAmount}. We send a certificate of insurance on request.`,
+  },
+  {
+    icon: UserCheck,
+    title: "Background-checked technicians",
+    body: "Everyone who comes to your house has passed a criminal background check and works for us directly, not as a day-labor sub.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Workmanship warranty",
+    body: `A ${site.warranty.replace(" warranty", "")} on our labor. If something we built or fixed fails, we come back and make it right.`,
+  },
+  {
+    icon: BadgeCheck,
+    title: "Satisfaction guarantee",
+    body: "We walk the job with you before we call it finished. You don't pay the final invoice until you're happy with the work.",
+  },
+];
+
+export function TrustList({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
+  const dark = tone === "dark";
+  return (
+    <dl className={cn("grid gap-x-10 sm:grid-cols-2", className)}>
+      {commitments.map(({ icon: Icon, title, body }) => (
+        <div key={title} className={cn("flex gap-4 border-t py-6", dark ? "border-navy-800" : "border-navy-200")}>
+          <Icon aria-hidden className={cn("mt-0.5 size-6 shrink-0", dark ? "text-copper-500" : "text-copper-700")} />
+          <div>
+            <dt className={cn("font-bold", dark ? "text-stone-50" : "text-navy-950")}>{title}</dt>
+            <dd className={cn("mt-1.5", dark ? "text-navy-300" : "text-navy-600")}>{body}</dd>
+          </div>
+        </div>
+      ))}
+    </dl>
+  );
+}

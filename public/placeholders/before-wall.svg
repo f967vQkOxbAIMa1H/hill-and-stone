@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#8b8579"/>
+  <rect width="800" height="470" fill="#a39c8f"/>
+  <path d="M0 120 Q200 150 380 110 T800 140 V200 Q560 230 400 190 T0 210Z" fill="#8f877a" opacity=".55"/>
+  <ellipse cx="300" cy="330" rx="140" ry="90" fill="#7c7466" opacity=".6"/>
+  <path d="M250 270 l40 10 30 -18 22 30 -8 38 26 22 -34 16 -46 -6 -24 22 -18 -34 -30 -10 18 -30z" fill="#3b362f"/>
+  <path d="M320 262 l40 -60 30 -20 M346 340 l60 40 40 70 M262 330 l-60 30 -40 60" stroke="#4a443b" stroke-width="3" fill="none"/>
+  <rect x="0" y="470" width="800" height="36" fill="#6f6556"/>
+  <path d="M60 470 v36 M180 478 v28 M520 470 l10 36 M640 474 v32" stroke="#4a4136" stroke-width="4"/>
+  <rect x="0" y="506" width="800" height="94" fill="#5b5043"/>
+  <text x="400" y="575" fill="#e2e8f0" font-family="system-ui" font-size="22" text-anchor="middle" opacity=".7">Placeholder photo: water-damaged drywall</text>
+</svg>
