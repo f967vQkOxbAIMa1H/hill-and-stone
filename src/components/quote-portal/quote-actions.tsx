@@ -9,7 +9,7 @@ import { RadioTiles } from "@/components/ui/radio-tiles";
 import { track } from "@/lib/analytics";
 import { formatCents } from "@/lib/money";
 import { declineReasons, type DeclineReason, type PaymentOption, type PortalState } from "@/lib/quotes/state";
-import { site } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 import { cn } from "@/lib/utils";
 
 export type ActionProps = {
@@ -147,6 +147,7 @@ function PaidPanel({ totalCents, payments }: ActionProps) {
 }
 
 function StatusPanel({ title, body, number, ask = "Contact us" }: { title: string; body: string; number: number; ask?: string }) {
+  const site = useSite();
   return (
     <>
       <h2 className="font-semiwide text-lg font-bold">{title}</h2>

@@ -6,7 +6,7 @@ import { PageIntro } from "@/components/site/page-intro";
 import { CoiForm } from "@/components/trust/coi-form";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Insurance, background checks and warranty",
@@ -35,7 +35,8 @@ const notCovered = [
   "Materials the customer supplied",
 ];
 
-export default function TrustPage() {
+export default async function TrustPage() {
+  const site = await getSite();
   return (
     <>
       <PageIntro

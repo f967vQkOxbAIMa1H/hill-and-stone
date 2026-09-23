@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -5,7 +6,8 @@ import { ProjectForm } from "@/components/admin/project-form";
 
 export const metadata: Metadata = { title: "New project" };
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  await requireCan("manageContent");
   return (
     <>
       <header className="border-b border-navy-200 px-5 py-6 sm:px-8">

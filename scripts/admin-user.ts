@@ -23,7 +23,8 @@ async function main() {
   const passwordHash = await hashPassword(password);
   const user = await db.user.upsert({
     where: { email: email.toLowerCase() },
-    update: { passwordHash, ...(name ? { name } : {}) },
+    // Also the recovery path if an owner is locked out: clears a forced change and any revoked access.
+    update: { passwordHash, mustChangePassword: false, deactivatedAt: null, ...(name ? { name } : {}) },
     create: { email: email.toLowerCase(), name: name ?? null, role: "OWNER", passwordHash },
   });
   // Changing a password signs out existing sessions.

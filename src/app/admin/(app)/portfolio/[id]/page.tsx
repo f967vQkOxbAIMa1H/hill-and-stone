@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,6 +12,7 @@ import { db } from "@/lib/db";
 export const metadata: Metadata = { title: "Edit project" };
 
 export default async function EditProjectPage({ params, searchParams }: PageProps<"/admin/portfolio/[id]">) {
+  await requireCan("manageContent");
   const project = await db.project.findUnique({ where: { id: (await params).id }, include: { images: { orderBy: { sortOrder: "asc" } } } });
   if (!project) notFound();
   const { created } = await searchParams;

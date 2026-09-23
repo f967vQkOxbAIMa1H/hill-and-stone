@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/ui/container";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 
 // Private, per-customer pages: never indexed, and the token never leaks via Referer.
 export const metadata: Metadata = {
@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-export default function QuoteLayout({ children }: LayoutProps<"/quote/[token]">) {
+export default async function QuoteLayout({ children }: LayoutProps<"/quote/[token]">) {
+  const site = await getSite();
   return (
     <>
       <header className="border-b border-navy-200 bg-stone-50">

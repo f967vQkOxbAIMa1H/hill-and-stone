@@ -3,7 +3,8 @@ import Link from "next/link";
 import { CtaBand } from "@/components/site/cta-band";
 import { PageIntro } from "@/components/site/page-intro";
 import { Container } from "@/components/ui/container";
-import { faq } from "@/lib/faq";
+import { buildFaq } from "@/lib/faq";
+import { getSite } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Questions and answers",
@@ -11,15 +12,17 @@ export const metadata: Metadata = {
     "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, deposits, payment options, materials and our workmanship warranty.",
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faq.flatMap((g) =>
-    g.items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })),
-  ),
-};
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const faq = buildFaq(await getSite());
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.flatMap((g) =>
+      g.items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })),
+    ),
+  };
+
   return (
     <>
       <script

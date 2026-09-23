@@ -1,9 +1,10 @@
 import { BadgeCheck, FileCheck2, ShieldCheck, UserCheck } from "lucide-react";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import type { SiteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 // Each commitment carries a specific, checkable detail rather than a slogan.
-export const commitments = [
+export const commitments = (site: SiteConfig) => [
   {
     icon: FileCheck2,
     title: "Licensed and insured",
@@ -30,11 +31,12 @@ export const commitments = [
   },
 ];
 
-export function TrustList({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
+export async function TrustList({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
+  const site = await getSite();
   const dark = tone === "dark";
   return (
     <dl className={cn("grid gap-x-10 sm:grid-cols-2", className)}>
-      {commitments.map(({ icon: Icon, title, body }) => (
+      {commitments(site).map(({ icon: Icon, title, body }) => (
         <div key={title} className={cn("flex gap-4 border-t py-6", dark ? "border-navy-800" : "border-navy-200")}>
           <Icon aria-hidden className={cn("mt-0.5 size-6 shrink-0", dark ? "text-copper-500" : "text-copper-700")} />
           <div>

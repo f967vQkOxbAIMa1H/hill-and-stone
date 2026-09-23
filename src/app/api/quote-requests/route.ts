@@ -7,7 +7,8 @@ import { env } from "@/lib/env";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { attributionSchema, flattenErrors, quoteRequestSchema, type FieldErrors } from "@/lib/quote-request/schema";
-import { serviceAreas, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { serviceAreas } from "@/lib/site";
 import { deleteFiles, putFile, sniffImage, type StoredFile } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -15,6 +16,7 @@ export const runtime = "nodejs";
 const fail = (status: number, errors: FieldErrors) => NextResponse.json({ ok: false, errors }, { status });
 
 export async function POST(request: Request) {
+  const site = await getSite();
   if (!rateLimit(`quote:${clientIp(request.headers)}`, 5, 10 * 60_000)) {
     return fail(429, { form: "Too many requests from this connection. Wait a few minutes, or call us." });
   }
@@ -127,10 +129,10 @@ export async function POST(request: Request) {
     const info = { number: lead.number, replyBy, photoCount: stored.length };
 
     after(async () => {
-      const toCustomer = customerConfirmation(req, info);
+      const toCustomer = await customerConfirmation(req, info);
       await sendEmail({ type: "LEAD_CONFIRMATION", to: req.email, leadId: lead.id, replyTo: site.email, ...toCustomer });
       if (env.CONTRACTOR_NOTIFY_EMAIL) {
-        const toOwner = contractorNotification(req, { ...info, serviceArea });
+        const toOwner = await contractorNotification(req, { ...info, serviceArea });
         await sendEmail({ type: "LEAD_NOTIFICATION", to: env.CONTRACTOR_NOTIFY_EMAIL, leadId: lead.id, replyTo: req.email, ...toOwner });
       }
     });

@@ -18,8 +18,8 @@ Design system preview: http://localhost:3000/design-system
 
 ## Before launch
 
-All Hill & Stone details (phone, license, insurance, story, policies, quote defaults) are in the
-`business` block at the top of `src/lib/site.ts`. Run `npm run check:launch` to see what's left, and
+Business details (phone, license, insurance, story, policies, quote defaults) are edited by an owner at
+**/admin/settings/site**; the defaults live at the top of `src/lib/site.ts`. Run `npm run check:launch` to see what's left, and
 follow [docs/DEPLOY.md](docs/DEPLOY.md) to deploy.
 
 ## Useful scripts
@@ -61,11 +61,14 @@ Customers approve quotes at `/quote/<token>`. The token is 32 random bytes; the 
 
 ## Admin (`/admin`)
 
-Create a login (prompts for a password, 12+ characters):
+Create the first owner login from the command line (prompts for a password, 12+ characters). It's also the
+recovery path if an owner is ever locked out:
 
 ```bash
 npm run admin:user -- owner@hillandstone.com "Owner Name"
 ```
+
+Everyone else is added from **Team** in the admin.
 
 - **Overview**: incoming requests, quote acceptance rate, revenue collected, quotes awaiting a response.
 - **Requests**: filter by status (pending review → quote sent → accepted/declined → completed), search, open a request to see contact details, budget, description, photos and notes.
@@ -73,6 +76,17 @@ npm run admin:user -- owner@hillandstone.com "Owner Name"
 - **Quote page**: copy link, open the client view, resend, void, request the balance once the job is done, payments and the full history (sent, viewed, deposit paid, balance requested, declined).
 - **Portfolio**: add projects with before/after photos; publish and feature them on Our Work and the home page.
 - **Reviews**: add customer reviews (publishing requires confirming the customer's permission), link them to projects.
+- **Team** (owners): add accounts with a temporary password shown once, choose a role (Owner, Office manager, Staff,
+  Technician), edit details, reset passwords, revoke or restore access. Temporary passwords must be replaced at first sign-in.
+- **Site settings** (owners): phone, email, hours, license, insurance, Google review link, policies, quote defaults and
+  the About story. Saved to the database and shown across the site immediately.
+
+| Role | Can do |
+|---|---|
+| Owner | Everything, including Team, Site settings and revenue |
+| Office manager | Requests, quotes, payments, portfolio, reviews; can void quotes |
+| Staff | Requests, build and send quotes, portfolio, reviews; no voiding or revenue |
+| Technician | View requests and quotes, change request status, add notes |
 
 Sessions are stored in the database (only a hash of the cookie), expire after 14 days, and are cleared when the password changes. Starting values for new quotes (trip fee, tax rate, deposit) live in `quoteDefaults` in `src/lib/site.ts`.
 
@@ -84,4 +98,5 @@ npm run test:e2e         # site smoke test in headless Firefox (app running)
 npm run test:e2e:quote   # quote portal + payments against stripe-mock (see the script header)
 npm run test:e2e:admin   # admin sign-in, requests, quote builder, send, lifecycle (same setup)
 npm run test:e2e:content # SEO files, 404, portfolio/reviews admin, balance requests, expiry job, GA4 privacy
+npm run test:e2e:team    # team accounts, role permissions, first sign-in, site settings
 ```

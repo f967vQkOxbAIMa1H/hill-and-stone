@@ -4,7 +4,8 @@ import { CtaBand } from "@/components/site/cta-band";
 import { PageIntro } from "@/components/site/page-intro";
 import { ScopeSheet } from "@/components/site/scope-sheet";
 import { Container } from "@/components/ui/container";
-import { services, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { services } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
     "Home repairs, carpentry, drywall and painting, flooring and fixtures, exterior repair and small renovations in Northwest Arkansas. See what we do and what we don't take on.",
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const site = await getSite();
   return (
     <>
       <PageIntro

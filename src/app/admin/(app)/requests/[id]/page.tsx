@@ -9,6 +9,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { SafeImage } from "@/components/ui/safe-image";
 import { leadStatus, quoteStatus } from "@/lib/admin/labels";
 import { getLead } from "@/lib/admin/queries";
+import { can } from "@/lib/auth/permissions";
+import { requireAdmin } from "@/lib/auth/session";
 import { budgetOptions, categoryOptions, contactOptions, labelFor, timelineOptions } from "@/lib/quote-request/options";
 import { formatCents } from "@/lib/money";
 import { serviceAreas } from "@/lib/site";
@@ -19,6 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/admin/requests/[i
 }
 
 export default async function RequestPage({ params }: PageProps<"/admin/requests/[id]">) {
+  const me = await requireAdmin();
   const lead = await getLead((await params).id);
   if (!lead) notFound();
   const c = lead.customer;
@@ -46,10 +49,12 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
               <span className="text-navy-600">{labelFor(categoryOptions, lead.category)}</span>
             </div>
           </div>
-          <ButtonLink href={`/admin/requests/${lead.id}/quote/new`}>
-            <Plus aria-hidden />
-            Create quote
-          </ButtonLink>
+          {can(me.role, "manageQuotes") && (
+            <ButtonLink prefetch={false} href={`/admin/requests/${lead.id}/quote/new`}>
+              <Plus aria-hidden />
+              Create quote
+            </ButtonLink>
+          )}
         </div>
       </header>
 

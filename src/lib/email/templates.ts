@@ -2,14 +2,15 @@ import "server-only";
 import { formatDay } from "@/lib/dates";
 import { budgetOptions, categoryOptions, contactOptions, labelFor, timelineOptions } from "@/lib/quote-request/options";
 import type { QuoteRequest } from "@/lib/quote-request/schema";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import type { SiteConfig } from "@/lib/site";
 
 export const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 const phoneFmt = (d: string) => `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 
-export function layout(body: string) {
+export function layout(site: SiteConfig, body: string) {
   return `<!doctype html><html><body style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden">
@@ -30,7 +31,8 @@ export function rows(pairs: [string, string][]) {
 
 type LeadInfo = { number: number; replyBy: Date; photoCount: number };
 
-export function customerConfirmation(req: QuoteRequest, lead: LeadInfo) {
+export async function customerConfirmation(req: QuoteRequest, lead: LeadInfo) {
+  const site = await getSite();
   const subject = `We got your request (#${lead.number})`;
   const summary: [string, string][] = [
     ["Request number", `#${lead.number}`],
@@ -40,7 +42,7 @@ export function customerConfirmation(req: QuoteRequest, lead: LeadInfo) {
     ["Photos", lead.photoCount ? `${lead.photoCount} attached` : "None"],
   ];
   const contact = labelFor(contactOptions, req.preferredContact).replace(" me", "").toLowerCase();
-  const html = layout(`
+  const html = layout(site, `
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Thanks, ${esc(req.firstName)}. Your request is in.</p>
 <p style="margin:0 0 12px">We'll review your project and ${esc(contact)} you by <strong>${esc(formatDay(lead.replyBy))}</strong> with next steps. Small jobs often get a price right away; larger ones may need a quick site visit.</p>
 ${rows(summary)}
@@ -57,7 +59,8 @@ Hill & Stone, ${site.phone}`;
   return { subject, html, text };
 }
 
-export function contractorNotification(req: QuoteRequest, lead: LeadInfo & { serviceArea: string | null }) {
+export async function contractorNotification(req: QuoteRequest, lead: LeadInfo & { serviceArea: string | null }) {
+  const site = await getSite();
   const subject = `New quote request #${lead.number}: ${labelFor(categoryOptions, req.category)} in ${req.city}`;
   const details: [string, string][] = [
     ["Name", `${req.firstName} ${req.lastName}`],
@@ -72,7 +75,7 @@ export function contractorNotification(req: QuoteRequest, lead: LeadInfo & { ser
     ["Photos", String(lead.photoCount)],
     ["Description", req.description],
   ];
-  const html = layout(`<p style="margin:0 0 8px;font-size:20px;font-weight:800">New quote request #${lead.number}</p>${rows(details)}<p style="margin:0;color:#475569;font-size:14px">Reply to this email to answer the customer directly.</p>`);
+  const html = layout(site, `<p style="margin:0 0 8px;font-size:20px;font-weight:800">New quote request #${lead.number}</p>${rows(details)}<p style="margin:0;color:#475569;font-size:14px">Reply to this email to answer the customer directly.</p>`);
   const text = details.map(([k, v]) => `${k}: ${v}`).join("\n");
   return { subject, html, text };
 }

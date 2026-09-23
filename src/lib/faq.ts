@@ -2,11 +2,11 @@
 // TODO(owner): these describe business policies (deposits, trip fee, warranty terms,
 // scheduling). Confirm or correct every answer before launch.
 
-import { site } from "@/lib/site";
+import type { SiteConfig } from "@/lib/site";
 
 export type FaqGroup = { slug: string; title: string; items: { q: string; a: string }[] };
 
-export const faq: FaqGroup[] = [
+export const buildFaq = (site: SiteConfig): FaqGroup[] => [
   {
     slug: "pricing",
     title: "Pricing and estimates",

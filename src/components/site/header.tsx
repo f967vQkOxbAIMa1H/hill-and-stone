@@ -3,11 +3,13 @@ import { Phone } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { quoteHref, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { quoteHref } from "@/lib/site";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
 
-export function Header() {
+export async function Header() {
+  const site = await getSite();
   return (
     <header className="sticky top-0 z-40 border-b border-navy-200 bg-stone-50/95 backdrop-blur-sm">
       <a

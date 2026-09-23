@@ -1,10 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { BrandPanel } from "@/components/brand/brand-panel";
 import { buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
-import { quoteHref, site } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
+import { quoteHref } from "@/lib/site";
 
 const destinations = [
   { href: "/services", label: "Services", note: "What we do and don't take on" },
@@ -15,6 +18,7 @@ const destinations = [
 
 /** Shared layout for the 404 and error pages: say what happened, then offer the useful next steps. */
 export function ErrorScreen({ title, lede, action }: { title: string; lede: string; action?: React.ReactNode }) {
+  const site = useSite();
   return (
     <Container className="grid gap-12 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-center">
       <div>

@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email/send";
 import { acceptedNotice, declinedNotice, paymentReceipt } from "@/lib/email/quote-templates";
 import { env } from "@/lib/env";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 import { getStripe, PAYMENT_METHOD_TYPES } from "@/lib/stripe";
 import type { PortalQuote } from "./queries";
 import { amountFor, balanceCents, portalState, statusAfterPayment, type DeclineReason, type PaymentOption } from "./state";
@@ -41,6 +41,7 @@ function quoteInfo(q: QuoteForInfo) {
 
 /** Creates a Stripe Checkout session for a payment option. The amount always comes from the database. */
 export async function createCheckout(quote: PortalQuote, option: PaymentOption) {
+  const site = await getSite();
   const stripe = getStripe();
   if (!stripe) throw new QuoteActionError("payments_unavailable", `Online payment isn't set up yet. Call ${site.phone} to pay by phone.`);
 
@@ -111,6 +112,7 @@ type FulfillResult = { state: "fulfilled" | "already" | "processing" | "ignored"
  * call it, and only the first caller that flips the payment to SUCCEEDED sends emails.
  */
 export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): Promise<FulfillResult> {
+  const site = await getSite();
   const payment = await db.payment.findFirst({
     where: session.metadata?.paymentId ? { id: session.metadata.paymentId } : { stripeCheckoutSessionId: session.id },
   });
@@ -176,9 +178,9 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
     if (!quote) return;
     const info = quoteInfo(quote);
     const pay = { amountCents: payment.amountCents, balanceCents: result.balance, paidAt: now, isDeposit: payment.isDeposit, ...details };
-    await sendEmail({ type: "PAYMENT_RECEIPT", to: quote.customer.email, quoteId: quote.id, replyTo: site.email, ...paymentReceipt({ ...info, customerName: quote.customer.firstName }, pay) });
+    await sendEmail({ type: "PAYMENT_RECEIPT", to: quote.customer.email, quoteId: quote.id, replyTo: site.email, ...(await paymentReceipt({ ...info, customerName: quote.customer.firstName }, pay)) });
     if (env.CONTRACTOR_NOTIFY_EMAIL) {
-      await sendEmail({ type: "QUOTE_ACCEPTED_NOTICE", to: env.CONTRACTOR_NOTIFY_EMAIL, quoteId: quote.id, replyTo: quote.customer.email, ...acceptedNotice(info, pay) });
+      await sendEmail({ type: "QUOTE_ACCEPTED_NOTICE", to: env.CONTRACTOR_NOTIFY_EMAIL, quoteId: quote.id, replyTo: quote.customer.email, ...(await acceptedNotice(info, pay)) });
     }
   });
 
@@ -254,12 +256,13 @@ export async function declineQuote(
   }
 
   after(async () => {
+    const site = await getSite();
     await sendEmail({
       type: "QUOTE_DECLINED_NOTICE",
       to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
       quoteId: quote.id,
       replyTo: quote.customer.email,
-      ...declinedNotice(quoteInfo(quote), reason, note),
+      ...(await declinedNotice(quoteInfo(quote), reason, note)),
     });
   });
 }

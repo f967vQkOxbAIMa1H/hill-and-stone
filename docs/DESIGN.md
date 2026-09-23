@@ -90,3 +90,9 @@ Scale (px, from the classic typographic scale): 14 · 16 · 18 · 21 · 24 · 36
 - **Brand panel** (`components/brand/brand-panel.tsx`): ridge contours on navy over a copper course. The stand-in for any missing photo, the 404 art, and the social image's motif.
 - **Error pages** say what happened in one line, then offer the useful next steps (phone, quote, main pages) rather than a big "404".
 - **Admin content screens** follow the builder: the form on one side, the live consequence spelled out in helper text ("Shows on Our Work", "Before and after are set, so the site shows the slider").
+
+## Patterns in use (Phase 7, team and settings)
+
+- **Role tiles** say in one line what each role can do, so choosing a role doesn't need a separate help page.
+- **Secrets are shown once** in a copper panel with a Copy button (temporary passwords) and never emailed.
+- **Settings page**: one section per topic, each with a line saying where on the site it appears; a sticky save bar, with fields given bottom scroll margin so they're never hidden behind it.

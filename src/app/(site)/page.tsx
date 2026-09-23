@@ -10,12 +10,12 @@ import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
 import { getProjects, getTestimonials } from "@/lib/content";
 import { projectMedia } from "@/lib/media";
-import { quoteHref, serviceAreas, services, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { quoteHref, serviceAreas, services } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-export const revalidate = 3600;
-
 export default async function HomePage() {
+  const site = await getSite();
   const [testimonials, projects] = await Promise.all([getTestimonials(3), getProjects()]);
   // Hero shows the first featured project that has a before/after pair.
   const hero = projects

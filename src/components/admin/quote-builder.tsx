@@ -9,7 +9,7 @@ import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import type { LineItemType } from "@/generated/prisma/enums";
 import { computeTotals, quoteDraftSchema, type QuoteDraftInput } from "@/lib/admin/quote-schema";
 import { formatCents } from "@/lib/money";
-import { quoteDefaults } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 import { cn } from "@/lib/utils";
 
 type Line = QuoteDraftInput["lines"][number] & { key: string };
@@ -34,6 +34,7 @@ const withKey = (l: QuoteDraftInput["lines"][number]): Line => ({ ...l, key: `l$
 export type BuilderLead = { id: string; number: number; name: string; email: string; address: string; photos: number };
 
 export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: QuoteDraftInput }) {
+  const site = useSite();
   const router = useRouter();
   const { lines: initialLines, ...initialForm } = initial;
   const [form, setForm] = useState(initialForm);
@@ -206,7 +207,7 @@ export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: Qu
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const line = withKey({ type: q.type, description: q.description, quantity: "1", unitPrice: q.type === "TRIP_FEE" ? quoteDefaults.tripFee : "" });
+                  const line = withKey({ type: q.type, description: q.description, quantity: "1", unitPrice: q.type === "TRIP_FEE" ? site.quoteDefaults.tripFee : "" });
                   setLines((ls) => [...ls, line]);
                   requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-field="lines.${lines.length}.description"]`)?.focus());
                 }}

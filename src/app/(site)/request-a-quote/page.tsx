@@ -3,14 +3,19 @@ import { Phone } from "lucide-react";
 import { QuoteForm } from "@/components/quote/quote-form";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
-import { services, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { services } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Request a quote",
-  description: `Tell us about your repair or project and attach photos. Hill & Stone replies within ${site.replyWindow}.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return {
+    title: "Request a quote",
+    description: `Tell us about your repair or project and attach photos. Hill & Stone replies within ${site.replyWindow}.`,
+  };
+}
 
 export default async function RequestQuotePage({ searchParams }: PageProps<"/request-a-quote">) {
+  const site = await getSite();
   const { service } = await searchParams;
   const preset = services.find((s) => s.slug === service)?.category;
 

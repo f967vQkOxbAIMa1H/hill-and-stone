@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { can } from "@/lib/auth/permissions";
+import { requireAdmin } from "@/lib/auth/session";
 import { ChevronLeft } from "lucide-react";
 import { fmtDateTime, fmtDay } from "@/components/admin/format";
 import { QuoteActionsBar } from "@/components/admin/quote-actions-bar";
@@ -10,6 +12,7 @@ import { builderLead, draftInput } from "@/lib/admin/builder-initial";
 import { eventLabel, quoteStatus } from "@/lib/admin/labels";
 import { getLead, getQuoteForAdmin, type AdminQuote } from "@/lib/admin/queries";
 import { env } from "@/lib/env";
+import { getSite } from "@/lib/settings";
 import { formatCents } from "@/lib/money";
 import { balanceCents, depositCents, hasDeposit, paidCents, portalState } from "@/lib/quotes/state";
 import { declineReasons } from "@/lib/quotes/state";
@@ -38,8 +41,10 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
     </Link>
   );
 
+  const me = await requireAdmin();
   // Drafts open in the builder.
   if (quote.status === "DRAFT") {
+    if (!can(me.role, "manageQuotes")) redirect("/admin?denied=1");
     const lead = quote.lead ? await getLead(quote.lead.id) : null;
     if (!lead) notFound();
     return (
@@ -51,7 +56,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
             <Badge>Draft</Badge>
           </div>
         </header>
-        <QuoteBuilder lead={builderLead(lead)} initial={draftInput(quote)} />
+        <QuoteBuilder lead={builderLead(lead)} initial={draftInput(quote, (await getSite()).quoteDefaults)} />
       </>
     );
   }
@@ -86,9 +91,9 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
           <QuoteActionsBar
             quoteId={quote.id}
             url={quote.status === "VOID" ? null : url}
-            canResend={state === "open"}
-            canVoid={!["ACCEPTED", "PAID", "VOID"].includes(quote.status)}
-            balanceDue={state === "partially_paid" ? formatCents(balanceCents(quote)) : null}
+            canResend={state === "open" && can(me.role, "manageQuotes")}
+            canVoid={!["ACCEPTED", "PAID", "VOID"].includes(quote.status) && can(me.role, "voidQuotes")}
+            balanceDue={state === "partially_paid" && can(me.role, "manageQuotes") ? formatCents(balanceCents(quote)) : null}
             clientEmail={quote.customer.email}
           />
         </div>

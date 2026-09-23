@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
-import { site } from "@/lib/site";
+import { SiteProvider } from "@/components/site-provider";
+import { getSite } from "@/lib/settings";
+import { brand } from "@/lib/site";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -14,25 +16,27 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: `${site.name} | Home repair in Northwest Arkansas`,
-    template: `%s | ${site.name}`,
+    default: `${brand.name} | Home repair in Northwest Arkansas`,
+    template: `%s | ${brand.name}`,
   },
   description:
     "Licensed and insured home repair, carpentry, drywall, painting and exterior work in Fayetteville, Springdale, Rogers and Bentonville.",
   // Images come from app/opengraph-image.tsx; pages inherit these unless they override.
   openGraph: {
     type: "website",
-    siteName: site.name,
+    siteName: brand.name,
     locale: "en_US",
   },
   twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Business settings for client components; server components call getSite() directly.
+  const site = await getSite();
   return (
     <html lang="en" className={`${archivo.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        {children}
+        <SiteProvider value={site}>{children}</SiteProvider>
         <GoogleAnalytics />
       </body>
     </html>

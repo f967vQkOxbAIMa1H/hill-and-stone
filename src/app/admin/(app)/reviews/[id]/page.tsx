@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,6 +9,7 @@ import { db } from "@/lib/db";
 export const metadata: Metadata = { title: "Edit review" };
 
 export default async function EditReviewPage({ params, searchParams }: PageProps<"/admin/reviews/[id]">) {
+  await requireCan("manageContent");
   const [review, projects] = await Promise.all([
     db.testimonial.findUnique({ where: { id: (await params).id } }),
     db.project.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),

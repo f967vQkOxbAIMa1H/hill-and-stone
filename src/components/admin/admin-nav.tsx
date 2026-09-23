@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Images, Inbox, LayoutDashboard, Star } from "lucide-react";
+import { FileText, Images, Inbox, LayoutDashboard, Settings, Star, Users } from "lucide-react";
+import type { Capability } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/requests", label: "Requests", icon: Inbox },
   { href: "/admin/quotes", label: "Quotes", icon: FileText },
-  { href: "/admin/portfolio", label: "Portfolio", icon: Images },
-  { href: "/admin/reviews", label: "Reviews", icon: Star },
-];
+  { href: "/admin/portfolio", label: "Portfolio", icon: Images, needs: "manageContent" },
+  { href: "/admin/reviews", label: "Reviews", icon: Star, needs: "manageContent" },
+  { href: "/admin/team", label: "Team", icon: Users, needs: "manageTeam" },
+  { href: "/admin/settings/site", label: "Site settings", icon: Settings, needs: "manageSettings" },
+] as { href: string; label: string; icon: typeof FileText; exact?: boolean; needs?: Capability }[];
 
-export function AdminNav({ pending }: { pending: number }) {
+export function AdminNav({ pending, capabilities }: { pending: number; capabilities: Capability[] }) {
   const pathname = usePathname();
   return (
     <ul className="flex gap-1 lg:flex-col">
-      {items.map(({ href, label, icon: Icon, exact }) => {
+      {items.filter((i) => !i.needs || capabilities.includes(i.needs)).map(({ href, label, icon: Icon, exact }) => {
         const current = exact ? pathname === href : pathname.startsWith(href);
         return (
           <li key={href}>

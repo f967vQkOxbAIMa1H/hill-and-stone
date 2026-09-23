@@ -4,11 +4,12 @@ import { sendEmail } from "@/lib/email/send";
 import { env } from "@/lib/env";
 import { flattenErrors } from "@/lib/quote-request/schema";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 export async function POST(request: Request) {
+  const site = await getSite();
   if (!rateLimit(`coi:${clientIp(request.headers)}`, 3, 10 * 60_000)) {
     return NextResponse.json({ ok: false, errors: { form: "Too many requests. Wait a few minutes, or email us." } }, { status: 429 });
   }

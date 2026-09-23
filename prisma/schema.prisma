@@ -115,6 +115,7 @@ enum EmailType {
   CAREER_APPLICATION_NOTICE // to contractor
   COI_REQUEST_NOTICE // to contractor: certificate of insurance request
   BALANCE_REQUEST // to customer: job done, balance due, with quote link
+  STAFF_ACCOUNT_NOTICE // to a team member: your admin login is ready (never includes the password)
 }
 
 enum EmailStatus {
@@ -129,6 +130,7 @@ enum UserRole {
   OWNER
   ADMIN
   STAFF
+  TECHNICIAN
   CUSTOMER
 }
 
@@ -144,20 +146,34 @@ enum ApplicationStatus {
 
 /// Staff/admin accounts, and (later) customer-portal logins.
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String?
-  role         UserRole  @default(STAFF)
-  passwordHash String?
-  customerId   String?   @unique
-  customer     Customer? @relation(fields: [customerId], references: [id])
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  name               String?
+  role               UserRole  @default(STAFF)
+  passwordHash       String?
+  customerId         String?   @unique
+  customer           Customer? @relation(fields: [customerId], references: [id])
+  lastLoginAt        DateTime?
+  /// Set when the owner revokes access. Deactivated users can't sign in.
+  deactivatedAt      DateTime?
+  /// True after an owner sets a temporary password; the user must choose their own at next sign-in.
+  mustChangePassword Boolean   @default(false)
+  phone              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   notes      LeadNote[]
   quotesMade Quote[]    @relation("QuoteCreatedBy")
   sessions   Session[]
+}
+
+/// Business settings edited from /admin/settings/site. One row (id "site"); the JSON is validated
+/// by src/lib/settings/schema.ts and merged over the defaults in src/lib/site.ts.
+model SiteSettings {
+  id          String   @id @default("site")
+  data        Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
 }
 
 /// Admin sign-in sessions. Only a SHA-256 hash of the cookie token is stored.

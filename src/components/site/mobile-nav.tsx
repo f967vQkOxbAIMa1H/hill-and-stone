@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Logo } from "@/components/brand/logo";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
-import { quoteHref, site } from "@/lib/site";
+import { quoteHref } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 import { cn } from "@/lib/utils";
 import { NavLinks } from "./nav-links";
 
 /** Native <dialog> gives focus trapping, Esc to close and inert background for free. */
 export function MobileNav() {
+  const site = useSite();
   const dialog = useRef<HTMLDialogElement>(null);
   const pathname = usePathname();
 

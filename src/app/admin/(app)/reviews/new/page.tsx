@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -7,6 +8,7 @@ import { db } from "@/lib/db";
 export const metadata: Metadata = { title: "Add review" };
 
 export default async function NewReviewPage() {
+  await requireCan("manageContent");
   const projects = await db.project.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } });
   return (
     <>

@@ -10,7 +10,7 @@ import { clientIp } from "@/lib/rate-limit";
 import { fulfillCheckoutSession } from "@/lib/quotes/payments";
 import { getQuoteByToken, recordView, type PortalQuote } from "@/lib/quotes/queries";
 import { balanceCents, depositCents, hasDeposit, portalState } from "@/lib/quotes/state";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
 // Always render fresh: this page shows live payment state for one customer.
@@ -86,7 +86,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
 
   return (
     <Container className="py-8 sm:py-12">
-      {notice && <NoticeBanner notice={notice} email={quote.customer.email} />}
+      {notice && <NoticeBanner notice={notice} email={quote.customer.email} replyWindow={(await getSite()).replyWindow} />}
       {notice === "paid" && typeof sp.session_id === "string" && paidNow && (
         <TrackOnce
           event="purchase"
@@ -104,13 +104,13 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
   );
 }
 
-function NoticeBanner({ notice, email }: { notice: Exclude<Notice, null>; email: string }) {
+function NoticeBanner({ notice, email, replyWindow }: { notice: Exclude<Notice, null>; email: string; replyWindow: string }) {
   const content = {
     paid: {
       icon: CheckCircle2,
       className: "border-success-700/30 bg-success-100 text-success-700",
       title: "Payment received. Thank you.",
-      body: `A receipt is on its way to ${email}. We'll be in touch within ${site.replyWindow} to confirm your start date.`,
+      body: `A receipt is on its way to ${email}. We'll be in touch within ${replyWindow} to confirm your start date.`,
     },
     processing: {
       icon: Clock,

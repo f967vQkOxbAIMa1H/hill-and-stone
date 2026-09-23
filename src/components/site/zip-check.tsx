@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
-import { quoteHref, site, type ServiceArea } from "@/lib/site";
+import { quoteHref, type ServiceArea } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 
 type Result = { tone: "yes" | "maybe" | "no"; message: string } | null;
 
 export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
+  const site = useSite();
   const id = useId();
   const [zip, setZip] = useState("");
   const [result, setResult] = useState<Result>(null);

@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { logout } from "@/app/admin/actions";
 import { LogoMark } from "@/components/brand/logo";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { capabilitiesOf, roleInfo, type StaffRole } from "@/lib/auth/permissions";
 import { requireAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 
@@ -31,11 +32,13 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </form>
         </div>
         <nav aria-label="Admin" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] lg:mt-6">
-          <AdminNav pending={pending} />
+          <AdminNav pending={pending} capabilities={capabilitiesOf(admin.role)} />
         </nav>
         <div className="mt-auto hidden border-t border-navy-800 pt-4 lg:block">
-          <p className="truncate px-1 text-sm font-semibold">{admin.name ?? admin.email}</p>
-          <p className="truncate px-1 text-sm text-navy-400">{admin.email}</p>
+          <Link prefetch={false} href="/admin/password" className="block rounded-control px-1 hover:bg-navy-900">
+            <span className="block truncate text-sm font-semibold">{admin.name ?? admin.email}</span>
+            <span className="block truncate text-sm text-navy-400">{roleInfo[admin.role as StaffRole].label}, my account</span>
+          </Link>
           <form action={logout} className="mt-3">
             <button type="submit" className="flex h-10 w-full cursor-pointer items-center gap-2 rounded-control px-2 text-sm text-navy-300 hover:bg-navy-900 hover:text-stone-50">
               <LogOut aria-hidden className="size-4" />

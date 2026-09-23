@@ -2,6 +2,9 @@
 
 ## 1. Fill in the business settings
 
+Sign in as an owner and open **Site settings** in the admin; saved values override the defaults below and show on
+the site immediately. The table describes the defaults in code.
+
 Everything customer-facing that's specific to Hill & Stone lives in one block at the top of
 `src/lib/site.ts`:
 

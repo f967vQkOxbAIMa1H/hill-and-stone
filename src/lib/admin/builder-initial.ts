@@ -1,7 +1,7 @@
 import "server-only";
 import type { QuoteDraftInput } from "@/lib/admin/quote-schema";
 import { categoryOptions, labelFor } from "@/lib/quote-request/options";
-import { quoteDefaults } from "@/lib/site";
+import type { SiteConfig } from "@/lib/site";
 import type { AdminQuote, getLead } from "./queries";
 
 const dollars = (cents: number) => (Math.abs(cents) % 100 === 0 ? String(Math.abs(cents) / 100) : (Math.abs(cents) / 100).toFixed(2));
@@ -21,7 +21,7 @@ export function builderLead(lead: Pick<Lead, "id" | "number" | "customer" | "add
   };
 }
 
-export function newQuoteInput(lead: Lead): QuoteDraftInput {
+export function newQuoteInput(lead: Lead, quoteDefaults: SiteConfig["quoteDefaults"]): QuoteDraftInput {
   return {
     leadId: lead.id,
     title: labelFor(categoryOptions, lead.category),
@@ -40,7 +40,7 @@ export function newQuoteInput(lead: Lead): QuoteDraftInput {
   };
 }
 
-export function draftInput(q: AdminQuote): QuoteDraftInput {
+export function draftInput(q: AdminQuote, quoteDefaults: SiteConfig["quoteDefaults"]): QuoteDraftInput {
   const days = q.validUntil ? Math.max(1, Math.round((q.validUntil.getTime() - Date.now()) / 86_400_000)) : quoteDefaults.validDays;
   return {
     id: q.id,

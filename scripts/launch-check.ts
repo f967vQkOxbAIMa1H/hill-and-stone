@@ -9,7 +9,8 @@ const envFile = process.argv.includes("--env")
 config({ path: envFile, quiet: true });
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { business, quoteDefaults } from "../src/lib/site";
+import { brand, defaultSettings, isPlaceholderPhone } from "../src/lib/site";
+import { settingsSchema, type Settings } from "../src/lib/settings/schema";
 
 type Item = { level: "block" | "warn"; area: string; message: string };
 const items: Item[] = [];
@@ -18,54 +19,23 @@ const block = (area: string, message: string) =>
 const warn = (area: string, message: string) =>
   items.push({ level: "warn", area, message });
 
-// ── Business settings (src/lib/site.ts) ─────────────────────────────────────
-const phoneDigits = business.contact.phone.replace(/\D/g, "");
-if (/555(01\d\d)$/.test(phoneDigits))
-  block(
-    "settings",
-    `Phone ${business.contact.phone} is a fictional 555-01xx number (business.contact.phone).`,
-  );
-if (!business.license.number)
-  warn(
-    "settings",
-    "License number isn't set (business.license.number). The site says “licensed” without a number.",
-  );
-if (!business.insurance.some((i) => i.detail))
-  warn(
-    "settings",
-    "No insurance details set (business.insurance). The Trust page offers a certificate on request instead.",
-  );
-if (!business.googleReviewsUrl)
-  warn(
-    "settings",
-    "Google review link isn't set (business.googleReviewsUrl). Review buttons are hidden.",
-  );
-const missingStory = Object.entries(business.story)
-  .filter(([, v]) => v == null)
-  .map(([k]) => k);
-if (missingStory.length)
-  warn(
-    "settings",
-    `About page story is missing: ${missingStory.join(", ")} (business.story). Those sentences are left out.`,
-  );
-const missingPhotos = Object.entries(business.photos)
-  .filter(([, v]) => v == null)
-  .map(([k]) => k);
-if (missingPhotos.length)
-  warn(
-    "settings",
-    `About page photos not set: ${missingPhotos.join(", ")} (business.photos). A brand graphic shows instead.`,
-  );
-if (!business.policies.confirmed)
-  block(
-    "settings",
-    "Policies not confirmed: review FAQ (src/lib/faq.ts), Trust page and email wording, then set business.policies.confirmed = true.",
-  );
-if (!quoteDefaults.confirmed)
-  block(
-    "settings",
-    "Quote defaults not confirmed: check trip fee, tax rate and deposit, then set quoteDefaults.confirmed = true.",
-  );
+// ── Business settings (saved in the admin, over the defaults in src/lib/site.ts) ──
+function checkSettings(settings: Settings) {
+  if (isPlaceholderPhone(settings.contact.phone))
+    block("settings", `Phone ${settings.contact.phone} is a fictional 555-01xx number. Set it at /admin/settings/site.`);
+  if (!settings.license.number) warn("settings", "License number isn't set (/admin/settings/site). The site says “licensed” without a number.");
+  if (!settings.insurance.some((i) => i.detail))
+    warn("settings", "No insurance details set (/admin/settings/site). The Trust page offers a certificate on request instead.");
+  if (!settings.googleReviewsUrl) warn("settings", "Google review link isn't set (/admin/settings/site). Review buttons are hidden.");
+  const missingStory = Object.entries(settings.story).filter(([, v]) => v == null).map(([k]) => k);
+  if (missingStory.length) warn("settings", `About page story is missing: ${missingStory.join(", ")} (/admin/settings/site).`);
+  const missingPhotos = Object.entries(brand.photos).filter(([, v]) => v == null).map(([k]) => k);
+  if (missingPhotos.length) warn("settings", `About page photos not set: ${missingPhotos.join(", ")} (brand.photos in src/lib/site.ts).`);
+  if (!settings.policies.confirmed)
+    block("settings", "Policies not confirmed: review the FAQ, Trust page and email wording, then tick “Policies confirmed” at /admin/settings/site.");
+  if (!settings.quoteDefaults.confirmed)
+    block("settings", "Quote defaults not confirmed: check trip fee, tax rate and deposit, then tick “Pricing confirmed” at /admin/settings/site.");
+}
 
 // ── Environment ─────────────────────────────────────────────────────────────
 const env = process.env;
@@ -115,11 +85,14 @@ if (/localhost|127\.0\.0\.1/.test(env.DATABASE_URL ?? ""))
 
 // ── Database content ────────────────────────────────────────────────────────
 async function checkDatabase() {
-  if (!env.DATABASE_URL) return;
+  if (!env.DATABASE_URL) return checkSettings(defaultSettings);
   const db = new PrismaClient({
     adapter: new PrismaPg({ connectionString: env.DATABASE_URL }),
   });
   try {
+    const row = await db.siteSettings.findUnique({ where: { id: "site" } });
+    const saved = row ? settingsSchema.safeParse({ ...defaultSettings, ...(row.data as object) }) : null;
+    checkSettings(saved?.success ? saved.data : defaultSettings);
     const [
       sampleProjects,
       seedReviews,

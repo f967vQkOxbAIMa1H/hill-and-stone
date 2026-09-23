@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/ui/container";
-import { nav, quoteHref, serviceAreas, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { nav, quoteHref, serviceAreas } from "@/lib/site";
 
-export function Footer() {
+export async function Footer() {
+  const site = await getSite();
   const core = serviceAreas.filter((a) => a.core);
   const year = new Date().getFullYear();
 

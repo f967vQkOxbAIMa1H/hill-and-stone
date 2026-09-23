@@ -7,11 +7,12 @@ import { describedBy, Field, Input, Textarea } from "@/components/ui/field";
 import { coiRequestSchema, type CoiRequestInput } from "@/lib/coi";
 import { flattenErrors } from "@/lib/quote-request/schema";
 import { track } from "@/lib/analytics";
-import { site } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 
 type Errors = Partial<Record<keyof CoiRequestInput | "form", string>>;
 
 export function CoiForm() {
+  const site = useSite();
   const [values, setValues] = useState({ name: "", email: "", organization: "", address: "", notes: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");

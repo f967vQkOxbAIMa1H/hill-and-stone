@@ -6,8 +6,6 @@ import { Container } from "@/components/ui/container";
 import { getProjects } from "@/lib/content";
 import { isPlaceholder, projectMedia } from "@/lib/media";
 
-export const revalidate = 3600;
-
 export const metadata: Metadata = {
   title: "Our work",
   description:

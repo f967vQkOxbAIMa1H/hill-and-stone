@@ -1,6 +1,7 @@
 "use client";
 
-import { site } from "@/lib/site";
+// Settings can't be loaded here, so this page uses the built-in defaults.
+import { defaultSite as site } from "@/lib/site";
 
 // Last-resort page when the root layout itself fails. It renders its own document without
 // the site's CSS, so styles are inline and limited to the brand essentials.

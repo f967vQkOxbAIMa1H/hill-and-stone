@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -11,6 +12,7 @@ import { db } from "@/lib/db";
 export const metadata: Metadata = { title: "Reviews" };
 
 export default async function ReviewsAdminPage() {
+  await requireCan("manageContent");
   const reviews = await db.testimonial.findMany({
     orderBy: [{ published: "desc" }, { featured: "desc" }, { reviewedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
     include: { project: { select: { title: true } } },

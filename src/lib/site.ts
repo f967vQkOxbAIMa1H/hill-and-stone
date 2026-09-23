@@ -1,108 +1,94 @@
 // Single source of truth for business facts and service content.
 import type { ServiceCategory } from "@/generated/prisma/enums";
 
+import type { Settings } from "@/lib/settings/schema";
+
 /* ════════════════════════════════════════════════════════════════════════════
- * BUSINESS SETTINGS: edit this block before launch.
- * `npm run check:launch` lists everything still unset or unconfirmed.
+ * BUSINESS DEFAULTS
+ * The owner edits these at /admin/settings/site; saved values override the defaults below.
+ * `npm run check:launch` lists anything still unset or unconfirmed.
  *
- * Anything set to null is simply left off the site (no brackets, no fake numbers),
- * so the site is presentable at every stage. Fill in values as you have them.
+ * Anything null is simply left off the site (no brackets, no fake numbers).
  * ════════════════════════════════════════════════════════════════════════════ */
-export const business = {
+
+/** Brand facts that change with a rebrand, not day to day. Edited here, in code. */
+export const brand = {
   name: "Hill & Stone",
   legalName: "Hill & Stone Home Repair LLC",
   tagline: "Reliable Northwest Arkansas home repairs, done right.",
-
-  contact: {
-    /** Shown site-wide. The current value is a fictional 555-01xx number: replace it. */
-    phone: "(479) 555-0142",
-    email: "hello@hillandstone.com",
-    hours: "Mon–Fri 7am–6pm, Sat by appointment",
-  },
-
-  /** e.g. "0123456" as printed on your Arkansas contractor/home improvement license. */
-  license: { label: "Arkansas home improvement license", number: null as string | null },
-
-  /** Rows with a null detail are hidden; the Trust page then offers a certificate on request. */
-  insurance: [
-    { type: "General liability", detail: null as string | null },
-    { type: "Workers' compensation", detail: null as string | null },
-    { type: "Commercial auto", detail: null as string | null },
-  ],
-
-  warrantyMonths: 12,
-
-  /** Your Google Business Profile review link. Review buttons are hidden until this is set. */
-  googleReviewsUrl: null as string | null,
-
-  /** About page story. Each sentence that uses a missing fact is left out. */
-  story: {
-    founderName: null as string | null, // "Sam Hill"
-    foundedYear: null as number | null, // 2019
-    hometown: null as string | null, // "Springdale"
-    crewSize: null as number | null, // 4
-    founderBackground: null as string | null, // "12 years as a finish carpenter for Fayetteville builders"
-  },
-
-  /** Photos in /public/images. Missing photos show a brand graphic instead. */
+  licenseLabel: "Arkansas home improvement license",
+  /** Photos in /public/images for the About page. Missing photos show a brand graphic instead. */
   photos: {
     team: null as string | null, // "/images/team.jpg"
     founder: null as string | null,
     crew: null as string | null,
   },
+};
 
-  policies: {
-    replyBusinessDays: 1,
-    coiBusinessDays: 2,
-    backgroundRecheckYears: 2,
-    /** Set to true once you've read the FAQ, Trust page and email wording and they match how you work. */
-    confirmed: false,
+/** Starting values until the owner saves settings in the admin. */
+export const defaultSettings: Settings = {
+  contact: {
+    phone: "(479) 555-0142", // fictional 555-01xx number: replace it
+    email: "hello@hillandstone.com",
+    hours: "Mon–Fri 7am–6pm, Sat by appointment",
   },
+  license: { number: null },
+  insurance: [
+    { type: "General liability", detail: null },
+    { type: "Workers' compensation", detail: null },
+    { type: "Commercial auto", detail: null },
+  ],
+  warrantyMonths: 12,
+  googleReviewsUrl: null,
+  story: { founderName: null, foundedYear: null, hometown: null, crewSize: null, founderBackground: null },
+  policies: { replyBusinessDays: 1, coiBusinessDays: 2, backgroundRecheckYears: 2, confirmed: false },
+  quoteDefaults: { tripFee: "75", taxRatePercent: "9.75", depositPercent: "50", validDays: 30, confirmed: false },
 };
 
-/**
- * Starting values for new quotes in the admin builder.
- * Set `confirmed: true` once these match how you price (check sales tax with your accountant).
- */
-export const quoteDefaults = {
-  tripFee: "75",
-  taxRatePercent: "9.75",
-  validDays: 30,
-  depositPercent: "50",
-  confirmed: false,
-};
-
-/* ─── Derived values used by the site. You shouldn't need to edit below here. ─── */
-
-const digits = business.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
-const insured = business.insurance.filter((i): i is { type: string; detail: string } => !!i.detail);
-
-/** True while the phone is still the fictional 555-01xx placeholder. */
-export const phoneIsPlaceholder = /555-?01\d\d$/.test(business.contact.phone.replace(/[^\d-]/g, ""));
+/* ─── Derived values used by the site. ─── */
 
 export const businessDays = (n: number) => (n === 1 ? "one business day" : n === 2 ? "two business days" : `${n} business days`);
 
-export const site = {
-  name: business.name,
-  legalName: business.legalName,
-  tagline: business.tagline,
-  phone: business.contact.phone,
-  phoneHref: `tel:+1${digits}`,
-  email: business.contact.email,
-  hours: business.contact.hours,
-  licenseLabel: business.license.label,
-  licenseNumber: business.license.number,
-  /** Insurance rows that have real details. */
-  insurance: insured,
-  /** Short line for footers, or null when no details are set. */
-  insuranceSummary: insured[0] ? `Insured: ${insured[0].detail} ${insured[0].type.toLowerCase()}` : null,
-  warranty: `${business.warrantyMonths % 12 === 0 ? `${business.warrantyMonths / 12}-year` : `${business.warrantyMonths}-month`} workmanship warranty`,
-  googleReviewsUrl: business.googleReviewsUrl,
-  replyBusinessDays: business.policies.replyBusinessDays,
-  replyWindow: businessDays(business.policies.replyBusinessDays),
-  coiWindow: businessDays(business.policies.coiBusinessDays),
-  backgroundRecheckYears: business.policies.backgroundRecheckYears,
-};
+/** True while a phone number is the fictional 555-01xx placeholder. */
+export const isPlaceholderPhone = (phone: string) => /555-?01\d\d$/.test(phone.replace(/[^\d-]/g, ""));
+
+/** Everything pages, emails and components read, built from the current settings. */
+export function buildSite(settings: Settings) {
+  const digits = settings.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+  const insured = settings.insurance.filter((i): i is { type: Settings["insurance"][number]["type"]; detail: string } => !!i.detail);
+  const months = settings.warrantyMonths;
+  return {
+    name: brand.name,
+    legalName: brand.legalName,
+    tagline: brand.tagline,
+    phone: settings.contact.phone,
+    phoneHref: `tel:+1${digits}`,
+    phoneIsPlaceholder: isPlaceholderPhone(settings.contact.phone),
+    email: settings.contact.email,
+    hours: settings.contact.hours,
+    licenseLabel: brand.licenseLabel,
+    licenseNumber: settings.license.number,
+    /** Insurance rows that have real details. */
+    insurance: insured,
+    /** Short line for footers, or null when no details are set. */
+    insuranceSummary: insured[0] ? `Insured: ${insured[0].detail} ${insured[0].type.toLowerCase()}` : null,
+    warranty: `${months % 12 === 0 ? `${months / 12}-year` : `${months}-month`} workmanship warranty`,
+    googleReviewsUrl: settings.googleReviewsUrl,
+    replyBusinessDays: settings.policies.replyBusinessDays,
+    replyWindow: businessDays(settings.policies.replyBusinessDays),
+    coiWindow: businessDays(settings.policies.coiBusinessDays),
+    backgroundRecheckYears: settings.policies.backgroundRecheckYears,
+    policiesConfirmed: settings.policies.confirmed,
+    story: settings.story,
+    photos: brand.photos,
+    quoteDefaults: settings.quoteDefaults,
+  };
+}
+
+export type SiteConfig = ReturnType<typeof buildSite>;
+
+/** Defaults only, for the few places that can't load settings (the global error page, the social image). */
+export const defaultSite = buildSite(defaultSettings);
 
 export type ServiceArea = {
   slug: string;

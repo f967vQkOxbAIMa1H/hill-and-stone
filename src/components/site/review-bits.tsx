@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 export function Stars({ rating, className }: { rating: number; className?: string }) {
@@ -25,7 +25,8 @@ export function GoogleG({ className }: { className?: string }) {
 }
 
 /** Hidden until the Google review link is set in business settings. */
-export function GoogleReviewsLink({ className }: { className?: string }) {
+export async function GoogleReviewsLink({ className }: { className?: string }) {
+  const site = await getSite();
   if (!site.googleReviewsUrl) return null;
   return (
     <a

@@ -2,9 +2,10 @@ import { Mail, Phone } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 
-export default function QuoteNotFound() {
+export default async function QuoteNotFound() {
+  const site = await getSite();
   return (
     <Container className="py-20 sm:py-28">
       <div className="max-w-xl">

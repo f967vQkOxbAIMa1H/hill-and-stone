@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,10 +6,12 @@ import { ChevronLeft } from "lucide-react";
 import { QuoteBuilder } from "@/components/admin/quote-builder";
 import { builderLead, newQuoteInput } from "@/lib/admin/builder-initial";
 import { getLead } from "@/lib/admin/queries";
+import { getSite } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "New quote" };
 
 export default async function NewQuotePage({ params }: PageProps<"/admin/requests/[id]/quote/new">) {
+  await requireCan("manageQuotes");
   const lead = await getLead((await params).id);
   if (!lead) notFound();
   return (
@@ -21,7 +24,7 @@ export default async function NewQuotePage({ params }: PageProps<"/admin/request
         <h1 className="mt-2 font-semiwide text-2xl font-bold sm:text-3xl">New quote</h1>
         <p className="mt-1 max-w-[70ch] truncate text-navy-600">&ldquo;{lead.description}&rdquo;</p>
       </header>
-      <QuoteBuilder lead={builderLead(lead)} initial={newQuoteInput(lead)} />
+      <QuoteBuilder lead={builderLead(lead)} initial={newQuoteInput(lead, (await getSite()).quoteDefaults)} />
     </>
   );
 }

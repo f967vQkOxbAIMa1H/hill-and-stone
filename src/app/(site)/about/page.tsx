@@ -6,9 +6,8 @@ import { PageIntro } from "@/components/site/page-intro";
 import { TrustList } from "@/components/site/trust-list";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { business } from "@/lib/site";
-
-const story = business.story;
+import { getSite } from "@/lib/settings";
+import type { SiteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
     "Hill & Stone is a Northwest Arkansas home repair company built on clear pricing, careful work and showing up when we say we will.",
 };
 
-// Story facts and photos come from `business` in src/lib/site.ts.
+// Story facts come from the admin site settings; photos from `brand.photos` in src/lib/site.ts.
 const values = [
   {
     title: "Show up when we said",
@@ -36,7 +35,8 @@ const values = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const site = await getSite();
   return (
     <>
       <PageIntro
@@ -50,24 +50,24 @@ export default function AboutPage() {
           <div className="max-w-[64ch]">
             <Heading id="story-heading">How we started</Heading>
             <div className="mt-6 space-y-5 text-lg leading-relaxed text-navy-700">
-              {storyParagraphs().map((p) => (
+              {storyParagraphs(site.story).map((p) => (
                 <p key={p}>{p}</p>
               ))}
             </div>
           </div>
 
-          {Object.values(business.photos).every((v) => !v) ? (
+          {Object.values(site.photos).every((v) => !v) ? (
             // No photos yet: one brand panel rather than three identical ones.
             <BrandPanel className="aspect-[4/3] self-start rounded-photo" />
           ) : (
             <div className="grid grid-cols-2 gap-4 self-start">
-              <Photo src={business.photos.team} alt="The Hill & Stone crew" className="col-span-2 aspect-[16/10]" />
+              <Photo src={site.photos.team} alt="The Hill & Stone crew" className="col-span-2 aspect-[16/10]" />
               <Photo
-                src={business.photos.founder}
-                alt={story.founderName ? `${story.founderName}, founder` : "Our founder"}
+                src={site.photos.founder}
+                alt={site.story.founderName ? `${site.story.founderName}, founder` : "Our founder"}
                 className="aspect-square"
               />
-              <Photo src={business.photos.crew} alt="The crew on a job" className="aspect-square" />
+              <Photo src={site.photos.crew} alt="The crew on a job" className="aspect-square" />
             </div>
           )}
         </Container>
@@ -121,7 +121,7 @@ function Photo({ src, alt, className }: { src: string | null; alt: string; class
 }
 
 /** The founder story, built from the facts in business settings. Sentences whose facts are missing are left out. */
-function storyParagraphs() {
+function storyParagraphs(story: SiteConfig["story"]) {
   const { founderName, foundedYear, hometown, crewSize, founderBackground } = story;
   const who = founderName ?? "Our founder";
   const first = [

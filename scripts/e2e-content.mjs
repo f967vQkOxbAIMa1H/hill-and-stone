@@ -63,6 +63,16 @@ async function publicText(p) {
   // React separates adjacent text with <!-- --> in server HTML; drop it so phrases match.
   return (await res.text()).replaceAll("<!-- -->", "");
 }
+/** Public pages normally update at once; allow up to the 60s cache ceiling for a rebuild race. */
+async function publicTextUntil(p, predicate, timeoutMs = 75_000) {
+  const start = Date.now();
+  let html = await publicText(p);
+  while (!predicate(html) && Date.now() - start < timeoutMs) {
+    await sleep(2000);
+    html = await publicText(p);
+  }
+  return { html, waited: Math.round((Date.now() - start) / 1000) };
+}
 
 try {
   // ── SEO files, icons, error pages ─────────────────────────────────────────
@@ -144,8 +154,8 @@ try {
   await shot("portfolio-edit");
 
   const slug = (await db.query(`select slug from "Project" where id=$1`, [projectId])).rows[0].slug;
-  const workHtml = await publicText("/our-work");
-  check("published project appears on Our Work right away", workHtml.includes(title));
+  const work = await publicTextUntil("/our-work", (h) => h.includes(title));
+  check("published project appears on Our Work", work.html.includes(title), `after ${work.waited}s`);
   await go(`/our-work?project=${slug}`);
   await page.waitForFunction(() => document.querySelector("dialog.project-dialog")?.open);
   await sleep(400);
@@ -171,13 +181,14 @@ try {
   await page.click("#permission");
   await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("main button[type=submit]")]);
   check("review is saved and live", (await text()).includes("It's live on the site"));
-  let reviews = await publicText("/reviews");
-  check("review shows on the Reviews page with its project link", reviews.includes("Great work on the porch columns") && reviews.includes(`See the project: ${title}`));
+  let r = await publicTextUntil("/reviews", (h) => h.includes(`See the project: ${title}`));
+  let reviews = r.html;
+  check("review shows on the Reviews page with its project link", reviews.includes("Great work on the porch columns") && reviews.includes(`See the project: ${title}`), `after ${r.waited}s`);
   await page.click("#published");
   await page.click("button::-p-text(Save changes)");
   await page.waitForFunction(() => document.body.innerText.includes("hidden from the site"));
-  reviews = await publicText("/reviews");
-  check("unpublishing hides the review", !reviews.includes(reviewText.slice(0, 40)));
+  r = await publicTextUntil("/reviews", (h) => !h.includes(reviewText.slice(0, 40)));
+  check("unpublishing hides the review", !r.html.includes(reviewText.slice(0, 40)), `after ${r.waited}s`);
   await go("/admin/reviews");
   await shot("reviews-admin");
 
@@ -221,7 +232,7 @@ try {
   await page.click("button::-p-text(Delete project)");
   await page.waitForSelector("#del-h");
   await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("[role=alertdialog] button::-p-text(Delete project)")]);
-  const gone = await publicText("/our-work");
+  const gone = (await publicTextUntil("/our-work", (h) => !h.includes(title))).html;
   const orphan = await fetch(`${BASE}/media/${directKey}`);
   check("deleting a project removes it and its photos", !gone.includes(title) && orphan.status === 404);
 } catch (error) {

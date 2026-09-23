@@ -1,3 +1,4 @@
+import { requireCan } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -11,6 +12,7 @@ import { categoryOptions, labelFor } from "@/lib/quote-request/options";
 export const metadata: Metadata = { title: "Portfolio" };
 
 export default async function PortfolioPage() {
+  await requireCan("manageContent");
   const projects = await db.project.findMany({
     orderBy: [{ published: "desc" }, { featured: "desc" }, { updatedAt: "desc" }],
     include: { images: { select: { isBefore: true, pairKey: true } } },

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { imageRoles, projectSchema, reviewSchema, slugify, type ProjectInput, type ReviewInput } from "@/lib/admin/content-schema";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireCan } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { deleteFiles } from "@/lib/storage";
 
@@ -30,7 +30,7 @@ function refreshPublic() {
 // ─── Portfolio ──────────────────────────────────────────────────────────────
 
 export async function saveProject(input: ProjectInput): Promise<FormResult> {
-  await requireAdmin();
+  await requireCan("manageContent");
   const parsed = projectSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: flatten(parsed.error) };
   const p = parsed.data;
@@ -60,7 +60,7 @@ export async function saveProject(input: ProjectInput): Promise<FormResult> {
 }
 
 export async function deleteProject(id: string) {
-  await requireAdmin();
+  await requireCan("manageContent");
   const images = await db.projectImage.findMany({ where: { projectId: id }, select: { storageKey: true } });
   await db.project.delete({ where: { id } }).catch(() => null);
   // Placeholder images live in /public ("/..." keys) and aren't ours to delete.
@@ -70,7 +70,7 @@ export async function deleteProject(id: string) {
 }
 
 export async function updateProjectImage(imageId: string, patch: { role?: string; alt?: string }) {
-  await requireAdmin();
+  await requireCan("manageContent");
   const image = await db.projectImage.findUnique({ where: { id: imageId } });
   if (!image) return { ok: false, message: "That photo no longer exists." };
 
@@ -103,7 +103,7 @@ export async function updateProjectImage(imageId: string, patch: { role?: string
 }
 
 export async function deleteProjectImage(imageId: string) {
-  await requireAdmin();
+  await requireCan("manageContent");
   const image = await db.projectImage.findUnique({ where: { id: imageId } });
   if (!image) return { ok: false, message: "That photo no longer exists." };
   await db.projectImage.delete({ where: { id: imageId } });
@@ -116,7 +116,7 @@ export async function deleteProjectImage(imageId: string) {
 // ─── Reviews ────────────────────────────────────────────────────────────────
 
 export async function saveReview(input: ReviewInput): Promise<FormResult> {
-  await requireAdmin();
+  await requireCan("manageContent");
   const parsed = reviewSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: flatten(parsed.error) };
   const r = parsed.data;
@@ -141,7 +141,7 @@ export async function saveReview(input: ReviewInput): Promise<FormResult> {
 }
 
 export async function deleteReview(id: string) {
-  await requireAdmin();
+  await requireCan("manageContent");
   await db.testimonial.delete({ where: { id } }).catch(() => null);
   refreshPublic();
   redirect("/admin/reviews");

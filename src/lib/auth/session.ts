@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { clientIp } from "@/lib/rate-limit";
+import { can, isStaffRole, type Capability } from "./permissions";
 
 export const SESSION_COOKIE = "hs_admin";
 const SESSION_DAYS = 14;
-const ADMIN_ROLES = ["OWNER", "ADMIN", "STAFF"] as const;
 
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
 
@@ -35,9 +35,10 @@ export const getAdmin = cache(async () => {
   if (!token) return null;
   const session = await db.session.findUnique({
     where: { tokenHash: hash(token) },
-    include: { user: { select: { id: true, email: true, name: true, role: true } } },
+    include: { user: { select: { id: true, email: true, name: true, role: true, deactivatedAt: true, mustChangePassword: true } } },
   });
-  if (!session || session.expiresAt < new Date() || !ADMIN_ROLES.includes(session.user.role as (typeof ADMIN_ROLES)[number])) {
+  // Deactivated accounts and non-staff roles are treated as signed out.
+  if (!session || session.expiresAt < new Date() || !isStaffRole(session.user.role) || session.user.deactivatedAt) {
     return null;
   }
   // Refresh activity at most every 10 minutes.
@@ -47,11 +48,28 @@ export const getAdmin = cache(async () => {
   return session.user;
 });
 
-/** Use at the top of every admin page and server action. */
-export async function requireAdmin() {
+/**
+ * Use at the top of every admin page and server action. Someone signed in with a temporary
+ * password is sent to choose their own before they can do anything else.
+ */
+export async function requireAdmin(opts: { allowPasswordChange?: boolean } = {}) {
   const admin = await getAdmin();
   if (!admin) redirect("/admin/login");
+  if (admin.mustChangePassword && !opts.allowPasswordChange) redirect("/admin/password");
   return admin;
+}
+
+/** requireAdmin plus a permission check. Pages and actions a role can't use send it to the overview. */
+export async function requireCan(capability: Capability) {
+  const admin = await requireAdmin();
+  if (!can(admin.role, capability)) redirect("/admin?denied=1");
+  return admin;
+}
+
+/** Signs a user out everywhere, except (optionally) the session making this request. */
+export async function revokeSessions(userId: string, opts: { keepCurrent?: boolean } = {}) {
+  const token = opts.keepCurrent ? (await cookies()).get(SESSION_COOKIE)?.value : undefined;
+  await db.session.deleteMany({ where: { userId, ...(token ? { tokenHash: { not: hash(token) } } : {}) } });
 }
 
 export async function destroySession() {

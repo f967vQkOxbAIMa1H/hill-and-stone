@@ -10,7 +10,7 @@ import { RadioTiles } from "@/components/ui/radio-tiles";
 import { formatDay } from "@/lib/dates";
 import { budgetOptions, categoryOptions, contactOptions, timelineOptions } from "@/lib/quote-request/options";
 import { flattenErrors, quoteRequestSchema, type FieldErrors, type QuoteRequestInput } from "@/lib/quote-request/schema";
-import { site } from "@/lib/site";
+import { useSite } from "@/components/site-provider";
 import { PhotoDropzone, type Photo } from "./photo-dropzone";
 
 type Values = Record<keyof QuoteRequestInput, string>;
@@ -36,6 +36,7 @@ type Status =
   | { state: "done"; number: number; replyBy: string; email: string; contact: string };
 
 export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
+  const site = useSite();
   const [values, setValues] = useState<Values>({ ...empty, category: defaultCategory ?? "" });
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});

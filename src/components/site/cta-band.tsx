@@ -2,15 +2,18 @@ import { Phone } from "lucide-react";
 import { buttonVariants, ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { quoteHref, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { quoteHref } from "@/lib/site";
 
-export function CtaBand({
+export async function CtaBand({
   title = "Tell us what needs fixing.",
-  body = `Send a few photos and a short description. We reply within ${site.replyWindow} with next steps, and most small jobs get a price without a site visit.`,
+  body,
 }: {
   title?: string;
   body?: string;
 }) {
+  const site = await getSite();
+  body ??= `Send a few photos and a short description. We reply within ${site.replyWindow} with next steps, and most small jobs get a price without a site visit.`;
   return (
     <section className="bg-navy-950 text-stone-50">
       <Container className="grid gap-8 py-20 lg:grid-cols-[1fr_auto] lg:items-end">

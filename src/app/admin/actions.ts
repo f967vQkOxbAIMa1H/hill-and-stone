@@ -8,7 +8,7 @@ import { z } from "zod";
 import { LeadStatus } from "@/generated/prisma/enums";
 import { quoteDraftSchema, computeTotals, type QuoteDraftInput } from "@/lib/admin/quote-schema";
 import { fakeVerify, verifyPassword } from "@/lib/auth/password";
-import { createSession, destroySession, requireAdmin } from "@/lib/auth/session";
+import { createSession, destroySession, requireCan } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email/send";
 import { balanceRequest, quoteSent } from "@/lib/email/quote-templates";
@@ -16,7 +16,7 @@ import { env } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { balanceCents, depositCents, paidCents, portalState } from "@/lib/quotes/state";
-import { site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
 // Every action re-checks the session: a page-level check doesn't protect a server action.
@@ -38,7 +38,8 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
 
   const user = await db.user.findUnique({ where: { email } });
   const ok = user?.passwordHash ? await verifyPassword(password, user.passwordHash) : await fakeVerify(password);
-  if (!user || !ok || user.role === "CUSTOMER") {
+  // Same message for every failure, so it doesn't reveal which accounts exist or are deactivated.
+  if (!user || !ok || user.role === "CUSTOMER" || user.deactivatedAt) {
     return { error: "That email and password don't match. Check both and try again.", email };
   }
 
@@ -55,7 +56,7 @@ export async function logout() {
 // ─── Leads ──────────────────────────────────────────────────────────────────
 
 export async function updateLeadStatus(leadId: string, status: string) {
-  await requireAdmin();
+  await requireCan("workRequests");
   const parsed = z.enum(LeadStatus).safeParse(status);
   if (!parsed.success) return { error: "Choose a status from the list." };
   await db.lead.update({
@@ -67,7 +68,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
 }
 
 export async function addLeadNote(leadId: string, body: string) {
-  const admin = await requireAdmin();
+  const admin = await requireCan("workRequests");
   const text = body.trim();
   if (!text) return { error: "Write a note first." };
   if (text.length > 2000) return { error: "Keep notes under 2,000 characters." };
@@ -143,7 +144,7 @@ async function persistDraft(input: QuoteDraftInput, userId: string): Promise<Sav
 }
 
 export async function saveQuoteDraft(input: QuoteDraftInput): Promise<SaveResult> {
-  const admin = await requireAdmin();
+  const admin = await requireCan("manageQuotes");
   const result = await persistDraft(input, admin.id);
   if (result.ok) revalidatePath("/admin", "layout");
   return result;
@@ -154,7 +155,7 @@ export type SendResult =
   | { ok: false; errors: Record<string, string>; id?: string };
 
 export async function sendQuote(input: QuoteDraftInput): Promise<SendResult> {
-  const admin = await requireAdmin();
+  const admin = await requireCan("manageQuotes");
   const saved = await persistDraft(input, admin.id);
   if (!saved.ok) return saved;
 
@@ -179,6 +180,7 @@ export async function sendQuote(input: QuoteDraftInput): Promise<SendResult> {
 const quoteLink = (token: string) => `${env.NEXT_PUBLIC_APP_URL}/quote/${token}`;
 
 async function emailQuote(quote: Awaited<ReturnType<typeof loadQuoteForEmail>>) {
+  const site = await getSite();
   const a = quote.address;
   return sendEmail({
     type: "QUOTE_SENT",
@@ -186,7 +188,7 @@ async function emailQuote(quote: Awaited<ReturnType<typeof loadQuoteForEmail>>) 
     quoteId: quote.id,
     leadId: quote.leadId ?? undefined,
     replyTo: site.email,
-    ...quoteSent({
+    ...(await quoteSent({
       number: quote.number,
       title: quote.title,
       totalCents: quote.totalCents,
@@ -197,7 +199,7 @@ async function emailQuote(quote: Awaited<ReturnType<typeof loadQuoteForEmail>>) 
       url: quoteLink(quote.publicToken),
       validUntil: quote.validUntil,
       depositCents: depositCents(quote),
-    }),
+    })),
   });
 }
 
@@ -206,7 +208,7 @@ function loadQuoteForEmail(id: string) {
 }
 
 export async function resendQuote(quoteId: string) {
-  const admin = await requireAdmin();
+  const admin = await requireCan("manageQuotes");
   const quote = await loadQuoteForEmail(quoteId);
   if (!["SENT", "VIEWED"].includes(quote.status)) return { error: "Only quotes waiting on the client can be resent." };
   const result = await emailQuote(quote);
@@ -217,7 +219,8 @@ export async function resendQuote(quoteId: string) {
 
 /** Emails the client their remaining balance with a link to pay it on their quote. */
 export async function requestBalancePayment(quoteId: string, note: string): Promise<{ ok: boolean; message: string }> {
-  const admin = await requireAdmin();
+  const site = await getSite();
+  const admin = await requireCan("manageQuotes");
   const quote = await db.quote.findUnique({ where: { id: quoteId }, include: { customer: true, address: true, payments: true } });
   if (!quote) return { ok: false, message: "That quote no longer exists." };
   if (portalState(quote) !== "partially_paid") return { ok: false, message: "Only accepted quotes with a balance due can be billed." };
@@ -229,7 +232,7 @@ export async function requestBalancePayment(quoteId: string, note: string): Prom
     quoteId,
     leadId: quote.leadId ?? undefined,
     replyTo: site.email,
-    ...balanceRequest({
+    ...(await balanceRequest({
       number: quote.number,
       title: quote.title,
       totalCents: quote.totalCents,
@@ -241,7 +244,7 @@ export async function requestBalancePayment(quoteId: string, note: string): Prom
       balanceCents: balanceCents(quote),
       paidCents: paidCents(quote),
       note: text,
-    }),
+    })),
   });
   await db.quoteEvent.create({
     data: { quoteId, type: "BALANCE_REQUESTED", metadata: { by: admin.email, amountCents: balanceCents(quote), emailed: result.ok } },
@@ -253,7 +256,7 @@ export async function requestBalancePayment(quoteId: string, note: string): Prom
 }
 
 export async function voidQuote(quoteId: string) {
-  const admin = await requireAdmin();
+  const admin = await requireCan("voidQuotes");
   const quote = await db.quote.findUnique({ where: { id: quoteId }, include: { payments: true } });
   if (!quote) return { error: "That quote no longer exists." };
   if (["ACCEPTED", "PAID"].includes(quote.status)) return { error: "This quote has payments, so it can't be voided. Refund it in Stripe first." };

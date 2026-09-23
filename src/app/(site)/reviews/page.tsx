@@ -5,9 +5,7 @@ import { GoogleG, GoogleReviewsLink, Stars } from "@/components/site/review-bits
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
 import { getTestimonials } from "@/lib/content";
-import { site } from "@/lib/site";
-
-export const revalidate = 3600;
+import { getSite } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Reviews",
@@ -17,6 +15,7 @@ export const metadata: Metadata = {
 const dateFmt = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "America/Chicago" });
 
 export default async function ReviewsPage() {
+  const site = await getSite();
   const reviews = await getTestimonials();
 
   return (

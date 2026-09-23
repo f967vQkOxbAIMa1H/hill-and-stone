@@ -1,4 +1,5 @@
-import { business, phoneIsPlaceholder, serviceAreas, site } from "@/lib/site";
+import { getSite } from "@/lib/settings";
+import { brand, serviceAreas } from "@/lib/site";
 
 const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -6,22 +7,23 @@ const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replac
  * schema.org data for search engines. Hill & Stone is a service-area business, so it lists
  * the towns served rather than a street address. Unset or placeholder facts are left out.
  */
-export function LocalBusinessJsonLd() {
+export async function LocalBusinessJsonLd() {
+  const site = await getSite();
   const data = {
     "@context": "https://schema.org",
     "@type": "HomeAndConstructionBusiness",
     "@id": `${base}/#business`,
-    name: business.name,
-    legalName: business.legalName,
+    name: brand.name,
+    legalName: brand.legalName,
     description: "Home repair, carpentry, drywall and painting, flooring, exterior repair and small renovations in Northwest Arkansas.",
     url: base,
     logo: `${base}/apple-icon`,
     image: `${base}/opengraph-image`,
-    ...(phoneIsPlaceholder ? {} : { telephone: `+1${site.phoneHref.replace(/\D/g, "").slice(-10)}` }),
+    ...(site.phoneIsPlaceholder ? {} : { telephone: `+1${site.phoneHref.replace(/\D/g, "").slice(-10)}` }),
     email: site.email,
     areaServed: serviceAreas.map((a) => ({ "@type": "City", name: `${a.name}, AR` })),
     address: { "@type": "PostalAddress", addressRegion: "AR", addressCountry: "US" },
-    ...(business.googleReviewsUrl ? { sameAs: [business.googleReviewsUrl] } : {}),
+    ...(site.googleReviewsUrl ? { sameAs: [site.googleReviewsUrl] } : {}),
     knowsAbout: ["Home repair", "Finish carpentry", "Drywall repair", "Interior painting", "Flooring installation", "Deck repair"],
   };
   return (

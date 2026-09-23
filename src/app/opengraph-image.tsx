@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { serviceAreas, site } from "@/lib/site";
+import { brand as site, serviceAreas } from "@/lib/site";
 
 export const alt = `${site.name}: home repair in Northwest Arkansas`;
 export const size = { width: 1200, height: 630 };
