@@ -24,7 +24,9 @@ export function GoogleG({ className }: { className?: string }) {
   );
 }
 
+/** Hidden until the Google review link is set in business settings. */
 export function GoogleReviewsLink({ className }: { className?: string }) {
+  if (!site.googleReviewsUrl) return null;
   return (
     <a
       href={site.googleReviewsUrl}

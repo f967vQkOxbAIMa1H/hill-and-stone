@@ -19,7 +19,7 @@ export class QuoteActionError extends Error {
   }
 }
 
-const quoteUrl = (token: string) => `${env.NEXT_PUBLIC_SITE_URL}/quote/${token}`;
+const quoteUrl = (token: string) => `${env.NEXT_PUBLIC_APP_URL}/quote/${token}`;
 const formatAddress = (a: PortalQuote["address"]) =>
   a ? `${a.line1}${a.line2 ? `, ${a.line2}` : ""}, ${a.city}, ${a.state} ${a.postalCode}` : "(no address)";
 

@@ -48,8 +48,8 @@ export function paymentReceipt(q: QuoteInfo, p: PaymentInfo) {
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Thanks, ${esc(q.customerName)}. Your payment went through.</p>
 <p style="margin:0 0 12px">${
     p.isDeposit
-      ? "Your deposit is in and your project is on our schedule. We'll be in touch within one business day to confirm a start date."
-      : "Your quote is approved and paid. We'll be in touch within one business day to confirm a start date."
+      ? `Your deposit is in and your project is on our schedule. We'll be in touch within ${site.replyWindow} to confirm a start date.`
+      : `Your quote is approved and paid. We'll be in touch within ${site.replyWindow} to confirm a start date.`
   }</p>
 ${rows(summary)}
 <p style="margin:0 0 12px"><a href="${esc(q.url)}" style="color:#b45309;font-weight:bold">View your quote</a>${

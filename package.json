@@ -18,7 +18,11 @@
     "test:e2e:quote": "node scripts/e2e-quote.mjs",
     "quotes:sample": "tsx scripts/sample-quotes.ts",
     "admin:user": "tsx scripts/admin-user.ts",
-    "test:e2e:admin": "node scripts/e2e-admin.mjs"
+    "test:e2e:admin": "node scripts/e2e-admin.mjs",
+    "check:launch": "tsx scripts/launch-check.ts",
+    "db:reset": "tsx scripts/db-reset.ts",
+    "db:clean-samples": "tsx scripts/clean-sample-data.ts",
+    "db:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

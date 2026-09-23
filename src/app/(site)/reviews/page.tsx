@@ -32,14 +32,16 @@ export default async function ReviewsPage() {
             </Lede>
           </div>
           {/* The Google profile is the independent source; send people there first. */}
-          <div className="rounded-panel border border-navy-200 bg-white p-6">
-            <div className="flex items-center gap-3">
-              <GoogleG className="size-8" />
-              <p className="font-semiwide text-lg leading-tight font-bold">Our Google reviews</p>
+          {site.googleReviewsUrl && (
+            <div className="rounded-panel border border-navy-200 bg-white p-6">
+              <div className="flex items-center gap-3">
+                <GoogleG className="size-8" />
+                <p className="font-semiwide text-lg leading-tight font-bold">Our Google reviews</p>
+              </div>
+              <p className="mt-3 text-navy-600">Read every review, or leave one after your job. It helps neighbors find a contractor they can trust.</p>
+              <GoogleReviewsLink className="mt-5 w-full justify-center" />
             </div>
-            <p className="mt-3 text-navy-600">Read every review, or leave one after your job. It helps neighbors find a contractor they can trust.</p>
-            <GoogleReviewsLink className="mt-5 w-full justify-center" />
-          </div>
+          )}
         </Container>
       </section>
 
@@ -78,8 +80,8 @@ export default async function ReviewsPage() {
           </ul>
         )}
         <p className="mt-4 text-sm text-navy-600">
-          Reviews are shared with permission. To leave one, use the Google link above or reply to your final invoice email from{" "}
-          {site.email}.
+          Reviews are shared with permission. To leave one,{" "}
+          {site.googleReviewsUrl ? "use the Google link above or " : ""}reply to your final invoice email from {site.email}.
         </p>
       </Container>
 

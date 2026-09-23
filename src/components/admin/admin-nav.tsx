@@ -19,7 +19,7 @@ export function AdminNav({ pending }: { pending: number }) {
         const current = exact ? pathname === href : pathname.startsWith(href);
         return (
           <li key={href}>
-            <Link
+            <Link prefetch={false}
               href={href}
               aria-current={current ? "page" : undefined}
               className={cn(

@@ -43,7 +43,7 @@ export const faq: FaqGroup[] = [
     items: [
       {
         q: "How soon can you start?",
-        a: `We reply to every request within ${site.replyBusinessDays === 1 ? "one business day" : `${site.replyBusinessDays} business days`}. Start dates depend on the season and the size of the job; your quote shows the next available date.`,
+        a: `We reply to every request within ${site.replyWindow}. Start dates depend on the season and the size of the job; your quote shows the next available date.`,
       },
       {
         q: "Do you handle emergencies?",

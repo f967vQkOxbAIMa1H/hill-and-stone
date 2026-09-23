@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { describedBy, Field, Input, Textarea } from "@/components/ui/field";
 import { coiRequestSchema, type CoiRequestInput } from "@/lib/coi";
 import { flattenErrors } from "@/lib/quote-request/schema";
+import { site } from "@/lib/site";
 
 type Errors = Partial<Record<keyof CoiRequestInput | "form", string>>;
 
@@ -50,7 +51,7 @@ export function CoiForm() {
         <div>
           <p className="font-bold">Request sent</p>
           <p className="mt-1 text-navy-600">
-            We&apos;ll ask our insurer to send the certificate to {values.email}, usually within two business days.
+            We&apos;ll ask our insurer to send the certificate to {values.email}, usually within {site.coiWindow}.
           </p>
         </div>
       </div>

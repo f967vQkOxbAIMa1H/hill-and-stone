@@ -34,7 +34,7 @@ const specs: Spec[] = [
 
 async function main() {
   const json = process.argv.includes("--json");
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   // Attach quotes to the most recent lead that has photos, else create a sample customer.
   const lead = await db.lead.findFirst({ where: { attachments: { some: {} } }, orderBy: { createdAt: "desc" } });

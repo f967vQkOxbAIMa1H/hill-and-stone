@@ -23,7 +23,7 @@ export function StatusTabs({
           const href = t.value ? `${base}?status=${t.value}${extra}` : `${base}${extra ? `?${extra.slice(1)}` : ""}`;
           return (
             <li key={t.label}>
-              <Link
+              <Link prefetch={false}
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(

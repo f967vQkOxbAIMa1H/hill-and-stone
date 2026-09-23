@@ -7,7 +7,7 @@ import { services, site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Request a quote",
-  description: "Tell us about your repair or project and attach photos. Hill & Stone replies within one business day.",
+  description: `Tell us about your repair or project and attach photos. Hill & Stone replies within ${site.replyWindow}.`,
 };
 
 export default async function RequestQuotePage({ searchParams }: PageProps<"/request-a-quote">) {
@@ -21,7 +21,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
           Request a quote
         </Heading>
         <Lede className="mt-5 mb-12">
-          Tell us what needs doing and where. Photos help most. We reply within one business day with a price or a time
+          Tell us what needs doing and where. Photos help most. We reply within {site.replyWindow} with a price or a time
           to come look.
         </Lede>
         <QuoteForm defaultCategory={preset} />
@@ -33,7 +33,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
           <ol className="mt-5 space-y-5">
             {[
               ["You send details", "This form, with photos if you have them."],
-              ["We reply in a business day", "With a price, questions, or a time for a short visit."],
+              [`We reply within ${site.replyWindow}`, "With a price, questions, or a time for a short visit."],
               ["You get a written quote", "Itemized labor, materials and trip fee. Approve and pay online."],
             ].map(([title, body], i) => (
               <li key={title} className="grid grid-cols-[2rem_1fr] gap-2">

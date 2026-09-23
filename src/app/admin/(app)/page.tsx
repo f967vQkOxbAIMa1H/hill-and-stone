@@ -29,7 +29,7 @@ export default async function OverviewPage() {
         {/* One ruled strip rather than four floating cards. */}
         <dl className="grid overflow-hidden rounded-panel border border-navy-200 bg-navy-200 sm:grid-cols-2 xl:grid-cols-4 [&>*]:bg-white" style={{ gap: 1 }}>
           {metrics.map((x) => (
-            <Link key={x.label} href={x.href} className="group p-5 hover:bg-stone-50">
+            <Link prefetch={false} key={x.label} href={x.href} className="group p-5 hover:bg-stone-50">
               <dt className="text-sm text-navy-600 group-hover:text-navy-950">{x.label}</dt>
               <dd className="mt-2 font-semiwide text-3xl font-extrabold tracking-[-0.01em] tabular-nums">{x.value}</dd>
               <dd className="mt-1 text-sm text-navy-600">{x.detail}</dd>
@@ -114,7 +114,7 @@ function Panel({ title, href, empty, children }: { title: string; href: string; 
         <h2 id={title} className="font-bold">
           {title}
         </h2>
-        <Link href={href} className="text-sm font-semibold text-copper-700 underline-offset-4 hover:underline">
+        <Link prefetch={false} href={href} className="text-sm font-semibold text-copper-700 underline-offset-4 hover:underline">
           See all
         </Link>
       </div>
@@ -130,7 +130,7 @@ function Panel({ title, href, empty, children }: { title: string; href: string; 
 function Row({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <li>
-      <Link href={href} className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-stone-50">
+      <Link prefetch={false} href={href} className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-stone-50">
         {children}
       </Link>
     </li>

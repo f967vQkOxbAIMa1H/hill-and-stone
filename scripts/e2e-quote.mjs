@@ -2,7 +2,7 @@
 // Needs: the app running with Stripe pointed at stripe-mock, plus Postgres.
 //   docker compose --profile test up -d
 //   STRIPE_SECRET_KEY=sk_test_mock STRIPE_WEBHOOK_SECRET=whsec_e2e STRIPE_API_HOST=localhost \
-//     STRIPE_API_PORT=12111 STRIPE_API_PROTOCOL=http NEXT_PUBLIC_SITE_URL=http://localhost:3100 npx next start -p 3100
+//     STRIPE_API_PORT=12111 STRIPE_API_PROTOCOL=http NEXT_PUBLIC_APP_URL=http://localhost:3100 npx next start -p 3100
 //   BASE_URL=http://localhost:3100 STRIPE_WEBHOOK_SECRET=whsec_e2e node scripts/e2e-quote.mjs
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -29,7 +29,7 @@ const check = (name, ok, detail = "") => {
 
 const quotes = JSON.parse(
   execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], {
-    env: { ...process.env, NEXT_PUBLIC_SITE_URL: BASE },
+    env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE },
     encoding: "utf8",
   }).trim().split("\n").pop(),
 );
@@ -201,7 +201,7 @@ try {
   check("photos aren't reachable without the right token", photoOtherToken.status === 404);
 
   // ── Mobile ─────────────────────────────────────────────────
-  const fresh = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_SITE_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
+  const fresh = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
   page = await open(fresh["open-deposit"], 390, 844);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check("portal has no horizontal scroll at 390px", !overflow);

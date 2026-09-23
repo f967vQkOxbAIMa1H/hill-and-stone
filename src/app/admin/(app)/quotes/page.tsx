@@ -31,7 +31,7 @@ export default async function QuotesPage({ searchParams }: PageProps<"/admin/quo
           <div className="mt-8 rounded-panel border border-dashed border-navy-300 p-8 text-center">
             <p className="font-semibold">No quotes with this status.</p>
             <p className="mt-1 text-sm text-navy-600">
-              Open a <Link href="/admin/requests" className="font-semibold text-copper-700 underline underline-offset-4">request</Link> and choose Create quote.
+              Open a <Link prefetch={false} href="/admin/requests" className="font-semibold text-copper-700 underline underline-offset-4">request</Link> and choose Create quote.
             </p>
           </div>
         ) : (
@@ -51,7 +51,7 @@ export default async function QuotesPage({ searchParams }: PageProps<"/admin/quo
                 {quotes.map((q) => (
                   <tr key={q.id} className="group relative hover:bg-stone-50">
                     <td className="px-4 py-3">
-                      <Link href={`/admin/quotes/${q.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-copper-700">
+                      <Link prefetch={false} href={`/admin/quotes/${q.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-copper-700">
                         #{q.number} {q.title}
                       </Link>
                       {q.lead && <span className="block text-navy-600">Request #{q.lead.number}</span>}

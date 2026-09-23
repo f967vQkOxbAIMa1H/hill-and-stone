@@ -14,7 +14,7 @@ export default async function NewQuotePage({ params }: PageProps<"/admin/request
   return (
     <>
       <header className="border-b border-navy-200 px-5 py-6 sm:px-8">
-        <Link href={`/admin/requests/${lead.id}`} className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
+        <Link prefetch={false} href={`/admin/requests/${lead.id}`} className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
           <ChevronLeft aria-hidden className="size-4" />
           Request #{lead.number}
         </Link>

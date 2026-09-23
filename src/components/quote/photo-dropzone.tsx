@@ -2,6 +2,7 @@
 
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { SafeImage } from "@/components/ui/safe-image";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { cn } from "@/lib/utils";
 
@@ -119,8 +120,7 @@ export function PhotoDropzone({
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Attached photos">
           {photos.map((p) => (
             <li key={p.id} className="group relative">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
-              <img src={p.url} alt="" className="aspect-square w-full rounded-control object-cover" />
+              <SafeImage src={p.url} alt={p.file.name} fallbackLabel="No preview" className="aspect-square w-full rounded-control object-cover" />
               <p className="mt-1 truncate text-sm" title={p.file.name}>
                 {p.file.name}
               </p>

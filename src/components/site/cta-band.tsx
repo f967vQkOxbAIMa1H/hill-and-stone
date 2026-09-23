@@ -6,7 +6,7 @@ import { quoteHref, site } from "@/lib/site";
 
 export function CtaBand({
   title = "Tell us what needs fixing.",
-  body = "Send a few photos and a short description. We reply within one business day with next steps, and most small jobs get a price without a site visit.",
+  body = `Send a few photos and a short description. We reply within ${site.replyWindow} with next steps, and most small jobs get a price without a site visit.`,
 }: {
   title?: string;
   body?: string;

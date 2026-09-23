@@ -175,7 +175,7 @@ export async function sendQuote(input: QuoteDraftInput): Promise<SendResult> {
   return { ok: true, id: quote.id, url: quoteLink(token), emailed: result.ok, emailError: result.ok ? undefined : result.error };
 }
 
-const quoteLink = (token: string) => `${env.NEXT_PUBLIC_SITE_URL}/quote/${token}`;
+const quoteLink = (token: string) => `${env.NEXT_PUBLIC_APP_URL}/quote/${token}`;
 
 async function emailQuote(quote: Awaited<ReturnType<typeof loadQuoteForEmail>>) {
   const a = quote.address;

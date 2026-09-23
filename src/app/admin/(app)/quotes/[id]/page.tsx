@@ -27,12 +27,12 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
   const { sent } = await searchParams;
 
   const back = quote.lead ? (
-    <Link href={`/admin/requests/${quote.lead.id}`} className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
+    <Link prefetch={false} href={`/admin/requests/${quote.lead.id}`} className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
       <ChevronLeft aria-hidden className="size-4" />
       Request #{quote.lead.number}
     </Link>
   ) : (
-    <Link href="/admin/quotes" className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
+    <Link prefetch={false} href="/admin/quotes" className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
       <ChevronLeft aria-hidden className="size-4" />
       Quotes
     </Link>
@@ -57,7 +57,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
   }
 
   const state = portalState(quote);
-  const url = `${env.NEXT_PUBLIC_SITE_URL}/quote/${quote.publicToken}`;
+  const url = `${env.NEXT_PUBLIC_APP_URL}/quote/${quote.publicToken}`;
   const expiredWhileOpen = state === "expired" && ["SENT", "VIEWED"].includes(quote.status);
 
   return (

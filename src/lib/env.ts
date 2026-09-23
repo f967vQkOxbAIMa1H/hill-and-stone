@@ -6,7 +6,7 @@ const optional = z.string().trim().optional().transform((v) => v || undefined);
 
 const schema = z.object({
   DATABASE_URL: z.url(),
-  NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   CONTRACTOR_NOTIFY_EMAIL: z.email().optional(),
   RESEND_API_KEY: optional,
   EMAIL_FROM: optional,

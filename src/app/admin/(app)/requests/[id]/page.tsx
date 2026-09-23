@@ -6,6 +6,7 @@ import { fmtDateTime, fmtDay, phoneFmt } from "@/components/admin/format";
 import { LeadStatusSelect, NoteForm } from "@/components/admin/lead-controls";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { SafeImage } from "@/components/ui/safe-image";
 import { leadStatus, quoteStatus } from "@/lib/admin/labels";
 import { getLead } from "@/lib/admin/queries";
 import { budgetOptions, categoryOptions, contactOptions, labelFor, timelineOptions } from "@/lib/quote-request/options";
@@ -28,7 +29,7 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
   return (
     <>
       <header className="border-b border-navy-200 px-5 py-6 sm:px-8">
-        <Link href="/admin/requests" className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
+        <Link prefetch={false} href="/admin/requests" className="inline-flex items-center gap-1 text-sm text-navy-600 hover:text-navy-950">
           <ChevronLeft aria-hidden className="size-4" />
           Requests
         </Link>
@@ -75,8 +76,7 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
                 {lead.attachments.map((p, i) => (
                   <li key={p.id}>
                     <a href={`/api/admin/attachments/${p.id}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-panel border border-navy-200 bg-navy-900 ring-copper-500 hover:ring-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- private, session-gated image */}
-                      <img src={`/api/admin/attachments/${p.id}`} alt={`Photo ${i + 1} from request #${lead.number}`} className="aspect-[4/3] w-full object-cover" />
+                      <SafeImage src={`/api/admin/attachments/${p.id}`} alt={`Photo ${i + 1} from request #${lead.number}`} fallbackLabel="File missing" className="aspect-[4/3] w-full object-cover" />
                     </a>
                     <p className="mt-1 truncate text-sm text-navy-600" title={p.fileName}>
                       {p.fileName}, {Math.max(1, Math.round(p.sizeBytes / 1024))} KB
@@ -95,7 +95,7 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
               <ul className="mt-3 divide-y divide-navy-200 rounded-panel border border-navy-200 bg-white">
                 {lead.quotes.map((q) => (
                   <li key={q.id}>
-                    <Link href={`/admin/quotes/${q.id}`} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-stone-50">
+                    <Link prefetch={false} href={`/admin/quotes/${q.id}`} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-stone-50">
                       <span>
                         <span className="font-semibold">#{q.number} {q.title}</span>
                         <span className="block text-sm text-navy-600">{q.sentAt ? `Sent ${fmtDay(q.sentAt)}` : `Created ${fmtDay(q.createdAt)}`}</span>

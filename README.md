@@ -10,12 +10,28 @@ Stack: Next.js 16 (App Router), Tailwind CSS 4, Prisma 7 + PostgreSQL, zod.
 cp .env.example .env     # then fill in keys as phases need them
 npm install              # also generates the Prisma client
 npm run db:up            # local Postgres on :5433 via Docker
-npm run db:migrate
-npm run db:seed
+npm run db:reset         # migrate + sample content (local only)
 npm run dev
 ```
 
 Design system preview: http://localhost:3000/design-system
+
+## Before launch
+
+All Hill & Stone details (phone, license, insurance, story, policies, quote defaults) are in the
+`business` block at the top of `src/lib/site.ts`. Run `npm run check:launch` to see what's left, and
+follow [docs/DEPLOY.md](docs/DEPLOY.md) to deploy.
+
+## Useful scripts
+
+| Command | What it does |
+|---|---|
+| `npm run check:launch` | Lists unset business details, missing env keys and leftover sample data |
+| `npm run db:reset` | Local only: wipe the database and `./storage`, migrate, load sample content |
+| `npm run db:clean-samples` | Remove sample/test data from any database (dry run unless `-- --yes`) |
+| `npm run db:deploy` | Apply migrations in production |
+| `npm run admin:user -- email "Name"` | Create or reset an admin login |
+| `npm run quotes:sample` | Create sample quotes in every state (dev) |
 
 ## Where things live
 

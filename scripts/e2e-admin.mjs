@@ -202,7 +202,7 @@ try {
   check("revenue metric includes the deposit", cents(revenueAfter) - cents(revenueBefore) === 20000, `${revenueBefore} → ${revenueAfter}`);
 
   // ── Resend and void on another quote ────────────────────────────────────
-  const samples = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_SITE_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
+  const samples = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
   const openToken = samples["open-full"].split("/quote/")[1];
   const openId = (await db.query(`select id from "Quote" where "publicToken"=$1`, [openToken])).rows[0].id;
   await go(`/admin/quotes/${openId}`);

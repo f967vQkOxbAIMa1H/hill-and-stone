@@ -14,7 +14,7 @@ export default defineConfig({
     environment: "node",
     env: {
       DATABASE_URL: "postgresql://test:test@localhost:5999/test",
-      NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
       STRIPE_SECRET_KEY: "sk_test_unit",
       STRIPE_WEBHOOK_SECRET: "whsec_unit_test_secret",
     },

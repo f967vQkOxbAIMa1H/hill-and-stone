@@ -2,6 +2,13 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type ServiceCategory } from "../src/generated/prisma/client";
 
+// Sample content must never reach a real database by accident.
+const seedHost = new URL(process.env.DATABASE_URL!).hostname;
+if (!["localhost", "127.0.0.1", "::1"].includes(seedHost) && process.env.ALLOW_SAMPLE_SEED !== "1") {
+  console.log(`Skipping sample seed: ${seedHost} isn't a local database. Set ALLOW_SAMPLE_SEED=1 to override.`);
+  process.exit(0);
+}
+
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 
 // Development-only sample data. Safe to re-run: sample projects use the "sample-" slug

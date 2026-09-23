@@ -7,12 +7,16 @@ export const commitments = [
   {
     icon: FileCheck2,
     title: "Licensed and insured",
-    body: `Arkansas home improvement license ${site.licenseNumber}. ${site.insuredAmount}. We send a certificate of insurance on request.`,
+    body: [
+      site.licenseNumber ? `${site.licenseLabel} ${site.licenseNumber}.` : "Licensed for home improvement work in Arkansas.",
+      site.insuranceSummary ? `${site.insuranceSummary}.` : "Fully insured.",
+      "We send a certificate of insurance on request.",
+    ].join(" "),
   },
   {
     icon: UserCheck,
     title: "Background-checked technicians",
-    body: "Everyone who comes to your house has passed a criminal background check and works for us directly, not as a day-labor sub.",
+    body: `Everyone who comes to your house has passed a criminal background check, rechecked every ${site.backgroundRecheckYears} years, and works for us directly.`,
   },
   {
     icon: ShieldCheck,

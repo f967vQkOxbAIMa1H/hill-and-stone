@@ -3,11 +3,16 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BrandPanel } from "@/components/brand/brand-panel";
 import { BeforeAfter } from "@/components/ui/before-after";
 import { ButtonLink } from "@/components/ui/button";
 import type { ServiceCategory } from "@/generated/prisma/enums";
 import { quoteHref, services } from "@/lib/site";
 import { cn } from "@/lib/utils";
+
+type Photo = { src: string; alt: string };
+/** What photos a project has. Projects without photos still show, with a brand graphic. */
+export type ProjectMedia = { kind: "pair"; before: Photo; after: Photo } | { kind: "single"; image: Photo } | { kind: "none" };
 
 export type GalleryProject = {
   slug: string;
@@ -20,8 +25,7 @@ export type GalleryProject = {
   materials: string[];
   durationDays: number | null;
   completed: string | null;
-  before: { src: string; alt: string };
-  after: { src: string; alt: string };
+  media: ProjectMedia;
   placeholder: boolean;
   quote: { body: string; authorName: string; city: string } | null;
 };
@@ -160,9 +164,9 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
         {current && (
           <div className="grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="bg-navy-950 p-3 sm:p-5 lg:p-6">
-              <BeforeAfter key={current.slug} before={current.before} after={current.after} sizes="(min-width: 1024px) 60vw, 100vw" />
+              <DetailMedia key={current.slug} project={current} />
               <div className="mt-3 flex items-center justify-between gap-3 text-sm text-navy-300">
-                <span>{current.placeholder ? "Placeholder photos" : "Drag to compare"}</span>
+                <span>{current.placeholder ? "Placeholder photos" : current.media.kind === "pair" ? "Drag to compare" : current.media.kind === "none" ? "Photos coming soon" : ""}</span>
                 {visible.length > 1 && index >= 0 && (
                   <span className="flex gap-1">
                     <IconButton label="Previous project" onClick={() => step(-1)} dark>
@@ -234,12 +238,41 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
   );
 }
 
+function DetailMedia({ project }: { project: GalleryProject }) {
+  const m = project.media;
+  if (m.kind === "pair") return <BeforeAfter before={m.before} after={m.after} sizes="(min-width: 1024px) 60vw, 100vw" />;
+  if (m.kind === "single")
+    return (
+      <div className="relative aspect-[4/3] overflow-hidden rounded-photo bg-navy-900">
+        <Image src={m.image.src} alt={m.image.alt} fill sizes="(min-width: 1024px) 60vw, 100vw" unoptimized={isSvg(m.image.src)} className="object-cover" />
+      </div>
+    );
+  return <BrandPanel label={categoryName[project.category]} className="aspect-[4/3] rounded-photo" />;
+}
+
 /** Static half-and-half preview: before on the left, after on the right. The slider lives in the detail view. */
 function SplitPreview({ project }: { project: GalleryProject }) {
+  const m = project.media;
+  if (m.kind === "none") {
+    return (
+      <span className="relative block">
+        <BrandPanel label={categoryName[project.category]} className="aspect-[4/3] rounded-photo" />
+        <span className="absolute inset-0 rounded-photo ring-copper-500 ring-inset transition-shadow group-hover:ring-4" />
+      </span>
+    );
+  }
+  if (m.kind === "single") {
+    return (
+      <span className="relative block aspect-[4/3] overflow-hidden rounded-photo bg-navy-900">
+        <Image src={m.image.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(m.image.src)} className="object-cover" />
+        <span className="absolute inset-0 rounded-photo ring-copper-500 ring-inset transition-shadow group-hover:ring-4" />
+      </span>
+    );
+  }
   return (
     <span className="relative block aspect-[4/3] overflow-hidden rounded-photo bg-navy-900">
-      <Image src={project.before.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(project.before.src)} className="object-cover [clip-path:inset(0_50%_0_0)]" />
-      <Image src={project.after.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(project.after.src)} className="object-cover [clip-path:inset(0_0_0_50%)]" />
+      <Image src={m.before.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(m.before.src)} className="object-cover [clip-path:inset(0_50%_0_0)]" />
+      <Image src={m.after.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(m.after.src)} className="object-cover [clip-path:inset(0_0_0_50%)]" />
       <span aria-hidden className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-stone-50" />
       <span className="absolute bottom-3 left-3 rounded-control bg-navy-950/80 px-2 py-0.5 text-sm font-semibold text-stone-50">Before</span>
       <span className="absolute right-3 bottom-3 rounded-control bg-copper-500 px-2 py-0.5 text-sm font-semibold text-navy-950">After</span>

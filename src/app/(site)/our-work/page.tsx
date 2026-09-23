@@ -4,7 +4,7 @@ import { PageIntro } from "@/components/site/page-intro";
 import { ProjectGallery, type GalleryProject } from "@/components/work/project-gallery";
 import { Container } from "@/components/ui/container";
 import { getProjects } from "@/lib/content";
-import { isPlaceholder, mediaUrl } from "@/lib/media";
+import { isPlaceholder, projectMedia } from "@/lib/media";
 
 export const revalidate = 3600;
 
@@ -17,29 +17,21 @@ export const metadata: Metadata = {
 export default async function OurWorkPage() {
   const projects = await getProjects();
 
-  const gallery: GalleryProject[] = projects.flatMap((p) => {
-    const before = p.images.find((i) => i.isBefore);
-    const after = p.images.find((i) => !i.isBefore && (!before?.pairKey || i.pairKey === before.pairKey));
-    if (!before || !after) return [];
-    return [
-      {
-        slug: p.slug,
-        title: p.title,
-        category: p.category,
-        city: p.city,
-        summary: p.summary,
-        scopeOfWork: p.scopeOfWork,
-        results: p.results,
-        materials: p.materials,
-        durationDays: p.durationDays,
-        completed: p.completedAt?.toISOString() ?? null,
-        before: { src: mediaUrl(before.storageKey), alt: before.alt },
-        after: { src: mediaUrl(after.storageKey), alt: after.alt },
-        placeholder: isPlaceholder(before.storageKey),
-        quote: p.testimonials[0] ?? null,
-      },
-    ];
-  });
+  const gallery: GalleryProject[] = projects.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    category: p.category,
+    city: p.city,
+    summary: p.summary,
+    scopeOfWork: p.scopeOfWork,
+    results: p.results,
+    materials: p.materials,
+    durationDays: p.durationDays,
+    completed: p.completedAt?.toISOString() ?? null,
+    media: projectMedia(p.images),
+    placeholder: p.images.some((i) => isPlaceholder(i.storageKey)),
+    quote: p.testimonials[0] ?? null,
+  }));
 
   return (
     <>

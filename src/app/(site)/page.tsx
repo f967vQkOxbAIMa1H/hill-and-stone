@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Phone } from "lucide-react";
+import { BrandPanel } from "@/components/brand/brand-panel";
 import { CtaBand } from "@/components/site/cta-band";
 import { GoogleReviewsLink, Stars } from "@/components/site/review-bits";
 import { TrustList } from "@/components/site/trust-list";
@@ -7,14 +8,19 @@ import { BeforeAfter } from "@/components/ui/before-after";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
-import { getTestimonials } from "@/lib/content";
+import { getProjects, getTestimonials } from "@/lib/content";
+import { projectMedia } from "@/lib/media";
 import { quoteHref, serviceAreas, services, site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const testimonials = await getTestimonials(3);
+  const [testimonials, projects] = await Promise.all([getTestimonials(3), getProjects()]);
+  // Hero shows the first featured project that has a before/after pair.
+  const hero = projects
+    .map((p) => ({ ...p, media: projectMedia(p.images) }))
+    .find((p): p is typeof p & { media: Extract<ReturnType<typeof projectMedia>, { kind: "pair" }> } => p.media.kind === "pair");
   const core = serviceAreas.filter((a) => a.core);
   const nearby = serviceAreas.filter((a) => !a.core);
 
@@ -46,19 +52,24 @@ export default async function HomePage() {
           </div>
 
           <figure className="lg:-mr-8 xl:-mr-16">
-            <BeforeAfter
-              intro
-              priority
-              sizes="(min-width: 1024px) 55vw, 100vw"
-              before={{ src: "/placeholders/before-wall.svg", alt: "Hallway wall with a water-damaged hole in the drywall" }}
-              after={{ src: "/placeholders/after-wall.svg", alt: "The same wall patched, textured, painted and fitted with new baseboard" }}
-            />
-            <figcaption className="mt-3 flex flex-wrap justify-between gap-x-4 text-sm text-navy-600">
-              <span>
-                <span className="font-semibold text-navy-950">Hallway water-damage repair,</span> Rogers
-              </span>
-              <span>Two days, drywall through paint</span>
-            </figcaption>
+            {hero ? (
+              <>
+                <BeforeAfter intro priority sizes="(min-width: 1024px) 55vw, 100vw" before={hero.media.before} after={hero.media.after} />
+                <figcaption className="mt-3 flex flex-wrap justify-between gap-x-4 text-sm text-navy-600">
+                  <Link href={`/our-work?project=${hero.slug}`} className="hover:text-navy-950">
+                    <span className="font-semibold text-navy-950">{hero.title},</span> {hero.city}
+                  </Link>
+                  {hero.durationDays && (
+                    <span>
+                      {hero.durationDays} {hero.durationDays === 1 ? "day" : "days"} on site
+                    </span>
+                  )}
+                </figcaption>
+              </>
+            ) : (
+              // No before/after photos published yet: a brand graphic holds the space.
+              <BrandPanel className="aspect-[4/3] rounded-photo" />
+            )}
           </figure>
         </Container>
       </section>

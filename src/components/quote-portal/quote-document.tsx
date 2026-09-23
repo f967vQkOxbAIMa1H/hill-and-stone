@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { SafeImage } from "@/components/ui/safe-image";
 import type { LineItemType } from "@/generated/prisma/enums";
 import { formatCents } from "@/lib/money";
 import type { PortalQuote } from "@/lib/quotes/queries";
@@ -186,8 +187,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
                   rel="noopener noreferrer"
                   className="block overflow-hidden rounded-control ring-copper-500 hover:ring-2"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- private, token-scoped image */}
-                  <img
+                  <SafeImage
                     src={`/api/quotes/${quote.publicToken}/photos/${p.id}`}
                     alt={`Photo ${i + 1} from your request`}
                     loading="lazy"

@@ -1,29 +1,105 @@
 // Single source of truth for business facts and service content.
-// TODO(owner): replace placeholder phone, license and insurance details before launch.
-
 import type { ServiceCategory } from "@/generated/prisma/enums";
 
-export const site = {
+/* ════════════════════════════════════════════════════════════════════════════
+ * BUSINESS SETTINGS: edit this block before launch.
+ * `npm run check:launch` lists everything still unset or unconfirmed.
+ *
+ * Anything set to null is simply left off the site (no brackets, no fake numbers),
+ * so the site is presentable at every stage. Fill in values as you have them.
+ * ════════════════════════════════════════════════════════════════════════════ */
+export const business = {
   name: "Hill & Stone",
   legalName: "Hill & Stone Home Repair LLC",
   tagline: "Reliable Northwest Arkansas home repairs, done right.",
-  phone: "(479) 555-0142", // placeholder (555-01xx is reserved for fiction)
-  phoneHref: "tel:+14795550142",
-  email: "hello@hillandstone.com",
-  hours: "Mon–Fri 7am–6pm, Sat by appointment",
-  licenseNumber: "AR-HI-000000", // placeholder
-  insuredAmount: "$2M general liability", // placeholder
-  warranty: "1-year workmanship warranty",
-  googleReviewsUrl: "https://g.page/r/placeholder/review", // placeholder
-  /** TODO(owner): replace with the real policy details from your certificate of insurance. */
+
+  contact: {
+    /** Shown site-wide. The current value is a fictional 555-01xx number: replace it. */
+    phone: "(479) 555-0142",
+    email: "hello@hillandstone.com",
+    hours: "Mon–Fri 7am–6pm, Sat by appointment",
+  },
+
+  /** e.g. "0123456" as printed on your Arkansas contractor/home improvement license. */
+  license: { label: "Arkansas home improvement license", number: null as string | null },
+
+  /** Rows with a null detail are hidden; the Trust page then offers a certificate on request. */
   insurance: [
-    { type: "General liability", detail: "$2,000,000 aggregate" },
-    { type: "Workers' compensation", detail: "[Carrier and policy status]" },
-    { type: "Commercial auto", detail: "[Coverage amount]" },
+    { type: "General liability", detail: null as string | null },
+    { type: "Workers' compensation", detail: null as string | null },
+    { type: "Commercial auto", detail: null as string | null },
   ],
-  /** Business days to reply to a quote request. TODO(owner): confirm. */
-  replyBusinessDays: 1,
-} as const;
+
+  warrantyMonths: 12,
+
+  /** Your Google Business Profile review link. Review buttons are hidden until this is set. */
+  googleReviewsUrl: null as string | null,
+
+  /** About page story. Each sentence that uses a missing fact is left out. */
+  story: {
+    founderName: null as string | null, // "Sam Hill"
+    foundedYear: null as number | null, // 2019
+    hometown: null as string | null, // "Springdale"
+    crewSize: null as number | null, // 4
+    founderBackground: null as string | null, // "12 years as a finish carpenter for Fayetteville builders"
+  },
+
+  /** Photos in /public/images. Missing photos show a brand graphic instead. */
+  photos: {
+    team: null as string | null, // "/images/team.jpg"
+    founder: null as string | null,
+    crew: null as string | null,
+  },
+
+  policies: {
+    replyBusinessDays: 1,
+    coiBusinessDays: 2,
+    backgroundRecheckYears: 2,
+    /** Set to true once you've read the FAQ, Trust page and email wording and they match how you work. */
+    confirmed: false,
+  },
+};
+
+/**
+ * Starting values for new quotes in the admin builder.
+ * Set `confirmed: true` once these match how you price (check sales tax with your accountant).
+ */
+export const quoteDefaults = {
+  tripFee: "75",
+  taxRatePercent: "9.75",
+  validDays: 30,
+  depositPercent: "50",
+  confirmed: false,
+};
+
+/* ─── Derived values used by the site. You shouldn't need to edit below here. ─── */
+
+const digits = business.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+const insured = business.insurance.filter((i): i is { type: string; detail: string } => !!i.detail);
+
+export const businessDays = (n: number) => (n === 1 ? "one business day" : n === 2 ? "two business days" : `${n} business days`);
+
+export const site = {
+  name: business.name,
+  legalName: business.legalName,
+  tagline: business.tagline,
+  phone: business.contact.phone,
+  phoneHref: `tel:+1${digits}`,
+  email: business.contact.email,
+  hours: business.contact.hours,
+  licenseLabel: business.license.label,
+  licenseNumber: business.license.number,
+  /** Insurance rows that have real details. */
+  insurance: insured,
+  /** Short line for footers, or null when no details are set. */
+  insuranceSummary: insured[0] ? `Insured: ${insured[0].detail} ${insured[0].type.toLowerCase()}` : null,
+  warranty: `${business.warrantyMonths % 12 === 0 ? `${business.warrantyMonths / 12}-year` : `${business.warrantyMonths}-month`} workmanship warranty`,
+  googleReviewsUrl: business.googleReviewsUrl,
+  replyBusinessDays: business.policies.replyBusinessDays,
+  replyWindow: businessDays(business.policies.replyBusinessDays),
+  coiWindow: businessDays(business.policies.coiBusinessDays),
+  backgroundRecheckYears: business.policies.backgroundRecheckYears,
+};
 
 export type ServiceArea = {
   slug: string;
@@ -111,17 +187,6 @@ export const services: Service[] = [
     weDont: ["Additions and new construction", "Projects requiring an architect or engineer", "Full kitchen gut remodels"],
   },
 ];
-
-/**
- * Starting values for new quotes in the admin builder.
- * TODO(owner): confirm the trip fee, and confirm the sales tax rate and what's taxable with your accountant.
- */
-export const quoteDefaults = {
-  tripFee: "75",
-  taxRatePercent: "9.75",
-  validDays: 30,
-  depositPercent: "50",
-};
 
 export const nav = [
   { href: "/services", label: "Services" },

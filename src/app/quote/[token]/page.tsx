@@ -9,6 +9,7 @@ import { clientIp } from "@/lib/rate-limit";
 import { fulfillCheckoutSession } from "@/lib/quotes/payments";
 import { getQuoteByToken, recordView, type PortalQuote } from "@/lib/quotes/queries";
 import { balanceCents, depositCents, hasDeposit, portalState } from "@/lib/quotes/state";
+import { site } from "@/lib/site";
 import { getStripe } from "@/lib/stripe";
 
 // Always render fresh: this page shows live payment state for one customer.
@@ -100,7 +101,7 @@ function NoticeBanner({ notice, email }: { notice: Exclude<Notice, null>; email:
       icon: CheckCircle2,
       className: "border-success-700/30 bg-success-100 text-success-700",
       title: "Payment received. Thank you.",
-      body: `A receipt is on its way to ${email}. We'll be in touch within one business day to confirm your start date.`,
+      body: `A receipt is on its way to ${email}. We'll be in touch within ${site.replyWindow} to confirm your start date.`,
     },
     processing: {
       icon: Clock,

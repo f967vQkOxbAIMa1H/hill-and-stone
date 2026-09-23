@@ -68,10 +68,20 @@ export default function TrustPage() {
               and keep it current.
             </p>
             <dl className="mt-8 border-t border-navy-200">
-              <div className="grid gap-1 border-b border-navy-200 py-4 sm:grid-cols-[240px_1fr]">
-                <dt className="font-semibold">Arkansas license</dt>
-                <dd className="text-navy-700">Home improvement license {site.licenseNumber}</dd>
-              </div>
+              {site.licenseNumber && (
+                <div className="grid gap-1 border-b border-navy-200 py-4 sm:grid-cols-[240px_1fr]">
+                  <dt className="font-semibold">Arkansas license</dt>
+                  <dd className="text-navy-700">
+                    {site.licenseLabel} {site.licenseNumber}
+                  </dd>
+                </div>
+              )}
+              {site.insurance.length === 0 && (
+                <div className="grid gap-1 border-b border-navy-200 py-4 sm:grid-cols-[240px_1fr]">
+                  <dt className="font-semibold">Coverage details</dt>
+                  <dd className="text-navy-700">Listed on our certificate of insurance. Request one below and it comes straight from our insurer.</dd>
+                </div>
+              )}
               {site.insurance.map((i) => (
                 <div key={i.type} className="grid gap-1 border-b border-navy-200 py-4 sm:grid-cols-[240px_1fr]">
                   <dt className="font-semibold">{i.type}</dt>
@@ -88,7 +98,7 @@ export default function TrustPage() {
               {[
                 ["You ask", "Fill in the form below with the property and where to send it."],
                 ["Our insurer issues it", "The certificate comes from the insurance company, not from us, so you know it's real."],
-                ["You receive it", "By email, usually within two business days, with you listed as certificate holder."],
+                ["You receive it", `By email, usually within ${site.coiWindow}, with you listed as certificate holder.`],
               ].map(([title, body], i) => (
                 <li key={title} className="border-t-2 border-navy-950 pt-4">
                   <span className="font-wide text-2xl font-extrabold text-copper-700">{i + 1}</span>
@@ -110,7 +120,7 @@ export default function TrustPage() {
             </p>
             <ul className="mt-8 space-y-4">
               {[
-                "Every technician passes a criminal background check through a licensed screening company before their first job, and again every two years.",
+                `Every technician passes a criminal background check through a licensed screening company before their first job, and again every ${site.backgroundRecheckYears} years.`,
                 "Our technicians are our employees, not day labor or anonymous subcontractors.",
                 "You get the name of your technician before the visit.",
                 "Technicians arrive in Hill & Stone shirts, in a marked vehicle.",
