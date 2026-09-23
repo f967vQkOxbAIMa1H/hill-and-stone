@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   try {
     const prefix = `leads/${new Date().toISOString().slice(0, 7)}`;
     for (const img of images) {
-      const s = await putFile(prefix, img.ext, img.data);
+      const s = await putFile(prefix, img.ext, img.data, img.mime);
       stored.push({ ...s, fileName: img.file.name.slice(0, 200), mimeType: img.mime });
     }
 

@@ -77,6 +77,7 @@ const required = [
   "CONTRACTOR_NOTIFY_EMAIL",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
+  "CRON_SECRET",
 ];
 for (const key of required)
   if (!env[key]?.trim()) block("env", `${key} is not set (${envFile}).`);
@@ -103,6 +104,11 @@ if (env.EMAIL_FROM?.includes("resend.dev"))
   warn(
     "env",
     "EMAIL_FROM uses resend.dev; verify your own domain in Resend so emails don't land in spam.",
+  );
+if ((env.STORAGE_DRIVER ?? "local") === "local")
+  warn(
+    "env",
+    "Uploads are stored on local disk (STORAGE_DRIVER=local). Fine on a server with a persistent disk; use STORAGE_DRIVER=s3 on Vercel or other serverless hosts.",
   );
 if (/localhost|127\.0\.0\.1/.test(env.DATABASE_URL ?? ""))
   warn("env", "DATABASE_URL points at a local database.");

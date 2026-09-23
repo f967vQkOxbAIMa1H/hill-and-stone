@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 import { CheckCircle2, Clock, Info } from "lucide-react";
 import { QuoteActions, type ActionProps } from "@/components/quote-portal/quote-actions";
+import { TrackOnce } from "@/components/analytics/google-analytics";
 import { QuoteDocument } from "@/components/quote-portal/quote-document";
 import { Container } from "@/components/ui/container";
 import { clientIp } from "@/lib/rate-limit";
@@ -62,6 +63,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
   after(() => recordView(quoteId, { ipAddress: clientIp(h), userAgent: h.get("user-agent")?.slice(0, 300) ?? undefined }));
 
   const state = portalState(quote);
+  const paidNow = typeof sp.session_id === "string" ? quote.payments.find((p) => p.stripeCheckoutSessionId === sp.session_id && p.status === "SUCCEEDED") : undefined;
   const succeeded = quote.payments.filter((p) => p.status === "SUCCEEDED" && p.paidAt);
   const actions: ActionProps = {
     token: quote.publicToken,
@@ -85,6 +87,13 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
   return (
     <Container className="py-8 sm:py-12">
       {notice && <NoticeBanner notice={notice} email={quote.customer.email} />}
+      {notice === "paid" && typeof sp.session_id === "string" && paidNow && (
+        <TrackOnce
+          event="purchase"
+          onceKey={sp.session_id}
+          params={{ transaction_id: `quote-${quote.number}-${paidNow.id.slice(-6)}`, value: paidNow.amountCents / 100, currency: "USD", payment_type: paidNow.isDeposit ? "deposit" : "payment" }}
+        />
+      )}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
         <QuoteDocument quote={quote} state={state} />
         <aside aria-label="Your response" className="lg:sticky lg:top-8 lg:self-start">

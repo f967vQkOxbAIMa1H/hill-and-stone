@@ -6,6 +6,7 @@ import { useId, useRef, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
 import { RadioTiles } from "@/components/ui/radio-tiles";
+import { track } from "@/lib/analytics";
 import { formatCents } from "@/lib/money";
 import { declineReasons, type DeclineReason, type PaymentOption, type PortalState } from "@/lib/quotes/state";
 import { site } from "@/lib/site";
@@ -92,7 +93,7 @@ function OpenPanel({ token, totalCents, depositLabel, depositCents }: ActionProp
         </div>
       )}
 
-      <PayButton token={token} option={option} label={`Accept and pay ${formatCents(amount)}`} />
+      <PayButton token={token} option={option} amountCents={amount} label={`Accept and pay ${formatCents(amount)}`} />
       <p className="mt-3 text-sm text-navy-300">By accepting, you approve the scope and price in this quote.</p>
 
       <div className="mt-6 border-t border-navy-800 pt-5">
@@ -126,7 +127,7 @@ function BalancePanel({ token, balanceCents, totalCents, payments }: ActionProps
       <p className="mt-1 text-sm text-navy-300">
         Of {formatCents(totalCents)} total. It&apos;s due when the work is done; you can also pay it now.
       </p>
-      <PayButton token={token} option="balance" label={`Pay remaining ${formatCents(balanceCents)}`} variant="outline-light" />
+      <PayButton token={token} option="balance" amountCents={balanceCents} label={`Pay remaining ${formatCents(balanceCents)}`} variant="outline-light" />
     </>
   );
 }
@@ -190,7 +191,7 @@ function PayOption({ name, checked, onChange, label, amount, note }: { name: str
   );
 }
 
-function PayButton({ token, option, label, variant = "primary" }: { token: string; option: PaymentOption; label: string; variant?: "primary" | "outline-light" }) {
+function PayButton({ token, option, label, amountCents, variant = "primary" }: { token: string; option: PaymentOption; label: string; amountCents: number; variant?: "primary" | "outline-light" }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -205,6 +206,7 @@ function PayButton({ token, option, label, variant = "primary" }: { token: strin
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout didn't open. Try again.");
+      track("begin_checkout", { currency: "USD", value: amountCents / 100, payment_option: option });
       window.location.assign(data.url);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout didn't open. Try again.");
@@ -277,6 +279,7 @@ function DeclineDialog({ dialog, token, onClose }: { dialog: React.RefObject<HTM
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Your response didn't save. Try again.");
+      track("quote_declined", { reason });
       dialog.current?.close();
       router.refresh();
     } catch (e) {

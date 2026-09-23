@@ -53,8 +53,16 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
   `https://<your-domain>/api/webhooks/stripe` with `checkout.session.completed`,
   `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and
   `checkout.session.expired`, and set `STRIPE_WEBHOOK_SECRET`.
-- **Uploads** are stored on local disk in `./storage`. Use a host with a persistent disk, or add an S3/R2
-  driver in `src/lib/storage.ts` before running on serverless hosting.
+- **Uploads**: `STORAGE_DRIVER=local` (default) keeps photos in `./storage` and needs a persistent disk.
+  On Vercel or other serverless hosts, set `STORAGE_DRIVER=s3` with an S3 or Cloudflare R2 bucket
+  (`STORAGE_BUCKET`, `STORAGE_ENDPOINT`, `STORAGE_REGION`, keys). The bucket stays private; the app serves photos
+  through routes that check access. Tested against MinIO (`docker compose --profile test up -d`).
+- **Quote expiry**: set `CRON_SECRET`. On Vercel, `vercel.json` runs `/api/cron/expire-quotes` daily. Elsewhere,
+  add `npm run quotes:expire` to the server's crontab.
+- **Analytics**: set `NEXT_PUBLIC_GA_MEASUREMENT_ID` at build time. Page views never include customers' quote links,
+  and the admin isn't tracked. Mark `generate_lead`, `begin_checkout` and `purchase` as key events in GA4.
+  Other events: `click_to_call`, `quote_declined`, `coi_request`. If you serve visitors in regions that require
+  consent before analytics, add a consent banner first.
 - **Rate limiting** is in memory, per server instance. Fine for one instance; move it to Redis if you scale out.
 
 ## Local development

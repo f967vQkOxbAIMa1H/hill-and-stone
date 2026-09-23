@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
 import { getAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { resolveKey } from "@/lib/storage";
+import { readStoredFile } from "@/lib/storage";
 
 // Full-resolution request photos for signed-in admins only.
 export async function GET(_request: Request, { params }: RouteContext<"/api/admin/attachments/[id]">) {
@@ -10,7 +9,8 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/admi
   const file = await db.attachment.findUnique({ where: { id } });
   if (!file) return new Response("Not found", { status: 404 });
   try {
-    const data = await readFile(resolveKey(file.storageKey));
+    const data = await readStoredFile(file.storageKey);
+    if (!data) return new Response("Not found", { status: 404 });
     return new Response(new Uint8Array(data), {
       headers: {
         "Content-Type": file.mimeType,

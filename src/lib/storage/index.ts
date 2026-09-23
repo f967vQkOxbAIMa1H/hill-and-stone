@@ -1,32 +1,28 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { driverFromEnv, localDriver, type StorageDriver } from "./drivers";
 
-// Local-disk storage for development. Files live outside /public and are never
-// served directly; the admin (Phase 5) streams them through an authenticated route.
-// TODO(Phase 5/deploy): add an S3/R2 driver behind the same interface using STORAGE_* env vars.
-const ROOT = path.join(process.cwd(), "storage");
+// One driver per server process, chosen by STORAGE_DRIVER (local disk by default, or S3/R2).
+let driver: StorageDriver | null = null;
+const storage = () => (driver ??= driverFromEnv());
 
 export type StoredFile = { storageKey: string; sizeBytes: number };
 
-export async function putFile(prefix: string, ext: string, data: Buffer): Promise<StoredFile> {
+/** Stores a file under a random name: user-supplied filenames never reach the storage path. */
+export async function putFile(prefix: string, ext: string, data: Buffer, contentType: string): Promise<StoredFile> {
   const storageKey = `${prefix}/${randomBytes(12).toString("hex")}.${ext}`;
-  const target = resolveKey(storageKey);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, data, { flag: "wx" });
+  await storage().put(storageKey, data, contentType);
   return { storageKey, sizeBytes: data.length };
 }
 
+export const readStoredFile = (key: string) => storage().get(key);
+
 export async function deleteFiles(keys: string[]) {
-  await Promise.allSettled(keys.map((k) => rm(resolveKey(k), { force: true })));
+  if (keys.length) await storage().delete(keys).catch((e) => console.error("deleteFiles failed", e));
 }
 
-export function resolveKey(storageKey: string) {
-  const target = path.resolve(ROOT, storageKey);
-  if (!target.startsWith(ROOT + path.sep)) throw new Error("Invalid storage key");
-  return target;
-}
+/** Local-disk path for a key (throws on unsafe keys). Used by tests and local tooling. */
+export const resolveKey = (key: string) => localDriver().resolve(key);
 
 /** Identify an image by its bytes, not its claimed MIME type or extension. */
 export function sniffImage(buf: Buffer): { mime: "image/jpeg" | "image/png" | "image/webp"; ext: string } | null {

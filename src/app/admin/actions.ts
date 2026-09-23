@@ -11,10 +11,11 @@ import { fakeVerify, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession, requireAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email/send";
-import { quoteSent } from "@/lib/email/quote-templates";
+import { balanceRequest, quoteSent } from "@/lib/email/quote-templates";
 import { env } from "@/lib/env";
+import { formatCents } from "@/lib/money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { depositCents } from "@/lib/quotes/state";
+import { balanceCents, depositCents, paidCents, portalState } from "@/lib/quotes/state";
 import { site } from "@/lib/site";
 import { getStripe } from "@/lib/stripe";
 
@@ -212,6 +213,43 @@ export async function resendQuote(quoteId: string) {
   await db.quoteEvent.create({ data: { quoteId, type: "SENT", metadata: { by: admin.email, to: quote.customer.email, resend: true } } });
   revalidatePath(`/admin/quotes/${quoteId}`);
   return result.ok ? { ok: true } : { error: `The email didn't send (${result.error}). Copy the link and send it yourself.` };
+}
+
+/** Emails the client their remaining balance with a link to pay it on their quote. */
+export async function requestBalancePayment(quoteId: string, note: string): Promise<{ ok: boolean; message: string }> {
+  const admin = await requireAdmin();
+  const quote = await db.quote.findUnique({ where: { id: quoteId }, include: { customer: true, address: true, payments: true } });
+  if (!quote) return { ok: false, message: "That quote no longer exists." };
+  if (portalState(quote) !== "partially_paid") return { ok: false, message: "Only accepted quotes with a balance due can be billed." };
+  const text = note.trim().slice(0, 1000) || null;
+  const a = quote.address;
+  const result = await sendEmail({
+    type: "BALANCE_REQUEST",
+    to: quote.customer.email,
+    quoteId,
+    leadId: quote.leadId ?? undefined,
+    replyTo: site.email,
+    ...balanceRequest({
+      number: quote.number,
+      title: quote.title,
+      totalCents: quote.totalCents,
+      customerName: `${quote.customer.firstName} ${quote.customer.lastName}`,
+      customerFirstName: quote.customer.firstName,
+      customerEmail: quote.customer.email,
+      address: a ? `${a.line1}, ${a.city}` : "",
+      url: quoteLink(quote.publicToken),
+      balanceCents: balanceCents(quote),
+      paidCents: paidCents(quote),
+      note: text,
+    }),
+  });
+  await db.quoteEvent.create({
+    data: { quoteId, type: "BALANCE_REQUESTED", metadata: { by: admin.email, amountCents: balanceCents(quote), emailed: result.ok } },
+  });
+  revalidatePath(`/admin/quotes/${quoteId}`);
+  return result.ok
+    ? { ok: true, message: `Balance request for ${formatCents(balanceCents(quote))} sent to ${quote.customer.email}.` }
+    : { ok: false, message: `Logged, but the email didn't send (${result.error}). Copy the client link and send it yourself.` };
 }
 
 export async function voidQuote(quoteId: string) {

@@ -88,6 +88,8 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
             url={quote.status === "VOID" ? null : url}
             canResend={state === "open"}
             canVoid={!["ACCEPTED", "PAID", "VOID"].includes(quote.status)}
+            balanceDue={state === "partially_paid" ? formatCents(balanceCents(quote)) : null}
+            clientEmail={quote.customer.email}
           />
         </div>
       </header>
@@ -194,6 +196,7 @@ function Timeline({ quote }: { quote: AdminQuote }) {
         label = `${payment?.isDeposit ? "Deposit paid" : "Payment received"}: ${formatCents(meta.amountCents)}`;
       }
       if (e.type === "SENT" && meta.resend) label = "Email sent again";
+      if (e.type === "BALANCE_REQUESTED" && meta.amountCents) label = `Balance payment requested: ${formatCents(meta.amountCents)}`;
       if (e.type === "DECLINED" && meta.reason) label = `Declined by client (${declineReasons.find((r) => r.value === meta.reason)?.label.toLowerCase() ?? meta.reason})`;
       return { at: e.createdAt, label, tone: e.type === "PAID" || e.type === "ACCEPTED" ? "good" : e.type === "DECLINED" || e.type === "VOIDED" || e.type === "PAYMENT_FAILED" ? "bad" : "plain", id: e.id };
     }),

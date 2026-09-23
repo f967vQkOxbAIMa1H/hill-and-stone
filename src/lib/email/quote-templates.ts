@@ -107,3 +107,22 @@ ${rows(summary)}
   const text = `Hi ${q.customerFirstName}, your quote is ready.\n\n${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nReview your quote: ${q.url}\n\nQuestions? Reply to this email or call ${site.phone}.`;
   return { subject, html, text };
 }
+
+export function balanceRequest(q: QuoteInfo & { customerFirstName: string; balanceCents: number; paidCents: number; note: string | null }) {
+  const subject = `Balance due for quote #${q.number}: ${formatCents(q.balanceCents)}`;
+  const summary: [string, string][] = [
+    ["Quote", `#${q.number}: ${q.title}`],
+    ["Quote total", formatCents(q.totalCents)],
+    ["Already paid", formatCents(q.paidCents)],
+    ["Balance due", formatCents(q.balanceCents)],
+  ];
+  const html = layout(`
+<p style="margin:0 0 12px;font-size:22px;font-weight:800">Hi ${esc(q.customerFirstName)}, your job is finished.</p>
+<p style="margin:0 0 12px">Thanks for having us. Here's the remaining balance for the work. You can pay it online from your quote in a minute.</p>
+${q.note ? `<p style="margin:0 0 12px;padding:12px 14px;background:#f1f5f9;border-radius:4px">${esc(q.note)}</p>` : ""}
+${rows(summary)}
+<p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#d97706;color:#0f172a;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Pay ${esc(formatCents(q.balanceCents))}</a></p>
+<p style="margin:0 0 12px;font-size:14px;color:#475569">Your ${esc(site.warranty)} starts today. If anything we did isn't right, reply to this email or call ${esc(site.phone)}.</p>`);
+  const text = `Hi ${q.customerFirstName}, your job is finished.\n\n${q.note ? `${q.note}\n\n` : ""}${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPay online: ${q.url}\n\nQuestions? Reply to this email or call ${site.phone}.`;
+  return { subject, html, text };
+}

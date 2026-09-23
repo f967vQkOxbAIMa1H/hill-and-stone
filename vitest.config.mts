@@ -17,6 +17,7 @@ export default defineConfig({
       NEXT_PUBLIC_APP_URL: "http://localhost:3000",
       STRIPE_SECRET_KEY: "sk_test_unit",
       STRIPE_WEBHOOK_SECRET: "whsec_unit_test_secret",
+      CRON_SECRET: "cron-unit-secret",
     },
   },
 });

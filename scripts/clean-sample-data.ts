@@ -10,8 +10,7 @@ import { config } from "dotenv";
 config({ quiet: true });
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { rm } from "node:fs/promises";
-import path from "node:path";
+import { driverFromEnv } from "../src/lib/storage/drivers";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 const apply = process.argv.includes("--yes");
@@ -48,12 +47,8 @@ async function main() {
     await tx.project.deleteMany({ where: { slug: { startsWith: "sample-" } } });
     await tx.user.deleteMany({ where: { OR: [{ email: { startsWith: "e2e." } }, { email: { startsWith: "probe@" } }] } });
   });
-  // Same path guard as src/lib/storage.ts: never delete outside the storage folder.
-  const root = path.join(process.cwd(), "storage");
-  for (const f of files) {
-    const target = path.resolve(root, f.storageKey);
-    if (target.startsWith(root + path.sep)) await rm(target, { force: true });
-  }
+  // Same driver the app uses (local disk or S3/R2), with the same key safety checks.
+  await driverFromEnv().delete(files.map((f) => f.storageKey));
   console.log("Done.");
 }
 

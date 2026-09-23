@@ -18,5 +18,16 @@ services:
     ports:
       - "12111:12111"
 
+  # S3-compatible storage for testing STORAGE_DRIVER=s3 locally
+  minio:
+    image: quay.io/minio/minio:latest
+    profiles: ["test"]
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: hillstone
+      MINIO_ROOT_PASSWORD: hillstone-minio-secret
+    ports:
+      - "9000:9000"
+
 volumes:
   pgdata:

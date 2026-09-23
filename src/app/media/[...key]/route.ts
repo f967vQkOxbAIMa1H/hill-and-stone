@@ -1,6 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { db } from "@/lib/db";
-import { resolveKey } from "@/lib/storage";
+import { readStoredFile } from "@/lib/storage";
 
 const types: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
 
@@ -12,7 +11,8 @@ export async function GET(_request: Request, { params }: RouteContext<"/media/[.
   const type = types[storageKey.split(".").pop()?.toLowerCase() ?? ""];
   if (!image || !type) return new Response("Not found", { status: 404 });
   try {
-    const data = await readFile(resolveKey(storageKey));
+    const data = await readStoredFile(storageKey);
+    if (!data) return new Response("Not found", { status: 404 });
     return new Response(new Uint8Array(data), {
       headers: { "Content-Type": type, "Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff" },
     });

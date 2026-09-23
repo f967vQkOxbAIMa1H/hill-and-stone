@@ -171,8 +171,8 @@ try {
   await page.click("details summary");
   const openCount = await page.$$eval("details[open]", (els) => els.length);
   check("FAQ question expands on click", openCount === 1);
-  const ld = await page.$eval("script[type='application/ld+json']", (el) => JSON.parse(el.textContent)["@type"]);
-  check("FAQ structured data present", ld === "FAQPage");
+  const ldTypes = await page.$$eval("script[type='application/ld+json']", (els) => els.map((el) => JSON.parse(el.textContent)["@type"]));
+  check("FAQ structured data present", ldTypes.includes("FAQPage"), ldTypes.join(","));
   await shot(page, "faq");
   await page.close();
 

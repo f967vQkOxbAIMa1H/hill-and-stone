@@ -22,9 +22,12 @@
     "check:launch": "tsx scripts/launch-check.ts",
     "db:reset": "tsx scripts/db-reset.ts",
     "db:clean-samples": "tsx scripts/clean-sample-data.ts",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "quotes:expire": "tsx scripts/expire-quotes.ts",
+    "test:e2e:content": "node scripts/e2e-content.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1138.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "class-variance-authority": "^0.7.1",

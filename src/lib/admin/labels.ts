@@ -48,6 +48,7 @@ export const eventLabel: Record<QuoteEventType, string> = {
   DECLINED: "Declined by client",
   PAYMENT_STARTED: "Client opened checkout",
   PAID: "Payment received",
+  BALANCE_REQUESTED: "Balance payment requested",
   PAYMENT_FAILED: "Payment failed",
   EXPIRED: "Expired",
   VOIDED: "Voided",

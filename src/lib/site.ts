@@ -77,6 +77,9 @@ export const quoteDefaults = {
 const digits = business.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
 const insured = business.insurance.filter((i): i is { type: string; detail: string } => !!i.detail);
 
+/** True while the phone is still the fictional 555-01xx placeholder. */
+export const phoneIsPlaceholder = /555-?01\d\d$/.test(business.contact.phone.replace(/[^\d-]/g, ""));
+
 export const businessDays = (n: number) => (n === 1 ? "one business day" : n === 2 ? "two business days" : `${n} business days`);
 
 export const site = {

@@ -16,6 +16,7 @@ const schema = z.object({
   STRIPE_API_HOST: optional,
   STRIPE_API_PORT: optional,
   STRIPE_API_PROTOCOL: z.enum(["http", "https"]).optional(),
+  CRON_SECRET: optional,
   STORAGE_BUCKET: optional,
   STORAGE_ENDPOINT: optional,
   STORAGE_ACCESS_KEY_ID: optional,

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { describedBy, Field, Input, Textarea } from "@/components/ui/field";
 import { coiRequestSchema, type CoiRequestInput } from "@/lib/coi";
 import { flattenErrors } from "@/lib/quote-request/schema";
+import { track } from "@/lib/analytics";
 import { site } from "@/lib/site";
 
 type Errors = Partial<Record<keyof CoiRequestInput | "form", string>>;
@@ -37,6 +38,7 @@ export function CoiForm() {
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw data.errors ?? {};
+      track("coi_request");
       setState("sent");
     } catch (errs) {
       setErrors({ form: "Your request didn't send. Try again, or email us.", ...(errs as Errors) });

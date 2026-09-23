@@ -3,6 +3,7 @@
 import { Phone } from "lucide-react";
 import { useRef, useState } from "react";
 import { readAttribution } from "@/components/site/attribution";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { describedBy, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { RadioTiles } from "@/components/ui/radio-tiles";
@@ -92,7 +93,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
         setStatus({ state: "done", number: res.number!, replyBy: res.replyBy!, email: values.email.trim(), contact });
         window.scrollTo({ top: 0 });
         requestAnimationFrame(() => doneHeading.current?.focus());
-        window.dispatchEvent(new CustomEvent("hs:conversion", { detail: { name: "quote_submitted" } }));
+        track("generate_lead", { form: "quote_request", service_category: values.category, photos: photos.length });
       } else {
         const errs = res?.errors ?? { form: `Your request didn't send. Try again, or call us at ${site.phone}.` };
         setErrors(errs);

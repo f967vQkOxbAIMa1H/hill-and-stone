@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Inbox, LayoutDashboard } from "lucide-react";
+import { FileText, Images, Inbox, LayoutDashboard, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/requests", label: "Requests", icon: Inbox },
   { href: "/admin/quotes", label: "Quotes", icon: FileText },
+  { href: "/admin/portfolio", label: "Portfolio", icon: Images },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
 ];
 
 export function AdminNav({ pending }: { pending: number }) {

@@ -84,3 +84,9 @@ Scale (px, from the classic typographic scale): 14 · 16 · 18 · 21 · 24 · 36
 - **Status tabs** are plain links with counts, so filtered views can be bookmarked.
 - **Irreversible actions** (send quote, void) confirm inline and name exactly what will happen ("Send $612.95 quote to …?").
 - **History** merges quote events and email outcomes in time order; green = money in, red = declined, voided or failed.
+
+## Patterns in use (Phase 6)
+
+- **Brand panel** (`components/brand/brand-panel.tsx`): ridge contours on navy over a copper course. The stand-in for any missing photo, the 404 art, and the social image's motif.
+- **Error pages** say what happened in one line, then offer the useful next steps (phone, quote, main pages) rather than a big "404".
+- **Admin content screens** follow the builder: the form on one side, the live consequence spelled out in helper text ("Shows on Our Work", "Before and after are set, so the site shows the slider").

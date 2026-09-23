@@ -99,6 +99,7 @@ enum QuoteEventType {
   DECLINED
   PAYMENT_STARTED
   PAID
+  BALANCE_REQUESTED
   PAYMENT_FAILED
   EXPIRED
   VOIDED
@@ -113,6 +114,7 @@ enum EmailType {
   PAYMENT_RECEIPT // to customer
   CAREER_APPLICATION_NOTICE // to contractor
   COI_REQUEST_NOTICE // to contractor: certificate of insurance request
+  BALANCE_REQUEST // to customer: job done, balance due, with quote link
 }
 
 enum EmailStatus {
