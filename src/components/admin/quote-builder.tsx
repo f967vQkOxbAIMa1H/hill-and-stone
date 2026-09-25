@@ -141,9 +141,10 @@ export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: Qu
               {err("lines")}
             </p>
           )}
-          <div className="mt-3 overflow-x-auto rounded-panel border border-navy-200 bg-white">
-            <table className="w-full min-w-[680px] text-left text-sm">
-              <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
+          {/* Below md each line becomes a small form: type and remove, description, then qty, price and amount. */}
+          <div className="mt-3 rounded-panel border border-navy-200 bg-white md:overflow-x-auto">
+            <table className="block w-full text-left text-sm md:table md:min-w-[680px]">
+              <thead className="hidden border-b border-navy-200 bg-stone-50 text-navy-600 md:table-header-group">
                 <tr>
                   <th scope="col" className="w-32 px-3 py-2 font-semibold">Type</th>
                   <th scope="col" className="px-3 py-2 font-semibold">Description</th>
@@ -153,36 +154,41 @@ export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: Qu
                   <th scope="col" className="w-12 px-2 py-2"><span className="sr-only">Remove</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-navy-200">
+              <tbody className="block divide-y divide-navy-200 md:table-row-group">
                 {lines.map((l, i) => {
                   const amount = totals?.items[i]?.totalCents ?? 0;
                   const e = (f: string) => err(`lines.${i}.${f}`);
                   return (
-                    <tr key={l.key} className="align-top">
-                      <td className="px-3 py-2">
+                    <tr key={l.key} className="grid grid-cols-[1fr_1fr_auto] gap-x-2 gap-y-2 p-3 align-top md:table-row md:p-0">
+                      <td className="order-1 col-span-2 md:table-cell md:px-3 md:py-2">
                         <Select aria-label={`Line ${i + 1} type`} value={l.type} onChange={(ev) => setLine(l.key, { type: ev.target.value as LineItemType })} className="h-10">
                           {(Object.keys(typeLabel) as LineItemType[]).map((t) => (
                             <option key={t} value={t}>{typeLabel[t]}</option>
                           ))}
                         </Select>
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="order-3 col-span-3 md:table-cell md:px-3 md:py-2">
                         <Input aria-label={`Line ${i + 1} description`} data-field={`lines.${i}.description`} value={l.description} onChange={(ev) => setLine(l.key, { description: ev.target.value })} className="h-10" aria-invalid={!!e("description") || undefined} placeholder={l.type === "LABOR" ? "e.g. Replace casing, 2 techs" : ""} />
                         {e("description") && <p className="mt-1 text-danger-700">{e("description")}</p>}
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="order-4 md:table-cell md:px-3 md:py-2">
+                        <MobileLabel>Qty</MobileLabel>
                         <Input aria-label={`Line ${i + 1} quantity`} data-field={`lines.${i}.quantity`} inputMode="decimal" value={l.quantity} onChange={(ev) => setLine(l.key, { quantity: ev.target.value })} className="h-10" aria-invalid={!!e("quantity") || undefined} />
                         {e("quantity") && <p className="mt-1 text-danger-700">{e("quantity")}</p>}
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="order-5 md:table-cell md:px-3 md:py-2">
+                        <MobileLabel>Unit price</MobileLabel>
                         <div className="relative">
                           <span aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-600">$</span>
                           <Input aria-label={`Line ${i + 1} unit price in dollars`} data-field={`lines.${i}.unitPrice`} inputMode="decimal" value={l.unitPrice} onChange={(ev) => setLine(l.key, { unitPrice: ev.target.value })} className="h-10 pl-6" aria-invalid={!!e("unitPrice") || undefined} />
                         </div>
                         {e("unitPrice") && <p className="mt-1 text-danger-700">{e("unitPrice")}</p>}
                       </td>
-                      <td className={cn("px-3 py-2 pt-4 text-right font-semibold tabular-nums", amount < 0 && "text-success-700")}>{formatCents(amount)}</td>
-                      <td className="px-2 py-2">
+                      <td className={cn("order-6 min-w-20 text-right font-semibold tabular-nums md:table-cell md:px-3 md:py-2 md:pt-4", amount < 0 && "text-success-700")}>
+                        <MobileLabel>Amount</MobileLabel>
+                        <span className="flex h-10 items-center justify-end md:block md:h-auto">{formatCents(amount)}</span>
+                      </td>
+                      <td className="order-2 justify-self-end md:table-cell md:px-2 md:py-2">
                         <button
                           type="button"
                           onClick={() => setLines((ls) => ls.filter((x) => x.key !== l.key))}
@@ -332,5 +338,14 @@ function Row({ term, value }: { term: string; value: string }) {
       <dt>{term}</dt>
       <dd>{value}</dd>
     </div>
+  );
+}
+
+/** Column headings are hidden on phones, so each small field carries its own label there. */
+function MobileLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span aria-hidden className="mb-1 block text-sm font-semibold text-navy-600 md:hidden">
+      {children}
+    </span>
   );
 }

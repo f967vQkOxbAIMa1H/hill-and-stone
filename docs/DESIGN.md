@@ -96,3 +96,11 @@ Scale (px, from the classic typographic scale): 14 · 16 · 18 · 21 · 24 · 36
 - **Role tiles** say in one line what each role can do, so choosing a role doesn't need a separate help page.
 - **Secrets are shown once** in a copper panel with a Copy button (temporary passwords) and never emailed.
 - **Settings page**: one section per topic, each with a line saying where on the site it appears; a sticky save bar, with fields given bottom scroll margin so they're never hidden behind it.
+
+## Patterns in use (admin on phones)
+
+- **Tab bar** below `lg`: Overview, Requests and Quotes in thumb reach, with More opening a bottom sheet (native `<dialog>`, slides up) for the rest of the sections, the account and Sign out. The active tab carries the same copper edge as the status tabs. The top of the screen keeps only a slim brand bar.
+- **Phone lists** (`components/admin/phone-list.tsx`): below `md`, list tables become one tappable row per record, name and detail left, the figure or status that matters right. Tables no longer scroll sideways on phones.
+- **Metric strip** reads as rows on phones: label and detail left, the number right.
+- Tables that must stay tables (price breakdown) fold secondary columns under the description; the quote builder turns each line into a small form with its own field labels.
+- Anything sticky at the bottom (settings save bar) sits above the tab bar, and `main` is padded so the last row is never under it.

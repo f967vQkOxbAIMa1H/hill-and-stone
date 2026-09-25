@@ -126,8 +126,8 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
   return (
     <form
       noValidate
-      // Keep focused fields clear of the sticky save bar.
-      className="max-w-5xl [&_input]:scroll-mb-28 [&_textarea]:scroll-mb-28"
+      // Keep focused fields clear of the sticky save bar (and the tab bar under it on phones).
+      className="max-w-5xl [&_input]:scroll-mb-44 [&_textarea]:scroll-mb-44 lg:[&_input]:scroll-mb-28 lg:[&_textarea]:scroll-mb-28"
       onSubmit={(e) => {
         e.preventDefault();
         start(async () => {
@@ -195,7 +195,7 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
         {text("founderBackground", "Founder's background", { optional: true, wide: true, hint: "Finishes the sentence “…and spent ___”, e.g. 12 years as a finish carpenter for Fayetteville builders." })}
       </Section>
 
-      <div className="sticky bottom-0 -mx-5 mt-4 flex flex-wrap items-center gap-3 border-t border-navy-200 bg-stone-50/95 px-5 py-4 backdrop-blur-sm sm:-mx-8 sm:px-8">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-5 lg:bottom-0 mt-4 flex flex-wrap items-center gap-3 border-t border-navy-200 bg-stone-50/95 px-5 py-4 backdrop-blur-sm sm:-mx-8 sm:px-8">
         <Button type="submit" variant="dark" disabled={pending}>
           {pending ? "Saving…" : "Save settings"}
         </Button>

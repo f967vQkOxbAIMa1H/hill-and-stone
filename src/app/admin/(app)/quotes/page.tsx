@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fmtDay } from "@/components/admin/format";
 import { AdminHeader } from "@/components/admin/page-header";
+import { PhoneList, PhoneRow } from "@/components/admin/phone-list";
 import { StatusTabs } from "@/components/admin/status-tabs";
 import { Badge } from "@/components/ui/badge";
 import type { QuoteStatus } from "@/generated/prisma/enums";
@@ -35,7 +36,24 @@ export default async function QuotesPage({ searchParams }: PageProps<"/admin/quo
             </p>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-panel border border-navy-200 bg-white">
+          <>
+          <PhoneList className="mt-4">
+            {quotes.map((q) => (
+              <PhoneRow
+                key={q.id}
+                href={`/admin/quotes/${q.id}`}
+                title={`#${q.number} ${q.title}`}
+                lines={[`${q.customer.firstName} ${q.customer.lastName}, updated ${fmtDay(q.updatedAt)}`]}
+                aside={
+                  <>
+                    <span className="font-semibold tabular-nums">{formatCents(q.totalCents)}</span>
+                    <Badge tone={quoteStatus[q.status].tone}>{quoteStatus[q.status].label}</Badge>
+                  </>
+                }
+              />
+            ))}
+          </PhoneList>
+          <div className="mt-4 hidden overflow-x-auto rounded-panel border border-navy-200 bg-white md:block">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
                 <tr>
@@ -66,6 +84,7 @@ export default async function QuotesPage({ searchParams }: PageProps<"/admin/quo
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </>

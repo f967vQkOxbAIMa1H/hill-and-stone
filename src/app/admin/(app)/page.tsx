@@ -78,10 +78,11 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
           style={{ gap: 1 }}
         >
           {metrics.map((x) => (
-            <Link prefetch={false} key={x.label} href={x.href} className="group p-5 hover:bg-stone-50">
-              <dt className="text-sm text-navy-600 group-hover:text-navy-950">{x.label}</dt>
-              <dd className="mt-2 font-semiwide text-3xl font-extrabold tracking-[-0.01em] tabular-nums">{x.value}</dd>
-              <dd className="mt-1 text-sm text-navy-600">{x.detail}</dd>
+            // Phones read each figure as a row, label left and number right; wider screens stack them in a grid.
+            <Link prefetch={false} key={x.label} href={x.href} className="group grid grid-cols-[1fr_auto] gap-x-4 px-4 py-3.5 hover:bg-stone-50 active:bg-stone-100 sm:block sm:p-5">
+              <dt className="text-sm font-semibold text-navy-950 sm:font-normal sm:text-navy-600 sm:group-hover:text-navy-950">{x.label}</dt>
+              <dd className="col-start-2 row-span-2 row-start-1 self-center font-semiwide text-2xl font-extrabold tracking-[-0.01em] tabular-nums sm:mt-2 sm:text-3xl">{x.value}</dd>
+              <dd className="mt-0.5 text-sm text-navy-600 sm:mt-1">{x.detail}</dd>
             </Link>
           ))}
         </dl>

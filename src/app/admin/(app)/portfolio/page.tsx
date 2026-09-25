@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { fmtDay } from "@/components/admin/format";
 import { AdminHeader } from "@/components/admin/page-header";
+import { PhoneList, PhoneRow } from "@/components/admin/phone-list";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { db } from "@/lib/db";
@@ -37,7 +38,31 @@ export default async function PortfolioPage() {
             <p className="mt-1 text-sm text-navy-600">Add a finished job with before and after photos. It&apos;s the most convincing thing on the site.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-panel border border-navy-200 bg-white">
+          <>
+          <PhoneList>
+            {projects.map((p) => {
+              const pair = p.images.some((i) => i.isBefore && i.pairKey === "main") && p.images.some((i) => !i.isBefore && i.pairKey === "main");
+              return (
+                <PhoneRow
+                  key={p.id}
+                  href={`/admin/portfolio/${p.id}`}
+                  title={p.title}
+                  lines={[
+                    `${labelFor(categoryOptions, p.category)}, ${p.city}`,
+                    p.images.length === 0 ? "No photos yet" : `${p.images.length} photo${p.images.length === 1 ? "" : "s"}, ${pair ? "before and after set" : "no before/after pair"}`,
+                  ]}
+                  aside={
+                    <>
+                      <Badge tone={p.published ? "success" : "neutral"}>{p.published ? "Published" : "Draft"}</Badge>
+                      {p.featured && <Badge tone="copper">Featured</Badge>}
+                      {p.slug.startsWith("sample-") && <Badge tone="danger">Sample</Badge>}
+                    </>
+                  }
+                />
+              );
+            })}
+          </PhoneList>
+          <div className="hidden overflow-x-auto rounded-panel border border-navy-200 bg-white md:block">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
                 <tr>
@@ -78,6 +103,7 @@ export default async function PortfolioPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </>

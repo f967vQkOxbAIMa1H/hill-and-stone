@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ImageIcon, Search } from "lucide-react";
 import { ago, fmtDay } from "@/components/admin/format";
 import { AdminHeader } from "@/components/admin/page-header";
+import { PhoneList, PhoneRow } from "@/components/admin/phone-list";
 import { StatusTabs } from "@/components/admin/status-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/field";
@@ -50,7 +51,30 @@ export default async function RequestsPage({ searchParams }: PageProps<"/admin/r
             <p className="mt-1 text-sm text-navy-600">{q ? "Try a name, email, city or request number." : "New website requests start in Pending review."}</p>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-panel border border-navy-200 bg-white">
+          <>
+          <PhoneList className="mt-4">
+            {leads.map((l) => {
+              const quote = l.quotes[0];
+              return (
+                <PhoneRow
+                  key={l.id}
+                  href={`/admin/requests/${l.id}`}
+                  title={`#${l.number} ${l.customer.firstName} ${l.customer.lastName}`}
+                  lines={[
+                    `${labelFor(categoryOptions, l.category)}, ${l.address.city}`,
+                    quote && `Quote ${quoteStatus[quote.status].label.toLowerCase()}, ${formatCents(quote.totalCents)}`,
+                  ]}
+                  aside={
+                    <>
+                      <Badge tone={leadStatus[l.status].tone}>{leadStatus[l.status].label}</Badge>
+                      <span className="text-navy-600">{ago(l.createdAt)}</span>
+                    </>
+                  }
+                />
+              );
+            })}
+          </PhoneList>
+          <div className="mt-4 hidden overflow-x-auto rounded-panel border border-navy-200 bg-white md:block">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
                 <tr>
@@ -103,6 +127,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/admin/r
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </>

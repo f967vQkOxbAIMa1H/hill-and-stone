@@ -3,6 +3,7 @@ import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { ago } from "@/components/admin/format";
 import { AdminHeader } from "@/components/admin/page-header";
+import { PhoneList, PhoneRow } from "@/components/admin/phone-list";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { roleInfo, staffRoles, type StaffRole } from "@/lib/auth/permissions";
@@ -18,6 +19,15 @@ export default async function TeamPage() {
     orderBy: [{ deactivatedAt: { sort: "asc", nulls: "first" } }, { role: "asc" }, { name: "asc" }],
   });
 
+  const statusOf = (u: (typeof users)[number]) =>
+    u.deactivatedAt
+      ? { label: "Access revoked", tone: "danger" as const }
+      : !u.passwordHash
+        ? { label: "No password set", tone: "neutral" as const }
+        : u.mustChangePassword
+          ? { label: "Waiting for first sign-in", tone: "copper" as const }
+          : { label: "Active", tone: "success" as const };
+
   return (
     <>
       <AdminHeader
@@ -31,7 +41,27 @@ export default async function TeamPage() {
         }
       />
       <div className="px-5 py-6 sm:px-8">
-        <div className="overflow-x-auto rounded-panel border border-navy-200 bg-white">
+        <PhoneList>
+          {users.map((u) => {
+            const status = statusOf(u);
+            return (
+              <PhoneRow
+                key={u.id}
+                href={`/admin/team/${u.id}`}
+                muted={!!u.deactivatedAt}
+                title={
+                  <>
+                    {u.name ?? u.email}
+                    {u.id === me.id && <span className="font-normal text-navy-600"> (you)</span>}
+                  </>
+                }
+                lines={[roleInfo[u.role as StaffRole].label, `Last sign-in ${u.lastLoginAt ? ago(u.lastLoginAt) : "never"}`]}
+                aside={<Badge tone={status.tone}>{status.label}</Badge>}
+              />
+            );
+          })}
+        </PhoneList>
+        <div className="hidden overflow-x-auto rounded-panel border border-navy-200 bg-white md:block">
           <table className="w-full min-w-[680px] text-left text-sm">
             <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
               <tr>
@@ -43,13 +73,7 @@ export default async function TeamPage() {
             </thead>
             <tbody className="divide-y divide-navy-200">
               {users.map((u) => {
-                const status = u.deactivatedAt
-                  ? { label: "Access revoked", tone: "danger" as const }
-                  : !u.passwordHash
-                    ? { label: "No password set", tone: "neutral" as const }
-                    : u.mustChangePassword
-                      ? { label: "Waiting for first sign-in", tone: "copper" as const }
-                      : { label: "Active", tone: "success" as const };
+                const status = statusOf(u);
                 return (
                   <tr key={u.id} className={u.deactivatedAt ? "group relative text-navy-600 hover:bg-stone-50" : "group relative hover:bg-stone-50"}>
                     <td className="px-4 py-3">

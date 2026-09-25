@@ -153,6 +153,38 @@
   }
 }
 
+/* Admin "More" sheet on phones: slides up from the tab bar that opened it. */
+.admin-sheet {
+  transition:
+    translate 250ms var(--ease-out-quart),
+    display 250ms allow-discrete,
+    overlay 250ms allow-discrete;
+  translate: 0 100%;
+}
+.admin-sheet[open] {
+  translate: 0 0;
+}
+@starting-style {
+  .admin-sheet[open] {
+    translate: 0 100%;
+  }
+}
+.admin-sheet::backdrop {
+  transition:
+    opacity 250ms,
+    display 250ms allow-discrete,
+    overlay 250ms allow-discrete;
+  opacity: 0;
+}
+.admin-sheet[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .admin-sheet[open]::backdrop {
+    opacity: 0;
+  }
+}
+
 /* Quote confirmation: arrives in answer to "Send request". */
 .quote-done {
   transition:

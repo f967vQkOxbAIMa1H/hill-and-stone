@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { fmtDay } from "@/components/admin/format";
 import { AdminHeader } from "@/components/admin/page-header";
+import { PhoneList, PhoneRow } from "@/components/admin/phone-list";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { reviewSources } from "@/lib/admin/content-schema";
@@ -37,7 +38,32 @@ export default async function ReviewsAdminPage() {
             <p className="mt-1 text-sm text-navy-600">Copy in reviews from Google or ones customers sent you directly.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-panel border border-navy-200 bg-white">
+          <>
+          <PhoneList>
+            {reviews.map((r) => (
+              <PhoneRow
+                key={r.id}
+                href={`/admin/reviews/${r.id}`}
+                title={
+                  <>
+                    {r.authorName}{" "}
+                    <span className="font-normal text-copper-700" aria-label={`${r.rating} stars`}>
+                      {"★".repeat(r.rating)}
+                    </span>
+                  </>
+                }
+                lines={[<span key="b" className="line-clamp-2">{r.body}</span>, `${r.city}, ${fmtDay(r.reviewedAt ?? r.createdAt)}`]}
+                aside={
+                  <>
+                    <Badge tone={r.published ? "success" : "neutral"}>{r.published ? "Published" : "Hidden"}</Badge>
+                    {r.featured && <Badge tone="copper">Featured</Badge>}
+                    {r.source === "seed" && <Badge tone="danger">Sample</Badge>}
+                  </>
+                }
+              />
+            ))}
+          </PhoneList>
+          <div className="hidden overflow-x-auto rounded-panel border border-navy-200 bg-white md:block">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="border-b border-navy-200 bg-stone-50 text-navy-600">
                 <tr>
@@ -78,6 +104,7 @@ export default async function ReviewsAdminPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </>
