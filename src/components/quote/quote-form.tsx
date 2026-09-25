@@ -11,6 +11,7 @@ import { formatDay } from "@/lib/dates";
 import { budgetOptions, categoryOptions, contactOptions, timelineOptions } from "@/lib/quote-request/options";
 import { flattenErrors, quoteRequestSchema, type FieldErrors, type QuoteRequestInput } from "@/lib/quote-request/schema";
 import { useSite } from "@/components/site-provider";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { PhotoDropzone, type Photo } from "./photo-dropzone";
 
 type Values = Record<keyof QuoteRequestInput, string>;
@@ -205,9 +206,9 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
           <p className="text-sm font-semibold">
             Photos <span className="font-normal text-navy-600">(optional, but they help us price faster)</span>
           </p>
-          <div className="mt-2">
+          <ScrollReveal delay={0.1} className="mt-2">
             <PhotoDropzone photos={photos} onChange={setPhotos} error={err("photos")} />
-          </div>
+          </ScrollReveal>
         </div>
       </Section>
 
@@ -265,9 +266,9 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-6 border-t border-navy-200 pt-8 first-of-type:border-t-0 first-of-type:pt-0">
+    <ScrollReveal as="section" className="flex flex-col gap-6 border-t border-navy-200 pt-8 first-of-type:border-t-0 first-of-type:pt-0">
       <h2 className="font-semiwide text-xl font-bold">{title}</h2>
       {children}
-    </section>
+    </ScrollReveal>
   );
 }

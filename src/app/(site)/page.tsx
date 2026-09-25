@@ -13,6 +13,7 @@ import { projectMedia } from "@/lib/media";
 import { getSite } from "@/lib/settings";
 import { quoteHref, serviceAreas, services } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default async function HomePage() {
   const site = await getSite();
@@ -81,15 +82,15 @@ export default async function HomePage() {
             Based in Northwest Arkansas, working across Benton and Washington counties
           </h2>
           <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-1">
-            {core.map((a) => (
-              <li key={a.slug}>
+            {core.map((a, i) => (
+              <ScrollReveal as="li" key={a.slug} delay={i * 0.1}>
                 <Link
                   href={`/service-areas#${a.slug}`}
                   className="font-wide text-3xl font-extrabold tracking-[-0.01em] transition-colors hover:text-copper-500 sm:text-4xl"
                 >
                   {a.name}
                 </Link>
-              </li>
+              </ScrollReveal>
             ))}
           </ul>
           <p className="mt-6 max-w-[80ch] text-navy-300">
@@ -116,25 +117,28 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Shared hairlines instead of floating cards: reads like a spec sheet. */}
-          <ul className="mt-12 grid gap-px overflow-hidden rounded-panel border border-navy-200 bg-navy-200 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s) => (
-              <li key={s.slug} className="bg-stone-50">
-                <Link
-                  href={`/services#${s.slug}`}
-                  className="group flex h-full flex-col p-7 transition-colors hover:bg-white focus-visible:-outline-offset-2"
-                >
-                  <h3 className="text-xl font-bold group-hover:text-copper-700">{s.name}</h3>
-                  <p className="mt-2 mb-5 text-navy-600">{s.summary}</p>
-                  <ul className="mt-auto space-y-1 border-t border-navy-200 pt-4 text-sm text-navy-700">
-                    {s.weDo.slice(0, 3).map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {/* Shared hairlines instead of floating cards: reads like a spec sheet. It rises as one piece, since
+              cells fading on their own would expose the grey hairline backing. */}
+          <ScrollReveal>
+            <ul className="mt-12 grid gap-px overflow-hidden rounded-panel border border-navy-200 bg-navy-200 sm:grid-cols-2 lg:grid-cols-3">
+              {services.map((s) => (
+                <li key={s.slug} className="bg-stone-50">
+                  <Link
+                    href={`/services#${s.slug}`}
+                    className="group flex h-full flex-col p-7 transition-colors hover:bg-white focus-visible:-outline-offset-2"
+                  >
+                    <h3 className="text-xl font-bold group-hover:text-copper-700">{s.name}</h3>
+                    <p className="mt-2 mb-5 text-navy-600">{s.summary}</p>
+                    <ul className="mt-auto space-y-1 border-t border-navy-200 pt-4 text-sm text-navy-700">
+                      {s.weDo.slice(0, 3).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -169,8 +173,10 @@ export default async function HomePage() {
           {testimonials.length > 0 ? (
             <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               {testimonials.map((t, i) => (
-                <figure
+                <ScrollReveal
+                  as="figure"
                   key={t.id}
+                  delay={i * 0.15}
                   className={cn(
                     i === 0 && "lg:row-span-2 lg:border-r lg:border-navy-200 lg:pr-10",
                     i === 1 && "border-t border-navy-200 pt-8 lg:border-t-0 lg:pt-0",
@@ -189,7 +195,7 @@ export default async function HomePage() {
                   <figcaption className="mt-4 text-navy-600">
                     <span className="font-semibold text-navy-950">{t.authorName}</span>, {t.city}
                   </figcaption>
-                </figure>
+                </ScrollReveal>
               ))}
             </div>
           ) : (

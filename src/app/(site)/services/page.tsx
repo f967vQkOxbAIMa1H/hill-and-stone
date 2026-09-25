@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CtaBand } from "@/components/site/cta-band";
 import { PageIntro } from "@/components/site/page-intro";
 import { ScopeSheet } from "@/components/site/scope-sheet";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { Container } from "@/components/ui/container";
 import { getSite } from "@/lib/settings";
 import { services } from "@/lib/site";
@@ -40,11 +41,12 @@ export default async function ServicesPage() {
         </nav>
 
         <div className="flex flex-col gap-8">
-          {services.map((s) => (
-            <ScopeSheet key={s.slug} service={s} headingAs="h2" />
+          {/* Sheets stack, so each rises as it scrolls in; only the two in view on arrival are staggered. */}
+          {services.map((s, i) => (
+            <ScopeSheet key={s.slug} service={s} headingAs="h2" delay={i < 2 ? i * 0.15 : 0} />
           ))}
 
-          <aside className="rounded-panel border border-dashed border-navy-300 p-6 sm:p-8">
+          <ScrollReveal as="aside" className="rounded-panel border border-dashed border-navy-300 p-6 sm:p-8">
             <h2 className="text-xl font-bold">Not sure where your job fits?</h2>
             <p className="mt-2 max-w-[60ch] text-navy-600">
               Send us photos through the quote form, or call{" "}
@@ -53,7 +55,7 @@ export default async function ServicesPage() {
               </a>
               . Plenty of jobs are a mix of two or three of these.
             </p>
-          </aside>
+          </ScrollReveal>
         </div>
       </Container>
 

@@ -2,6 +2,7 @@ import { BadgeCheck, FileCheck2, ShieldCheck, UserCheck } from "lucide-react";
 import { getSite } from "@/lib/settings";
 import type { SiteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 // Each commitment carries a specific, checkable detail rather than a slogan.
 export const commitments = (site: SiteConfig) => [
@@ -36,14 +37,14 @@ export async function TrustList({ className, tone = "light" }: { className?: str
   const dark = tone === "dark";
   return (
     <dl className={cn("grid gap-x-10 sm:grid-cols-2", className)}>
-      {commitments(site).map(({ icon: Icon, title, body }) => (
-        <div key={title} className={cn("flex gap-4 border-t py-6", dark ? "border-navy-800" : "border-navy-200")}>
+      {commitments(site).map(({ icon: Icon, title, body }, i) => (
+        <ScrollReveal key={title} delay={(i % 2) * 0.15} className={cn("flex gap-4 border-t py-6", dark ? "border-navy-800" : "border-navy-200")}>
           <Icon aria-hidden className={cn("mt-0.5 size-6 shrink-0", dark ? "text-copper-500" : "text-copper-700")} />
           <div>
             <dt className={cn("font-bold", dark ? "text-stone-50" : "text-navy-950")}>{title}</dt>
             <dd className={cn("mt-1.5", dark ? "text-navy-300" : "text-navy-600")}>{body}</dd>
           </div>
-        </div>
+        </ScrollReveal>
       ))}
     </dl>
   );

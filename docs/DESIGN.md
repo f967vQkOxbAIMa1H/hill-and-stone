@@ -44,14 +44,14 @@ Scale (px, from the classic typographic scale): 14 · 16 · 18 · 21 · 24 · 36
 - Left-aligned by default. Center only short confirmation states.
 - Container 1200px, 20px gutters on mobile.
 - Radius follows hierarchy: controls 4px, panels 8px, photos 14px.
-- Borders over shadows. One elevation shadow (navy-tinted) for overlays only.
+- Borders over shadows. One elevation shadow (navy-tinted) for overlays, plus the **slate** panel (`slate` utility in `globals.css`): a soft navy shadow and light backdrop blur, with a border that warms from `navy-200` to copper at 40% on hover. Used for scope sheets, project cards, review cards and the quote form card.
 
 ## Principles
 
 1. **The work is the proof.** The home hero is a before/after slider. That's the one bold moment on the site; keep everything around it quiet.
 2. **Read like a real estimate.** Services are scope sheets (what we do and what we don't), not icon-card grids.
 3. **No template chrome.** No all-caps eyebrows, no `→` on buttons, no middle-dot meta strings, no 01/02/03 unless the content is a real sequence (the quote process is one).
-4. **Motion only answers actions**, plus one page-load moment on the hero. Always respect `prefers-reduced-motion`.
+4. **Motion answers actions and scrolling.** Sections, cards and panels rise into place once as they scroll into view (`components/ScrollReveal.tsx`: spring, 30px rise, 0.98 scale, once). Siblings that arrive together stagger by 0.15s; stacked items don't, since the scroll staggers them. Only opacity and transform animate, so there's no layout shift. With `prefers-reduced-motion`, reveals only fade.
 5. **Plain, specific copy.** Buttons say what happens ("Request a quote", "Approve and pay"). Errors say what went wrong and how to fix it.
 
 ## Patterns in use (Phase 2)

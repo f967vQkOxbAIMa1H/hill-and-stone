@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
 import { getTestimonials } from "@/lib/content";
 import { getSite } from "@/lib/settings";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "Reviews",
@@ -32,14 +33,14 @@ export default async function ReviewsPage() {
           </div>
           {/* The Google profile is the independent source; send people there first. */}
           {site.googleReviewsUrl && (
-            <div className="rounded-panel border border-navy-200 bg-white p-6">
+            <ScrollReveal delay={0.15} className="slate rounded-panel p-6">
               <div className="flex items-center gap-3">
                 <GoogleG className="size-8" />
                 <p className="font-semiwide text-lg leading-tight font-bold">Our Google reviews</p>
               </div>
               <p className="mt-3 text-navy-600">Read every review, or leave one after your job. It helps neighbors find a contractor they can trust.</p>
               <GoogleReviewsLink className="mt-5 w-full justify-center" />
-            </div>
+            </ScrollReveal>
           )}
         </Container>
       </section>
@@ -53,8 +54,8 @@ export default async function ReviewsPage() {
         ) : (
           // CSS columns give a wall where short and long reviews pack together.
           <ul className="gap-8 sm:columns-2 lg:columns-3">
-            {reviews.map((r) => (
-              <li key={r.id} className="mb-8 break-inside-avoid rounded-panel border border-navy-200 bg-white p-6">
+            {reviews.map((r, i) => (
+              <ScrollReveal as="li" key={r.id} delay={(i % 3) * 0.15} className="slate mb-8 break-inside-avoid rounded-panel p-6">
                 <figure>
                   <Stars rating={r.rating} />
                   <blockquote className="mt-4 text-lg leading-relaxed">
@@ -74,7 +75,7 @@ export default async function ReviewsPage() {
                     )}
                   </figcaption>
                 </figure>
-              </li>
+              </ScrollReveal>
             ))}
           </ul>
         )}

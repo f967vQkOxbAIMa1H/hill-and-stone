@@ -1,11 +1,12 @@
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { Heading } from "@/components/ui/heading";
 import type { Service } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /** A service laid out like the scope section of a real estimate. */
-export function ScopeSheet({ service, className, headingAs = "h3" }: { service: Service; className?: string; headingAs?: "h2" | "h3" }) {
+export function ScopeSheet({ service, className, headingAs = "h3", delay = 0 }: { service: Service; className?: string; headingAs?: "h2" | "h3"; delay?: number }) {
   return (
-    <article id={service.slug} className={cn("scroll-mt-28 rounded-panel border border-navy-200 bg-white", className)}>
+    <ScrollReveal as="article" id={service.slug} delay={delay} className={cn("slate scroll-mt-28 overflow-hidden rounded-panel", className)}>
       <header className="border-b border-navy-200 p-6 sm:p-8">
         <Heading as={headingAs} level="sub">
           {service.name}
@@ -33,6 +34,6 @@ export function ScopeSheet({ service, className, headingAs = "h3" }: { service: 
           </ul>
         </div>
       </div>
-    </article>
+    </ScrollReveal>
   );
 }

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BrandPanel } from "@/components/brand/brand-panel";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { BeforeAfter } from "@/components/ui/before-after";
 import { ButtonLink } from "@/components/ui/button";
 import type { ServiceCategory } from "@/generated/prisma/enums";
@@ -134,22 +135,25 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
           </ButtonLink>
         </div>
       ) : (
-        <ul className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((p) => (
-            <li key={p.slug}>
+        <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          {visible.map((p, i) => (
+            // Tiles in one row arrive left to right.
+            <ScrollReveal as="li" key={p.slug} delay={(i % 3) * 0.15} className="flex">
               <button
                 type="button"
                 onClick={(e) => show(p.slug, e.currentTarget)}
-                className="group block w-full cursor-pointer text-left"
+                className="group slate block w-full cursor-pointer rounded-[calc(var(--radius-photo)+0.5rem)] p-2 text-left"
               >
                 <SplitPreview project={p} />
-                <span className="mt-4 block text-sm text-navy-600">
-                  {categoryName[p.category]}, {p.city}
+                <span className="block px-3 pt-4 pb-4">
+                  <span className="block text-sm text-navy-600">
+                    {categoryName[p.category]}, {p.city}
+                  </span>
+                  <span className="mt-1 block text-xl font-bold group-hover:text-copper-700">{p.title}</span>
+                  <span className="mt-1.5 block text-navy-600">{p.summary}</span>
                 </span>
-                <span className="mt-1 block text-xl font-bold group-hover:text-copper-700">{p.title}</span>
-                <span className="mt-1.5 block text-navy-600">{p.summary}</span>
               </button>
-            </li>
+            </ScrollReveal>
           ))}
         </ul>
       )}
@@ -257,7 +261,6 @@ function SplitPreview({ project }: { project: GalleryProject }) {
     return (
       <span className="relative block">
         <BrandPanel label={categoryName[project.category]} className="aspect-[4/3] rounded-photo" />
-        <span className="absolute inset-0 rounded-photo ring-copper-500 ring-inset transition-shadow group-hover:ring-4" />
       </span>
     );
   }
@@ -265,7 +268,6 @@ function SplitPreview({ project }: { project: GalleryProject }) {
     return (
       <span className="relative block aspect-[4/3] overflow-hidden rounded-photo bg-navy-900">
         <Image src={m.image.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(m.image.src)} className="object-cover" />
-        <span className="absolute inset-0 rounded-photo ring-copper-500 ring-inset transition-shadow group-hover:ring-4" />
       </span>
     );
   }
@@ -276,7 +278,6 @@ function SplitPreview({ project }: { project: GalleryProject }) {
       <span aria-hidden className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-stone-50" />
       <span className="absolute bottom-3 left-3 rounded-control bg-navy-950/80 px-2 py-0.5 text-sm font-semibold text-stone-50">Before</span>
       <span className="absolute right-3 bottom-3 rounded-control bg-copper-500 px-2 py-0.5 text-sm font-semibold text-navy-950">After</span>
-      <span className="absolute inset-0 rounded-photo ring-copper-500 ring-inset transition-shadow group-hover:ring-4" />
     </span>
   );
 }
