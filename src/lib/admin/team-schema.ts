@@ -1,5 +1,6 @@
 // Team account inputs, shared by the forms (client) and server actions.
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 import { staffRoles } from "@/lib/auth/permissions";
 
 export const passwordRule = z
@@ -10,7 +11,7 @@ export const passwordRule = z
 
 export const staffSchema = z.object({
   id: z.string().optional(),
-  name: z.string().trim().min(2, "Enter their full name.").max(80),
+  name: z.string().overwrite(stripTags).trim().min(2, "Enter their full name.").max(80),
   email: z.string().trim().toLowerCase().pipe(z.email("Enter an email like name@yourdomain.com.")),
   phone: z
     .string()

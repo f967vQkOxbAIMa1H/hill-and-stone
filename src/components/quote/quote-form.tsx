@@ -78,7 +78,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
     for (const [k, v] of Object.entries(values)) body.append(k, v);
     for (const p of photos) body.append("photos", p.file, p.file.name);
     body.append("attribution", readAttribution());
-    body.append("company", (e.currentTarget.elements.namedItem("company") as HTMLInputElement).value);
+    body.append("website_url_hp", (e.currentTarget.elements.namedItem("website_url_hp") as HTMLInputElement).value);
 
     // XHR rather than fetch so we can show upload progress for large photos.
     const xhr = new XMLHttpRequest();
@@ -143,8 +143,8 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
     <form onSubmit={submit} noValidate className="flex flex-col gap-12" aria-describedby={errors.form ? "form-error" : undefined}>
       {/* Honeypot: hidden from people and assistive tech. */}
       <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
-        <label htmlFor="company">Company</label>
-        <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+        <label htmlFor="website_url_hp">Leave this empty</label>
+        <input id="website_url_hp" name="website_url_hp" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       <Section title="Your details">

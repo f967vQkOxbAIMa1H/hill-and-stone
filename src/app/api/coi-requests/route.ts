@@ -14,7 +14,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors: { form: "Too many requests. Wait a few minutes, or email us." } }, { status: 429 });
   }
   const body = await request.json().catch(() => null);
-  if (body?.company) return NextResponse.json({ ok: true }); // honeypot
+  // Honeypot: a hidden field people never see. Bots that fill it get a fake success and nothing is sent.
+  if (body?.website_url_hp) return NextResponse.json({ ok: true });
   const input = Object.fromEntries(
     Object.keys(coiRequestSchema.shape).map((k) => [k, typeof body?.[k] === "string" ? body[k] : ""]),
   );

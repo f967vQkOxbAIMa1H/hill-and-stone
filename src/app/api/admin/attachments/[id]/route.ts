@@ -1,10 +1,11 @@
-import { getAdmin } from "@/lib/auth/session";
+import { apiAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { readStoredFile } from "@/lib/storage";
 
 // Full-resolution request photos for signed-in admins only.
 export async function GET(_request: Request, { params }: RouteContext<"/api/admin/attachments/[id]">) {
-  if (!(await getAdmin())) return new Response("Unauthorized", { status: 401 });
+  const { admin, status } = await apiAdmin("workRequests");
+  if (!admin) return new Response(status === 401 ? "Unauthorized" : "Forbidden", { status });
   const { id } = await params;
   const file = await db.attachment.findUnique({ where: { id } });
   if (!file) return new Response("Not found", { status: 404 });

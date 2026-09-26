@@ -1,4 +1,4 @@
-import { getAdmin } from "@/lib/auth/session";
+import { apiAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { readStoredFile } from "@/lib/storage";
 
@@ -6,7 +6,8 @@ const types: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", p
 
 // Admin preview of any project photo, including ones on unpublished projects.
 export async function GET(request: Request, { params }: RouteContext<"/api/admin/project-images/[id]">) {
-  if (!(await getAdmin())) return new Response("Unauthorized", { status: 401 });
+  const { admin, status } = await apiAdmin("manageContent");
+  if (!admin) return new Response(status === 401 ? "Unauthorized" : "Forbidden", { status });
   const image = await db.projectImage.findUnique({ where: { id: (await params).id } });
   if (!image) return new Response("Not found", { status: 404 });
   // Sample placeholders live in /public.

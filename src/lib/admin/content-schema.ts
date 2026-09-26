@@ -1,8 +1,9 @@
 // Portfolio project and review inputs, shared by admin forms (client) and server actions.
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 import { ServiceCategory } from "@/generated/prisma/enums";
 
-const optionalText = (max: number) => z.string().trim().max(max).optional().default("");
+const optionalText = (max: number) => z.string().overwrite(stripTags).trim().max(max).optional().default("");
 const optionalDate = z
   .string()
   .trim()
@@ -22,7 +23,7 @@ export const slugify = (s: string) =>
 
 export const projectSchema = z.object({
   id: z.string().optional(),
-  title: z.string().trim().min(3, "Give the project a title.").max(120),
+  title: z.string().overwrite(stripTags).trim().min(3, "Give the project a title.").max(120),
   slug: z
     .string()
     .trim()
@@ -31,9 +32,9 @@ export const projectSchema = z.object({
     .default("")
     .refine((v) => !v || /^[a-z0-9]+(-[a-z0-9]+)*$/.test(v), "Use lowercase letters, numbers and dashes, like back-door-trim."),
   category: z.enum(ServiceCategory, { error: "Choose a category." }),
-  city: z.string().trim().min(2, "Enter the city.").max(60),
-  summary: z.string().trim().min(10, "Describe the problem in a sentence.").max(300),
-  scopeOfWork: z.string().trim().min(10, "Describe what you did.").max(3000),
+  city: z.string().overwrite(stripTags).trim().min(2, "Enter the city.").max(60),
+  summary: z.string().overwrite(stripTags).trim().min(10, "Describe the problem in a sentence.").max(300),
+  scopeOfWork: z.string().overwrite(stripTags).trim().min(10, "Describe what you did.").max(3000),
   results: optionalText(1000),
   materials: optionalText(1000), // one per line
   durationDays: z
@@ -61,9 +62,9 @@ export const reviewSources = [
 export const reviewSchema = z
   .object({
     id: z.string().optional(),
-    authorName: z.string().trim().min(2, "Enter the customer's name as they want it shown, like “Dana R.”").max(80),
-    city: z.string().trim().min(2, "Enter the city.").max(60),
-    body: z.string().trim().min(10, "Paste the review text.").max(2000),
+    authorName: z.string().overwrite(stripTags).trim().min(2, "Enter the customer's name as they want it shown, like “Dana R.”").max(80),
+    city: z.string().overwrite(stripTags).trim().min(2, "Enter the city.").max(60),
+    body: z.string().overwrite(stripTags).trim().min(10, "Paste the review text.").max(2000),
     rating: z.coerce.number().int().min(1).max(5),
     source: z.enum(reviewSources.map((s) => s.value) as [string, ...string[]]),
     sourceUrl: z

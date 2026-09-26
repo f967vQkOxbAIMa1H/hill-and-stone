@@ -1,5 +1,6 @@
 // Quote builder input, shared by the editor (client) and the server actions.
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 import { LineItemType } from "@/generated/prisma/enums";
 import { lineTotalCents, quoteTotals } from "@/lib/money";
 
@@ -17,7 +18,7 @@ const qty = z
 
 export const lineSchema = z.object({
   type: z.enum(LineItemType),
-  description: z.string().trim().min(1, "Describe this line.").max(300),
+  description: z.string().overwrite(stripTags).trim().min(1, "Describe this line.").max(300),
   quantity: qty,
   unitPrice: money,
 });
@@ -26,9 +27,9 @@ export const quoteDraftSchema = z
   .object({
     id: z.string().optional(),
     leadId: z.string().min(1),
-    title: z.string().trim().min(3, "Give the quote a short title.").max(120),
-    scopeOfWork: z.string().trim().min(20, "Describe the scope in a sentence or two.").max(5000),
-    exclusions: z.string().trim().max(2000).optional().default(""),
+    title: z.string().overwrite(stripTags).trim().min(3, "Give the quote a short title.").max(120),
+    scopeOfWork: z.string().overwrite(stripTags).trim().min(20, "Describe the scope in a sentence or two.").max(5000),
+    exclusions: z.string().overwrite(stripTags).trim().max(2000).optional().default(""),
     validDays: z.coerce.number().int().min(1, "At least 1 day.").max(120, "At most 120 days."),
     taxRatePercent: z
       .string()

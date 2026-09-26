@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { declineQuote, QuoteActionError } from "@/lib/quotes/payments";
 import { getQuoteByToken } from "@/lib/quotes/queries";
@@ -7,7 +8,7 @@ import { declineReasons } from "@/lib/quotes/state";
 
 const body = z.object({
   reason: z.enum(declineReasons.map((r) => r.value) as [string, ...string[]], { error: "Choose a reason." }),
-  note: z.string().trim().max(1000, "Keep your note under 1,000 characters.").optional(),
+  note: z.string().overwrite(stripTags).trim().max(1000, "Keep your note under 1,000 characters.").optional(),
 });
 
 export async function POST(request: Request, { params }: RouteContext<"/api/quotes/[token]/decline">) {

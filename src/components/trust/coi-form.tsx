@@ -30,12 +30,12 @@ export function CoiForm() {
     }
     setErrors({});
     setState("sending");
-    const company = (e.currentTarget.elements.namedItem("company") as HTMLInputElement).value;
+    const website_url_hp = (e.currentTarget.elements.namedItem("website_url_hp") as HTMLInputElement).value;
     try {
       const res = await fetch("/api/coi-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, company }),
+        body: JSON.stringify({ ...values, website_url_hp }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw data.errors ?? {};
@@ -65,7 +65,7 @@ export function CoiForm() {
   return (
     <form onSubmit={submit} noValidate className="grid gap-5 rounded-panel border border-navy-200 bg-white p-6 sm:grid-cols-2 sm:p-8">
       <div aria-hidden className="absolute -left-[9999px]">
-        <input name="company" tabIndex={-1} autoComplete="off" />
+        <input name="website_url_hp" tabIndex={-1} autoComplete="off" />
       </div>
       <Field id="coi-name" label="Your name" error={err("name")}>
         <Input id="coi-name" autoComplete="name" value={values.name} onChange={(e) => set("name", e.target.value)} {...describedBy("coi-name", { error: err("name") })} />

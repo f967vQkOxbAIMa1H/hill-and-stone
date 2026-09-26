@@ -17,7 +17,8 @@ const fail = (status: number, errors: FieldErrors) => NextResponse.json({ ok: fa
 
 export async function POST(request: Request) {
   const site = await getSite();
-  if (!rateLimit(`quote:${clientIp(request.headers)}`, 5, 10 * 60_000)) {
+  // 5 requests per connection every 15 minutes.
+  if (!rateLimit(`quote:${clientIp(request.headers)}`, 5, 15 * 60_000)) {
     return fail(429, { form: "Too many requests from this connection. Wait a few minutes, or call us." });
   }
 
@@ -28,8 +29,9 @@ export async function POST(request: Request) {
     return fail(400, { form: "The form didn't come through. Check your connection and try again." });
   }
 
-  // Honeypot: real people never see or fill this field.
-  if (String(form.get("company") ?? "").trim()) {
+  // Honeypot: real people never see or fill this field. Bots that do get a fake success; nothing is
+  // saved, stored or emailed.
+  if (String(form.get("website_url_hp") ?? "").trim()) {
     return NextResponse.json({ ok: true, number: 0, replyBy: addBusinessDays(new Date(), site.replyBusinessDays).toISOString() });
   }
 

@@ -15,6 +15,7 @@ import { balanceRequest, quoteSent } from "@/lib/email/quote-templates";
 import { env } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { stripTags } from "@/lib/sanitize";
 import { balanceCents, depositCents, paidCents, portalState } from "@/lib/quotes/state";
 import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
@@ -69,7 +70,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
 
 export async function addLeadNote(leadId: string, body: string) {
   const admin = await requireCan("workRequests");
-  const text = body.trim();
+  const text = stripTags(String(body ?? "")).trim();
   if (!text) return { error: "Write a note first." };
   if (text.length > 2000) return { error: "Keep notes under 2,000 characters." };
   await db.leadNote.create({ data: { leadId, body: text, authorId: admin.id } });

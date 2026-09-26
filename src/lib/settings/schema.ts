@@ -1,10 +1,12 @@
 // Business settings the owner edits at /admin/settings/site. Client-safe.
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 
-const text = (max: number) => z.string().trim().max(max);
+const text = (max: number) => z.string().overwrite(stripTags).trim().max(max);
 const nullableText = (max: number) =>
   z
     .string()
+    .overwrite(stripTags)
     .trim()
     .max(max)
     .nullable()

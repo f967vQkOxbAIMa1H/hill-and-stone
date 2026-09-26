@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { can } from "@/lib/auth/permissions";
-import { getAdmin } from "@/lib/auth/session";
+import { z } from "zod";
+import { apiAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { deleteFiles, putFile, sniffImage } from "@/lib/storage";
@@ -10,16 +10,19 @@ export const runtime = "nodejs";
 
 // Admin upload of portfolio photos. Multipart: one or more "photos", plus "role" (before | after | gallery).
 export async function POST(request: Request, { params }: RouteContext<"/api/admin/projects/[id]/images">) {
-  const admin = await getAdmin();
-  if (!admin) return NextResponse.json({ error: "Sign in again." }, { status: 401 });
-  if (!can(admin.role, "manageContent")) return NextResponse.json({ error: "Your role can't change the portfolio." }, { status: 403 });
+  const { admin, status } = await apiAdmin("manageContent");
+  if (!admin) {
+    return NextResponse.json({ error: status === 401 ? "Sign in again." : "Your role can't change the portfolio." }, { status });
+  }
   const { id } = await params;
   const project = await db.project.findUnique({ where: { id }, include: { _count: { select: { images: true } } } });
   if (!project) return NextResponse.json({ error: "That project no longer exists." }, { status: 404 });
 
   const form = await request.formData().catch(() => null);
   if (!form) return NextResponse.json({ error: "The upload didn't come through. Try again." }, { status: 400 });
-  const role = String(form.get("role") ?? "gallery");
+  const parsedRole = z.enum(["gallery", "before", "after"]).safeParse(form.get("role") ?? "gallery");
+  if (!parsedRole.success) return NextResponse.json({ error: "Choose where the photo goes: before, after or gallery." }, { status: 400 });
+  const role = parsedRole.data;
   const files = form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
   if (!files.length) return NextResponse.json({ error: "Choose at least one photo." }, { status: 400 });
   if (project._count.images + files.length > 30) return NextResponse.json({ error: "A project can have up to 30 photos." }, { status: 400 });

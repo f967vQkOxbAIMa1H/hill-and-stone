@@ -66,6 +66,18 @@ export async function requireCan(capability: Capability) {
   return admin;
 }
 
+/**
+ * For API route handlers, which answer with a status instead of redirecting. Verifies the session
+ * in the handler itself (the proxy only checks a cookie exists), and treats someone who hasn't yet
+ * replaced a temporary password, or whose role lacks the capability, as not allowed.
+ */
+export async function apiAdmin(capability?: Capability) {
+  const admin = await getAdmin();
+  if (!admin || admin.mustChangePassword) return { admin: null, status: 401 as const };
+  if (capability && !can(admin.role, capability)) return { admin: null, status: 403 as const };
+  return { admin, status: 200 as const };
+}
+
 /** Signs a user out everywhere, except (optionally) the session making this request. */
 export async function revokeSessions(userId: string, opts: { keepCurrent?: boolean } = {}) {
   const token = opts.keepCurrent ? (await cookies()).get(SESSION_COOKIE)?.value : undefined;

@@ -1,8 +1,9 @@
 // Shared by the form (client) and the API route (server).
 import { z } from "zod";
+import { stripTags } from "@/lib/sanitize";
 import { BudgetRange, ContactMethod, ProjectTimeline, ServiceCategory } from "@/generated/prisma/enums";
 
-const text = (max: number) => z.string().trim().max(max, `Keep this under ${max} characters.`);
+const text = (max: number) => z.string().overwrite(stripTags).trim().max(max, `Keep this under ${max} characters.`);
 
 export const quoteRequestSchema = z.object({
   firstName: text(60).min(1, "Enter your first name."),
