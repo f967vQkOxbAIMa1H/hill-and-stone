@@ -29,9 +29,6 @@ export function newQuoteInput(lead: Lead, quoteDefaults: SiteConfig["quoteDefaul
     exclusions: "",
     validDays: quoteDefaults.validDays,
     taxRatePercent: quoteDefaults.taxRatePercent,
-    depositMode: "none",
-    depositPercent: quoteDefaults.depositPercent,
-    depositFixed: "",
     lines: [
       { type: "LABOR", description: "", quantity: "1", unitPrice: "" },
       { type: "MATERIALS", description: "", quantity: "1", unitPrice: "" },
@@ -50,9 +47,6 @@ export function draftInput(q: AdminQuote, quoteDefaults: SiteConfig["quoteDefaul
     exclusions: q.exclusions ?? "",
     validDays: days,
     taxRatePercent: String(q.taxRateBps / 100),
-    depositMode: q.depositFixedCents != null ? "fixed" : q.depositBps > 0 ? "percent" : "none",
-    depositPercent: q.depositBps > 0 ? String(q.depositBps / 100) : quoteDefaults.depositPercent,
-    depositFixed: q.depositFixedCents != null ? dollars(q.depositFixedCents) : "",
     lines: q.lineItems.map((l) => ({ type: l.type, description: l.description, quantity: qty(l.quantityMilli), unitPrice: dollars(l.unitPriceCents) })),
   };
 }

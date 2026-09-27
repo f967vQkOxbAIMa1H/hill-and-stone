@@ -9,7 +9,7 @@ import { getSite } from "@/lib/settings";
 export const metadata: Metadata = {
   title: "Questions and answers",
   description:
-    "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, deposits, payment options, materials and our workmanship warranty.",
+    "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, payment on completion, payment options, materials and our workmanship warranty.",
 };
 
 

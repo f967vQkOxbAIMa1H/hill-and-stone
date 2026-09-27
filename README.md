@@ -65,7 +65,7 @@ Create the first owner login from the command line (prompts for a password, 12+ 
 recovery path if an owner is ever locked out:
 
 ```bash
-npm run admin:user -- owner@hillandstone.com "Owner Name"
+npm run admin:user -- owner@hillstone.com "Owner Name"
 ```
 
 Everyone else is added from **Team** in the admin.

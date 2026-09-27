@@ -8,9 +8,6 @@ const base: QuoteDraftInput = {
   exclusions: "",
   validDays: 30,
   taxRatePercent: "9.75",
-  depositMode: "percent",
-  depositPercent: "50",
-  depositFixed: "",
   lines: [
     { type: "LABOR", description: "Labor", quantity: "4.5", unitPrice: "85" },
     { type: "MATERIALS", description: "PVC trim", quantity: "3", unitPrice: "$42.00" },
@@ -26,13 +23,14 @@ describe("quote builder", () => {
     expect(t.subtotalCents).toBe(55_850);
     expect(t.taxCents).toBe(5_445);
     expect(t.totalCents).toBe(61_295);
-    expect(t.depositCents).toBe(30_648);
   });
-  it("supports a fixed deposit below the total", () => {
-    expect(computeTotals({ ...base, depositMode: "fixed", depositFixed: "250" }).depositFixedCents).toBe(25_000);
-    const tooBig = quoteDraftSchema.safeParse({ ...base, depositMode: "fixed", depositFixed: "5000" });
-    expect(tooBig.success).toBe(false);
-    expect(tooBig.error?.issues[0].path).toEqual(["depositFixed"]);
+  it("never sets a deposit: payment is due on completion", () => {
+    const t = computeTotals(base);
+    expect(t.depositBps).toBe(0);
+    expect(t.depositFixedCents).toBeNull();
+    // Deposit fields from an old client are ignored, not stored.
+    const r = quoteDraftSchema.safeParse({ ...base, depositMode: "percent", depositPercent: "50" });
+    expect(r.success && "depositMode" in r.data).toBe(false);
   });
   it("rejects bad numbers with plain messages", () => {
     const r = quoteDraftSchema.safeParse({ ...base, lines: [{ type: "LABOR", description: "x", quantity: "0", unitPrice: "abc" }] });
@@ -41,9 +39,8 @@ describe("quote builder", () => {
     expect(messages).toContain("Quantity must be more than 0.");
     expect(messages).toContain("Enter an amount like 85 or 85.50.");
   });
-  it("requires a positive total and a sane deposit percent", () => {
+  it("requires a positive total", () => {
     expect(quoteDraftSchema.safeParse({ ...base, lines: [base.lines[3]] }).success).toBe(false);
-    expect(quoteDraftSchema.safeParse({ ...base, depositPercent: "100" }).success).toBe(false);
     expect(quoteDraftSchema.safeParse(base).success).toBe(true);
   });
 });

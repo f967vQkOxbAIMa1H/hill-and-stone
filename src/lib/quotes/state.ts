@@ -7,13 +7,15 @@ export type QuoteForState = {
   totalCents: number;
   depositBps: number;
   depositFixedCents?: number | null;
+  paymentRequestedAt?: Date | null;
   payments: { status: string; amountCents: number }[];
 };
 
 export type PortalState =
-  | "open" // can be accepted and paid, or declined
+  | "open" // can be accepted (no payment up front) or declined
   | "expired" // past validUntil without a response
-  | "partially_paid" // accepted with a deposit; balance still due
+  | "accepted" // accepted; work scheduled or underway, nothing due yet
+  | "payment_due" // work complete and payment requested (or a legacy deposit left a balance)
   | "paid" // paid in full
   | "declined"
   | "void" // withdrawn by us, or expired and closed
@@ -31,7 +33,7 @@ export function balanceCents(quote: Pick<QuoteForState, "payments" | "totalCents
   return Math.max(0, quote.totalCents - paidCents(quote));
 }
 
-/** A fixed deposit wins over a percentage, and never exceeds the total. */
+/** Legacy deposits (no longer offered). A fixed deposit wins over a percentage, and never exceeds the total. */
 export function depositCents(quote: Pick<QuoteForState, "totalCents" | "depositBps" | "depositFixedCents">) {
   if (quote.depositFixedCents != null) return Math.min(Math.max(0, quote.depositFixedCents), quote.totalCents);
   return Math.round((quote.totalCents * quote.depositBps) / 10_000);
@@ -55,7 +57,9 @@ export function portalState(quote: QuoteForState, now = new Date()): PortalState
     case "PAID":
       return "paid";
     case "ACCEPTED":
-      return balanceCents(quote) > 0 ? "partially_paid" : "paid";
+      if (balanceCents(quote) === 0) return "paid";
+      // Payment is due on completion. Older quotes that took a deposit can pay their balance too.
+      return quote.paymentRequestedAt || paidCents(quote) > 0 ? "payment_due" : "accepted";
     case "SENT":
     case "VIEWED":
       if (quote.validUntil && quote.validUntil.getTime() < now.getTime()) return "expired";
@@ -63,16 +67,22 @@ export function portalState(quote: QuoteForState, now = new Date()): PortalState
   }
 }
 
-export type PaymentOption = "deposit" | "full" | "balance";
+/** Payment is due upon completion: nothing is charged at acceptance, and there are no deposits or plans. */
+export type PaymentOption = "balance";
 
-/** Amount to charge for a payment option, or null if that option isn't available in this state. */
-export function amountFor(quote: QuoteForState, option: PaymentOption, now = new Date()): number | null {
-  const state = portalState(quote, now);
-  if (option === "balance") return state === "partially_paid" ? balanceCents(quote) : null;
-  if (state !== "open") return null;
-  if (option === "deposit") return hasDeposit(quote) ? depositCents(quote) : null;
-  return quote.totalCents;
+/** Amount the customer can pay now, or null until the job is complete and payment has been requested. */
+export function amountDue(quote: QuoteForState, now = new Date()): number | null {
+  return portalState(quote, now) === "payment_due" ? balanceCents(quote) : null;
 }
+
+/** Accepting is free; it only needs an open quote. */
+export const canAccept = (quote: QuoteForState, now = new Date()) => portalState(quote, now) === "open";
+
+/** The owner can mark the job complete and ask for payment once the quote is accepted. */
+export const canRequestPayment = (quote: QuoteForState, now = new Date()) => {
+  const state = portalState(quote, now);
+  return state === "accepted" || state === "payment_due";
+};
 
 /** Status after a payment succeeds, given the quote's payments including that one. */
 export function statusAfterPayment(quote: Pick<QuoteForState, "payments" | "totalCents">): "ACCEPTED" | "PAID" {

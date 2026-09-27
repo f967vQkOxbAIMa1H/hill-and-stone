@@ -3,6 +3,8 @@ import { Phone } from "lucide-react";
 import { BrandPanel } from "@/components/brand/brand-panel";
 import { CtaBand } from "@/components/site/cta-band";
 import { GoogleReviewsLink, Stars } from "@/components/site/review-bits";
+import { FounderPortraits } from "@/components/site/founders";
+import { TrustBadges } from "@/components/site/trust-badges";
 import { TrustList } from "@/components/site/trust-list";
 import { BeforeAfter } from "@/components/ui/before-after";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import { Heading, Lede } from "@/components/ui/heading";
 import { getProjects, getTestimonials } from "@/lib/content";
 import { projectMedia } from "@/lib/media";
 import { getSite } from "@/lib/settings";
+import { storyParagraphs } from "@/lib/story";
 import { quoteHref, serviceAreas, services } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -47,9 +50,7 @@ export default async function HomePage() {
                 {site.phone}
               </a>
             </div>
-            <p className="mt-6 text-sm text-navy-600">
-              Licensed and insured in Arkansas. {site.warranty} on every job.
-            </p>
+            <TrustBadges site={site} className="mt-8" />
           </div>
 
           <figure className="lg:-mr-8 xl:-mr-16">
@@ -142,6 +143,26 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* Origin story: who the two founders are, with a reserved portrait for each. */}
+      <section aria-labelledby="story-heading" className="border-t border-navy-200">
+        <Container className="grid gap-12 py-20 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16 lg:py-24">
+          <div className="max-w-[62ch]">
+            <Heading id="story-heading">Our story</Heading>
+            <div className="mt-6 space-y-5 text-lg leading-relaxed text-navy-700">
+              {storyParagraphs(site.story)
+                .slice(0, 2)
+                .map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
+            </div>
+            <Link href="/about" className="mt-6 inline-block font-semibold text-copper-700 underline-offset-4 hover:underline">
+              More about how we work
+            </Link>
+          </div>
+          <FounderPortraits site={site} className="w-full self-start lg:max-w-md lg:justify-self-end" />
+        </Container>
+      </section>
+
       {/* Trust */}
       <section aria-labelledby="trust-heading" className="bg-stone-100">
         <Container className="grid gap-10 py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:py-24">
@@ -166,6 +187,9 @@ export default async function HomePage() {
               <GoogleReviewsLink />
               <Link href="/reviews" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-copper-700 underline-offset-4 hover:underline">
                 See all reviews
+              </Link>
+              <Link href="/reviews#leave-a-review" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-copper-700 underline-offset-4 hover:underline">
+                Leave a review
               </Link>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { reviewSources } from "@/lib/admin/content-schema";
 import { db } from "@/lib/db";
+import { isPublicRating } from "@/lib/reviews";
 
 export const metadata: Metadata = { title: "Reviews" };
 
@@ -23,7 +24,7 @@ export default async function ReviewsAdminPage() {
     <>
       <AdminHeader
         title="Reviews"
-        description="Customer reviews for the Reviews page and home page. Only publish reviews you have permission to share."
+        description="Customer reviews for the Reviews page and home page. Website reviews with 4 or 5 stars publish automatically; under 4 stars stay private and go to your inbox as Feedback/Low-Rating."
         actions={
           <ButtonLink prefetch={false} href="/admin/reviews/new">
             <Plus aria-hidden />
@@ -55,7 +56,8 @@ export default async function ReviewsAdminPage() {
                 lines={[<span key="b" className="line-clamp-2">{r.body}</span>, `${r.city}, ${fmtDay(r.reviewedAt ?? r.createdAt)}`]}
                 aside={
                   <>
-                    <Badge tone={r.published ? "success" : "neutral"}>{r.published ? "Published" : "Hidden"}</Badge>
+                    <Badge tone={r.published && isPublicRating(r.rating) ? "success" : "neutral"}>{r.published && isPublicRating(r.rating) ? "Published" : "Hidden"}</Badge>
+                        {!isPublicRating(r.rating) && <Badge tone="danger">Low rating</Badge>}
                     {r.featured && <Badge tone="copper">Featured</Badge>}
                     {r.source === "seed" && <Badge tone="danger">Sample</Badge>}
                   </>
@@ -93,7 +95,8 @@ export default async function ReviewsAdminPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="flex flex-wrap gap-1">
-                        <Badge tone={r.published ? "success" : "neutral"}>{r.published ? "Published" : "Hidden"}</Badge>
+                        <Badge tone={r.published && isPublicRating(r.rating) ? "success" : "neutral"}>{r.published && isPublicRating(r.rating) ? "Published" : "Hidden"}</Badge>
+                        {!isPublicRating(r.rating) && <Badge tone="danger">Low rating</Badge>}
                         {r.featured && <Badge tone="copper">Featured</Badge>}
                         {r.source === "seed" && <Badge tone="danger">Sample</Badge>}
                       </span>

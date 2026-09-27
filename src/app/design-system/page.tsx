@@ -86,7 +86,7 @@ export default function DesignSystemPage() {
             <Button size="lg">Request a quote</Button>
             <Button>Request a quote</Button>
             <Button size="sm">Request a quote</Button>
-            <Button variant="dark">Approve and pay</Button>
+            <Button variant="dark">Accept quote</Button>
             <Button variant="outline">See our work</Button>
             <Button variant="ghost">Cancel</Button>
             <Button variant="danger">Decline quote</Button>

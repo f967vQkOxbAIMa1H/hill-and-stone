@@ -108,9 +108,9 @@ const projects: SampleProject[] = [
 
 async function main() {
   await db.user.upsert({
-    where: { email: "owner@hillandstone.com" },
+    where: { email: "owner@hillstone.com" },
     update: {},
-    create: { email: "owner@hillandstone.com", name: "Owner", role: "OWNER" },
+    create: { email: "owner@hillstone.com", name: "Owner", role: "OWNER" },
   });
 
   await db.testimonial.deleteMany({ where: { source: "seed" } });

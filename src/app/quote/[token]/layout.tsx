@@ -35,7 +35,7 @@ export default async function QuoteLayout({ children }: LayoutProps<"/quote/[tok
       <footer className="border-t border-navy-200 bg-stone-100">
         <Container className="flex flex-col gap-1 py-6 pb-28 text-sm text-navy-600 sm:flex-row sm:justify-between lg:pb-6">
           <p>
-            {site.legalName}.{site.licenseNumber ? ` ${site.licenseLabel} ${site.licenseNumber}.` : ""}
+            {site.legalName}. {site.licenseStatement}.{site.licenseNumber ? ` ${site.licenseLabel} ${site.licenseNumber}.` : ""}
           </p>
           <p>
             <Link href="/trust#payments" className="underline-offset-4 hover:underline">

@@ -42,7 +42,8 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
             {[
               ["You send details", "This form, with photos if you have them."],
               [`We reply within ${site.replyWindow}`, "With a price, questions, or a time for a short visit."],
-              ["You get a written quote", "Itemized labor, materials and trip fee. Approve and pay online."],
+              ["You get a written quote", "Priced for your project and itemized. We don't post rates; every job is quoted on its own."],
+              ["You pay when it's done", "Accept the quote online for free. Payment is due on completion, with no deposit."],
             ].map(([title, body], i) => (
               <ScrollReveal as="li" key={title} delay={0.25 + i * 0.15} className="grid grid-cols-[2rem_1fr] gap-2">
                 <span className="font-wide text-xl leading-tight font-extrabold text-copper-500">{i + 1}</span>
@@ -62,7 +63,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
           </div>
         </ScrollReveal>
         <p className="mt-4 px-1 text-sm text-navy-600">
-          Licensed and insured in Arkansas. {site.warranty} on every job.
+          {site.licenseStatement}. {site.warranty} on every job.
         </p>
       </aside>
     </Container>

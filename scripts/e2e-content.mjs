@@ -15,7 +15,7 @@ config({ quiet: true });
 const BASE = process.env.BASE_URL ?? "http://localhost:3100";
 const SHOTS = process.env.SHOTS ?? "./.e2e-shots/content";
 const CRON_SECRET = process.env.CRON_SECRET ?? "";
-const ADMIN_EMAIL = "e2e.content@hillandstone.com";
+const ADMIN_EMAIL = "e2e.content@hillstone.com";
 const ADMIN_PASSWORD = `e2e-${randomBytes(9).toString("base64url")}`;
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
@@ -192,24 +192,31 @@ try {
   await go("/admin/reviews");
   await shot("reviews-admin");
 
-  // ── Balance payment request ──────────────────────────────────────────────
+  // ── Mark complete and request payment (payment is due on completion) ───
   const samples = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
   const qid = async (k) => (await db.query(`select id from "Quote" where "publicToken"=$1`, [samples[k].split("/quote/")[1]])).rows[0].id;
-  const depositPaidId = await qid("deposit-paid");
+  const acceptedId = await qid("accepted");
   await go(`/admin/quotes/${await qid("open-full")}`);
-  check("no balance button before a deposit is paid", !(await text()).includes("Request balance payment"));
-  await go(`/admin/quotes/${depositPaidId}`);
-  await page.click("button::-p-text(Request balance payment)");
+  check("no payment request before the client accepts", !(await text()).includes("Mark complete and request payment"));
+  await go(`/admin/quotes/${acceptedId}`);
+  await page.click("button::-p-text(Mark complete and request payment)");
   await page.waitForSelector("#bill-note");
-  check("balance request confirms amount and recipient", (await text()).includes("request for the $497.44 balance?"));
+  const total = (await db.query(`select "totalCents", number from "Quote" where id=$1`, [acceptedId])).rows[0];
+  const due = `$${(total.totalCents / 100).toFixed(2)}`;
+  check("payment request confirms amount and recipient", (await text()).includes(`ask sample.customer@example.com to pay ${due}?`) || (await text()).includes(`to pay ${due}?`));
   await page.type("#bill-note", "Thanks again. Extra paint is in the garage.");
   await page.click("button::-p-text(Send request for)");
-  await page.waitForFunction(() => /Balance request for|didn't send/.test(document.body.innerText));
-  await go(`/admin/quotes/${depositPaidId}`);
-  check("history logs the balance request", (await text()).includes("Balance payment requested: $497.44"));
-  const billEmail = (await db.query(`select subject from "EmailLog" where "quoteId"=$1 and type='BALANCE_REQUEST'`, [depositPaidId])).rows[0];
-  check("balance email is dispatched", billEmail?.subject === `Balance due for quote #${(await db.query(`select number from "Quote" where id=$1`, [depositPaidId])).rows[0].number}: $497.44`, billEmail?.subject);
-  await shot("balance-request");
+  await page.waitForFunction(() => /Payment request for|didn't send/.test(document.body.innerText));
+  const requested = (await db.query(`select "paymentRequestedAt" from "Quote" where id=$1`, [acceptedId])).rows[0];
+  check("marking complete opens payment", !!requested.paymentRequestedAt);
+  await go(`/admin/quotes/${acceptedId}`);
+  check("history logs the payment request", (await text()).includes(`Job complete, payment requested: ${due}`));
+  check("button becomes a reminder", (await text()).includes("Resend payment request"));
+  const billEmail = (await db.query(`select subject from "EmailLog" where "quoteId"=$1 and type='BALANCE_REQUEST'`, [acceptedId])).rows[0];
+  check("payment email is dispatched", billEmail?.subject === `Your job is complete: ${due} due for quote #${total.number}`, billEmail?.subject);
+  const portal = await (await fetch(samples.accepted)).text();
+  check("client can now pay", portal.includes("Payment due"));
+  await shot("payment-request");
 
   // ── Expiry job ───────────────────────────────────────────────────────────
   const expiredId = await qid("expired");
@@ -223,7 +230,7 @@ try {
     check("expiry job marks overdue quotes EXPIRED once", run.ok && body.expired >= 1 && after === "EXPIRED" && events === 1, JSON.stringify(body));
     const again = await (await fetch(`${BASE}/api/cron/expire-quotes`, { headers: { authorization: `Bearer ${CRON_SECRET}` } })).json();
     check("running it again changes nothing", again.expired === 0, JSON.stringify(again));
-    const openStill = (await db.query(`select status from "Quote" where id=$1`, [await qid("open-deposit")])).rows[0].status;
+    const openStill = (await db.query(`select status from "Quote" where id=$1`, [await qid("open")])).rows[0].status;
     check("quotes still in date are untouched", openStill === "SENT", openStill);
   }
 

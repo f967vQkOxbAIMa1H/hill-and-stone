@@ -3,7 +3,7 @@ import { SafeImage } from "@/components/ui/safe-image";
 import type { LineItemType } from "@/generated/prisma/enums";
 import { formatCents } from "@/lib/money";
 import type { PortalQuote } from "@/lib/quotes/queries";
-import { depositCents, hasDeposit, type PortalState } from "@/lib/quotes/state";
+import type { PortalState } from "@/lib/quotes/state";
 
 const groupOrder: LineItemType[] = ["LABOR", "MATERIALS", "TRIP_FEE", "OTHER", "DISCOUNT"];
 const groupLabel: Record<LineItemType, string> = {
@@ -17,7 +17,8 @@ const groupLabel: Record<LineItemType, string> = {
 export const stateBadge: Record<PortalState, { label: string; tone: "copper" | "success" | "danger" | "neutral" }> = {
   open: { label: "Awaiting your approval", tone: "copper" },
   expired: { label: "Expired", tone: "danger" },
-  partially_paid: { label: "Accepted, deposit paid", tone: "success" },
+  accepted: { label: "Accepted, payment due on completion", tone: "success" },
+  payment_due: { label: "Work complete, payment due", tone: "copper" },
   paid: { label: "Paid in full", tone: "success" },
   declined: { label: "Declined", tone: "neutral" },
   void: { label: "Withdrawn", tone: "neutral" },
@@ -162,12 +163,10 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
             <dt className="font-bold">Total</dt>
             <dd className="font-wide text-2xl font-extrabold">{formatCents(quote.totalCents)}</dd>
           </div>
-          {hasDeposit(quote) && (
-            <div className="flex justify-between gap-6 text-sm text-navy-600">
-              <dt>Deposit to start{quote.depositFixedCents == null ? ` (${quote.depositBps / 100}%)` : ""}</dt>
-              <dd>{formatCents(depositCents(quote))}</dd>
-            </div>
-          )}
+          <div className="flex justify-between gap-6 text-sm text-navy-600">
+            <dt>Payment</dt>
+            <dd>Due on completion, no deposit</dd>
+          </div>
         </dl>
       </section>
 

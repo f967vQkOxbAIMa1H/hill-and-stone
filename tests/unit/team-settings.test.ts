@@ -71,6 +71,7 @@ describe("site settings", () => {
       ...defaultSettings,
       contact: { ...defaultSettings.contact, phone: "479.200.1234" },
       insurance: [{ type: "General liability", detail: "$2,000,000" }, ...defaultSettings.insurance.slice(1)],
+      license: { number: null, showPublicly: true },
       warrantyMonths: 24,
       policies: { ...defaultSettings.policies, replyBusinessDays: 2 },
     });

@@ -23,18 +23,26 @@ const warn = (area: string, message: string) =>
 function checkSettings(settings: Settings) {
   if (isPlaceholderPhone(settings.contact.phone))
     block("settings", `Phone ${settings.contact.phone} is a fictional 555-01xx number. Set it at /admin/settings/site.`);
-  if (!settings.license.number) warn("settings", "License number isn't set (/admin/settings/site). The site says “licensed” without a number.");
-  if (!settings.insurance.some((i) => i.detail))
-    warn("settings", "No insurance details set (/admin/settings/site). The Trust page offers a certificate on request instead.");
+  if (!settings.license.showPublicly)
+    warn("settings", "License number and insurance details are hidden (waiting on the LLC). Once registered, fill them in and tick “Show license number and insurance details” at /admin/settings/site.");
+  else {
+    if (!settings.license.number) warn("settings", "License details are public but no license number is set (/admin/settings/site).");
+    if (!settings.insurance.some((i) => i.detail))
+      warn("settings", "No insurance details set (/admin/settings/site). The Trust page offers a certificate on request instead.");
+  }
+  if (!brand.domainConfirmed)
+    warn("brand", `Domain is a placeholder (${brand.domain}). Buy the Hillstone domain, then set brand.domain in src/lib/site.ts and NEXT_PUBLIC_APP_URL.`);
+  if (settings.contact.email === defaultSettings.contact.email)
+    block("settings", `Contact email is still the default ${settings.contact.email}. Set the business inbox at /admin/settings/site.`);
   if (!settings.googleReviewsUrl) warn("settings", "Google review link isn't set (/admin/settings/site). Review buttons are hidden.");
   const missingStory = Object.entries(settings.story).filter(([, v]) => v == null).map(([k]) => k);
   if (missingStory.length) warn("settings", `About page story is missing: ${missingStory.join(", ")} (/admin/settings/site).`);
-  const missingPhotos = Object.entries(brand.photos).filter(([, v]) => v == null).map(([k]) => k);
-  if (missingPhotos.length) warn("settings", `About page photos not set: ${missingPhotos.join(", ")} (brand.photos in src/lib/site.ts).`);
+  const missingPhotos = (["founder", "coFounder"] as const).filter((k) => brand.photos[k] == null);
+  if (missingPhotos.length) warn("settings", `Our Story founder photos not set: ${missingPhotos.join(", ")} (brand.photos in src/lib/site.ts). Their frames show a brand graphic until then.`);
   if (!settings.policies.confirmed)
     block("settings", "Policies not confirmed: review the FAQ, Trust page and email wording, then tick “Policies confirmed” at /admin/settings/site.");
   if (!settings.quoteDefaults.confirmed)
-    block("settings", "Quote defaults not confirmed: check trip fee, tax rate and deposit, then tick “Pricing confirmed” at /admin/settings/site.");
+    block("settings", "Quote defaults not confirmed: check trip fee and tax rate, then tick “Pricing confirmed” at /admin/settings/site.");
 }
 
 // ── Environment ─────────────────────────────────────────────────────────────
@@ -65,6 +73,8 @@ if (env.STRIPE_SECRET_KEY?.startsWith("sk_test_"))
     "env",
     "STRIPE_SECRET_KEY is a test key. Switch to the live key (sk_live_...) to take real payments.",
   );
+if (env.SHOW_SAMPLE_CONTENT === "1")
+  block("env", "SHOW_SAMPLE_CONTENT=1 shows placeholder projects and reviews on the public site. Remove it.");
 if (env.STRIPE_API_HOST)
   block(
     "env",

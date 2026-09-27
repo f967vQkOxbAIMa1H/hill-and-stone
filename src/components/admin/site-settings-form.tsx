@@ -14,6 +14,7 @@ type Form = {
   email: string;
   hours: string;
   licenseNumber: string;
+  credentialsPublic: boolean;
   insurance: string[];
   warrantyMonths: string;
   googleReviewsUrl: string;
@@ -23,10 +24,10 @@ type Form = {
   policiesConfirmed: boolean;
   tripFee: string;
   taxRatePercent: string;
-  depositPercent: string;
   validDays: string;
   pricingConfirmed: boolean;
   founderName: string;
+  coFounderName: string;
   foundedYear: string;
   hometown: string;
   crewSize: string;
@@ -38,6 +39,7 @@ const toForm = (s: Settings): Form => ({
   email: s.contact.email,
   hours: s.contact.hours,
   licenseNumber: s.license.number ?? "",
+  credentialsPublic: s.license.showPublicly,
   insurance: s.insurance.map((i) => i.detail ?? ""),
   warrantyMonths: String(s.warrantyMonths),
   googleReviewsUrl: s.googleReviewsUrl ?? "",
@@ -47,10 +49,10 @@ const toForm = (s: Settings): Form => ({
   policiesConfirmed: s.policies.confirmed,
   tripFee: s.quoteDefaults.tripFee,
   taxRatePercent: s.quoteDefaults.taxRatePercent,
-  depositPercent: s.quoteDefaults.depositPercent,
   validDays: String(s.quoteDefaults.validDays),
   pricingConfirmed: s.quoteDefaults.confirmed,
   founderName: s.story.founderName ?? "",
+  coFounderName: s.story.coFounderName ?? "",
   foundedYear: s.story.foundedYear ? String(s.story.foundedYear) : "",
   hometown: s.story.hometown ?? "",
   crewSize: s.story.crewSize ? String(s.story.crewSize) : "",
@@ -59,13 +61,13 @@ const toForm = (s: Settings): Form => ({
 
 const toInput = (f: Form, base: Settings) => ({
   contact: { phone: f.phone, email: f.email, hours: f.hours },
-  license: { number: f.licenseNumber },
+  license: { number: f.licenseNumber, showPublicly: f.credentialsPublic },
   insurance: base.insurance.map((i, n) => ({ type: i.type, detail: f.insurance[n] })),
   warrantyMonths: f.warrantyMonths,
   googleReviewsUrl: f.googleReviewsUrl,
-  story: { founderName: f.founderName, foundedYear: f.foundedYear, hometown: f.hometown, crewSize: f.crewSize, founderBackground: f.founderBackground },
+  story: { founderName: f.founderName, coFounderName: f.coFounderName, foundedYear: f.foundedYear, hometown: f.hometown, crewSize: f.crewSize, founderBackground: f.founderBackground },
   policies: { replyBusinessDays: f.replyBusinessDays, coiBusinessDays: f.coiBusinessDays, backgroundRecheckYears: f.backgroundRecheckYears, confirmed: f.policiesConfirmed },
-  quoteDefaults: { tripFee: f.tripFee, taxRatePercent: f.taxRatePercent, depositPercent: f.depositPercent, validDays: f.validDays, confirmed: f.pricingConfirmed },
+  quoteDefaults: { tripFee: f.tripFee, taxRatePercent: f.taxRatePercent, validDays: f.validDays, confirmed: f.pricingConfirmed },
 });
 
 // Server error keys (e.g. "contact.phone") → form field ids.
@@ -81,7 +83,6 @@ const errorField: Record<string, string> = {
   "policies.backgroundRecheckYears": "backgroundRecheckYears",
   "quoteDefaults.tripFee": "tripFee",
   "quoteDefaults.taxRatePercent": "taxRatePercent",
-  "quoteDefaults.depositPercent": "depositPercent",
   "quoteDefaults.validDays": "validDays",
   "story.foundedYear": "foundedYear",
   "story.crewSize": "crewSize",
@@ -114,7 +115,7 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([key]) => key !== k)));
     setNotice(null);
   };
-  const text = (k: Exclude<keyof Form, "insurance" | "policiesConfirmed" | "pricingConfirmed">, label: string, extra: Partial<React.ComponentProps<typeof Input>> & { hint?: string; optional?: boolean; wide?: boolean } = {}) => {
+  const text = (k: Exclude<keyof Form, "insurance" | "policiesConfirmed" | "pricingConfirmed" | "credentialsPublic">, label: string, extra: Partial<React.ComponentProps<typeof Input>> & { hint?: string; optional?: boolean; wide?: boolean } = {}) => {
     const { hint, optional, wide, ...rest } = extra;
     return (
       <Field id={k} label={label} hint={hint} optional={optional} error={errors[k]} className={wide ? "sm:col-span-2" : undefined}>
@@ -150,7 +151,7 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
         {text("hours", "Business hours", { wide: true, hint: "Shown in the footer and FAQ, e.g. Mon–Fri 7am–6pm, Sat by appointment." })}
       </Section>
 
-      <Section title="License, insurance and warranty" description="Shown in the footer, trust badges and Trust page. Blank details are left off the site.">
+      <Section title="License, insurance and warranty" description="The site always says “licensed and insured for minor home repair.” The license number and insurance details below stay hidden until you choose to show them.">
         {text("licenseNumber", "Arkansas license number", { optional: true })}
         {text("warrantyMonths", "Workmanship warranty (months)", { inputMode: "numeric" })}
         {settings.insurance.map((ins, n) => (
@@ -162,6 +163,15 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
             />
           </Field>
         ))}
+        <div className="sm:col-span-2">
+          <Checkbox
+            id="credentialsPublic"
+            label="Show license number and insurance details on the site"
+            hint="Leave off until the LLC is registered with the City of Fayetteville and the state. You can fill in the details now; they stay private."
+            checked={f.credentialsPublic}
+            onChange={(e) => set("credentialsPublic", e.target.checked)}
+          />
+        </div>
       </Section>
 
       <Section title="Online listings" description="Your Google Business Profile review link. Review buttons stay hidden until it's set.">
@@ -180,15 +190,15 @@ export function SiteSettingsForm({ settings }: { settings: Settings }) {
       <Section title="Quote defaults" description="Starting values for new quotes in the quote builder. Existing quotes don't change.">
         {text("tripFee", "Trip fee ($)", { inputMode: "decimal" })}
         {text("taxRatePercent", "Sales tax (%)", { inputMode: "decimal", hint: "Confirm the rate and what's taxable with your accountant." })}
-        {text("depositPercent", "Default deposit (%)", { inputMode: "numeric" })}
         {text("validDays", "Quotes valid for (days)", { inputMode: "numeric" })}
         <div className="sm:col-span-2">
           <Checkbox id="pricingConfirmed" label="Pricing confirmed" hint="These defaults match how we price." checked={f.pricingConfirmed} onChange={(e) => set("pricingConfirmed", e.target.checked)} />
         </div>
       </Section>
 
-      <Section title="About page story" description="Each sentence that uses a blank fact is left out, so the story reads naturally at any stage.">
+      <Section title="Our story" description="Used on the home and About pages. Each sentence that uses a blank fact is left out, so the story reads naturally at any stage.">
         {text("founderName", "Founder's name", { optional: true })}
+        {text("coFounderName", "Co-founder's name", { optional: true })}
         {text("foundedYear", "Year founded", { optional: true, inputMode: "numeric" })}
         {text("hometown", "Founder's hometown", { optional: true })}
         {text("crewSize", "Crew size", { optional: true, inputMode: "numeric" })}

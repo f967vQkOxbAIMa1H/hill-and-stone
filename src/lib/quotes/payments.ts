@@ -8,7 +8,7 @@ import { env } from "@/lib/env";
 import { getSite } from "@/lib/settings";
 import { getStripe, PAYMENT_METHOD_TYPES } from "@/lib/stripe";
 import type { PortalQuote } from "./queries";
-import { amountFor, balanceCents, portalState, statusAfterPayment, type DeclineReason, type PaymentOption } from "./state";
+import { amountDue, balanceCents, canAccept, portalState, statusAfterPayment, type DeclineReason } from "./state";
 
 export class QuoteActionError extends Error {
   constructor(
@@ -39,15 +39,18 @@ function quoteInfo(q: QuoteForInfo) {
 
 // ─── Checkout ───────────────────────────────────────────────────────────────
 
-/** Creates a Stripe Checkout session for a payment option. The amount always comes from the database. */
-export async function createCheckout(quote: PortalQuote, option: PaymentOption) {
+/**
+ * Creates a Stripe Checkout session for the balance due. Payment is due upon completion, so this only
+ * works after the job is marked complete. The amount always comes from the database.
+ */
+export async function createCheckout(quote: PortalQuote) {
   const site = await getSite();
   const stripe = getStripe();
   if (!stripe) throw new QuoteActionError("payments_unavailable", `Online payment isn't set up yet. Call ${site.phone} to pay by phone.`);
 
-  const amount = amountFor(quote, option);
+  const amount = amountDue(quote);
   if (amount === null || amount <= 0) {
-    throw new QuoteActionError("not_available", "This quote can't be paid right now. Refresh the page to see its current status.");
+    throw new QuoteActionError("not_available", "Payment opens once the work is complete. Refresh the page to see its current status.");
   }
 
   // Close any earlier unfinished checkouts so the same quote can't be paid twice from two tabs.
@@ -58,11 +61,11 @@ export async function createCheckout(quote: PortalQuote, option: PaymentOption) 
   }
 
   const payment = await db.payment.create({
-    data: { quoteId: quote.id, amountCents: amount, currency: quote.currency, isDeposit: option === "deposit" },
+    data: { quoteId: quote.id, amountCents: amount, currency: quote.currency },
   });
 
-  const label = option === "deposit" ? "Deposit" : option === "balance" ? "Remaining balance" : "Payment in full";
-  const metadata = { quoteId: quote.id, paymentId: payment.id, option, quoteNumber: String(quote.number) };
+  const label = amount < quote.totalCents ? "Remaining balance" : "Payment";
+  const metadata = { quoteId: quote.id, paymentId: payment.id, option: "balance", quoteNumber: String(quote.number) };
 
   try {
     const session = await stripe.checkout.sessions.create(
@@ -92,7 +95,7 @@ export async function createCheckout(quote: PortalQuote, option: PaymentOption) 
 
     await db.payment.update({ where: { id: payment.id }, data: { stripeCheckoutSessionId: session.id } });
     await db.quoteEvent.create({
-      data: { quoteId: quote.id, type: "PAYMENT_STARTED", metadata: { paymentId: payment.id, option, amountCents: amount } },
+      data: { quoteId: quote.id, type: "PAYMENT_STARTED", metadata: { paymentId: payment.id, amountCents: amount } },
     });
     if (!session.url) throw new Error("Checkout session has no URL");
     return session.url;
@@ -158,7 +161,13 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
     await tx.quoteEvent.create({
       data: { quoteId: quote.id, type: "PAID", metadata: { paymentId: payment.id, amountCents: payment.amountCents, sessionId: session.id } },
     });
-    if (quote.leadId) await tx.lead.update({ where: { id: quote.leadId }, data: { status: "ACCEPTED" } });
+    // Payment is due on completion, so a quote paid in full means the job is done.
+    if (quote.leadId) {
+      await tx.lead.updateMany({
+        where: { id: quote.leadId, status: { not: "ARCHIVED" } },
+        data: { status: nextStatus === "PAID" ? "COMPLETED" : "ACCEPTED" },
+      });
+    }
     await tx.conversionEvent.create({
       data: { name: payment.isDeposit ? "quote_deposit_paid" : "quote_paid", quoteId: quote.id, valueCents: payment.amountCents },
     });
@@ -220,6 +229,38 @@ export async function markSessionEnded(session: Stripe.Checkout.Session, outcome
   if (changed.count && outcome === "FAILED") {
     await db.quoteEvent.create({ data: { quoteId: payment.quoteId, type: "PAYMENT_FAILED", metadata: { paymentId: payment.id, sessionId: session.id } } });
   }
+}
+
+// ─── Accept (no payment: it's due on completion) ────────────────────────────
+
+export async function acceptQuote(quote: PortalQuote, meta: { ipAddress?: string; userAgent?: string }) {
+  if (!canAccept(quote)) {
+    throw new QuoteActionError("not_available", "This quote can't be accepted anymore. Refresh the page to see its current status.");
+  }
+  const now = new Date();
+  const changed = await db.$transaction(async (tx) => {
+    const res = await tx.quote.updateMany({
+      where: { id: quote.id, status: { in: ["SENT", "VIEWED"] } },
+      data: { status: "ACCEPTED", acceptedAt: now },
+    });
+    if (res.count === 0) return false;
+    await tx.quoteEvent.create({ data: { quoteId: quote.id, type: "ACCEPTED", ...meta } });
+    if (quote.leadId) await tx.lead.update({ where: { id: quote.leadId }, data: { status: "ACCEPTED" } });
+    await tx.conversionEvent.create({ data: { name: "quote_accepted", quoteId: quote.id, valueCents: quote.totalCents } });
+    return true;
+  });
+  if (!changed) throw new QuoteActionError("not_available", "This quote was just updated. Refresh the page to see its current status.");
+
+  after(async () => {
+    const site = await getSite();
+    await sendEmail({
+      type: "QUOTE_ACCEPTED_NOTICE",
+      to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
+      quoteId: quote.id,
+      replyTo: quote.customer.email,
+      ...(await acceptedNotice(quoteInfo(quote), null)),
+    });
+  });
 }
 
 // ─── Decline ────────────────────────────────────────────────────────────────

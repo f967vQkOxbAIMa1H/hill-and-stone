@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description:
-    "Licensed and insured home repair, carpentry, drywall, painting and exterior work in Fayetteville, Springdale, Rogers and Bentonville.",
+    "Hill & Stone (Hillstone) Home Company: licensed and insured minor home repair, carpentry, drywall, painting and exterior work in Fayetteville, Springdale, Rogers and Bentonville.",
   // Images come from app/opengraph-image.tsx; pages inherit these unless they override.
   openGraph: {
     type: "website",

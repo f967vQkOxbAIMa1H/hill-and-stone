@@ -20,14 +20,27 @@ const lines: Line[] = [
   { type: "TRIP_FEE", description: "Trip fee", quantityMilli: 1000, unitPriceCents: 7500 },
 ];
 
-type Spec = { key: string; status: QuoteStatus; depositBps: number; validDays: number; paid?: ("deposit" | "full")[]; declined?: boolean };
+// Payment is due upon completion: quotes are accepted for free, then billed once the job is marked complete.
+// "legacy-deposit" is an older quote that took a 50% deposit, kept to check it can still pay its balance.
+type Spec = {
+  key: string;
+  status: QuoteStatus;
+  depositBps: number;
+  validDays: number;
+  accepted?: boolean;
+  paymentRequested?: boolean;
+  paid?: ("deposit" | "full")[];
+  declined?: boolean;
+};
 
 const specs: Spec[] = [
-  { key: "open-deposit", status: "SENT", depositBps: 5000, validDays: 30 },
+  { key: "open", status: "SENT", depositBps: 0, validDays: 30 },
   { key: "open-full", status: "SENT", depositBps: 0, validDays: 30 },
-  { key: "expired", status: "VIEWED", depositBps: 5000, validDays: -3 },
-  { key: "deposit-paid", status: "ACCEPTED", depositBps: 5000, validDays: 30, paid: ["deposit"] },
-  { key: "paid", status: "PAID", depositBps: 0, validDays: 30, paid: ["full"] },
+  { key: "expired", status: "VIEWED", depositBps: 0, validDays: -3 },
+  { key: "accepted", status: "ACCEPTED", depositBps: 0, validDays: 30, accepted: true },
+  { key: "payment-due", status: "ACCEPTED", depositBps: 0, validDays: 30, accepted: true, paymentRequested: true },
+  { key: "legacy-deposit", status: "ACCEPTED", depositBps: 5000, validDays: 30, accepted: true, paid: ["deposit"] },
+  { key: "paid", status: "PAID", depositBps: 0, validDays: 30, accepted: true, paymentRequested: true, paid: ["full"] },
   { key: "declined", status: "DECLINED", depositBps: 0, validDays: 30, declined: true },
   { key: "void", status: "VOID", depositBps: 0, validDays: 30 },
 ];
@@ -74,7 +87,8 @@ async function main() {
         depositBps: spec.depositBps,
         validUntil: new Date(now + spec.validDays * DAY),
         sentAt: new Date(now - 2 * DAY),
-        acceptedAt: spec.paid ? new Date(now - DAY) : null,
+        acceptedAt: spec.accepted ? new Date(now - 2 * DAY) : null,
+        paymentRequestedAt: spec.paymentRequested ? new Date(now - DAY) : null,
         declinedAt: spec.declined ? new Date(now - DAY) : null,
         declineReason: spec.declined ? "POSTPONED" : null,
         lineItems: { create: items },

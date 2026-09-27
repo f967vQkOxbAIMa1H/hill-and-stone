@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
+import { lookupZip } from "@/lib/service-area";
 import { quoteHref, type ServiceArea } from "@/lib/site";
 import { useSite } from "@/components/site-provider";
 
@@ -18,17 +19,15 @@ export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
   function check(e: React.FormEvent) {
     e.preventDefault();
     const value = zip.trim();
-    if (!/^\d{5}$/.test(value)) {
-      setResult({ tone: "no", message: "Enter a 5-digit ZIP code, like 72712." });
-      return;
-    }
-    const match = areas.find((a) => a.zips.includes(value));
-    if (match) {
+    const r = lookupZip(value, areas);
+    if (r.status === "invalid") {
+      setResult({ tone: "no", message: "Enter a 5-digit ZIP code, like 72701." });
+    } else if (r.status === "served") {
       setResult({
         tone: "yes",
-        message: `Yes, ${value} is ${match.name}. ${match.core ? "That's one of our primary areas." : "We work there regularly."}`,
+        message: `Yes, ${value} is ${r.area.name}. ${r.area.core ? "That's one of our primary areas." : "We work there regularly."}`,
       });
-    } else if (value.startsWith("727")) {
+    } else if (r.status === "nearby") {
       setResult({
         tone: "maybe",
         message: `${value} is in Northwest Arkansas but not on our list yet. Send a quote request or call and we'll confirm.`,
@@ -49,7 +48,7 @@ export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
           inputMode="numeric"
           autoComplete="postal-code"
           maxLength={5}
-          placeholder="72712"
+          placeholder="72701"
           value={zip}
           onChange={(e) => {
             setZip(e.target.value.replace(/\D/g, ""));

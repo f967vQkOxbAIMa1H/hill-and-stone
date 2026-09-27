@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { reviewSources, type ReviewInput } from "@/lib/admin/content-schema";
+import { isPublicRating, PUBLIC_MIN_RATING } from "@/lib/reviews";
 
 export function ReviewForm({ initial, projects }: { initial: ReviewInput; projects: { id: string; title: string }[] }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export function ReviewForm({ initial, projects }: { initial: ReviewInput; projec
     setNotice(null);
   };
   const err = (k: string) => errors[k];
+  const publicOk = isPublicRating(Number(v.rating));
   const aria = (k: string) => ({ "aria-invalid": err(k) ? true : undefined, "data-field": k });
 
   function submit(e: React.FormEvent) {
@@ -53,7 +55,11 @@ export function ReviewForm({ initial, projects }: { initial: ReviewInput; projec
           <Input id="city" value={v.city} onChange={(e) => set("city", e.target.value)} {...aria("city")} placeholder="Rogers" />
         </Field>
         <Field id="rating" label="Stars">
-          <Select id="rating" value={String(v.rating)} onChange={(e) => set("rating", Number(e.target.value))}>
+          <Select id="rating" value={String(v.rating)} onChange={(e) => {
+            const rating = Number(e.target.value);
+            set("rating", rating);
+            if (!isPublicRating(rating)) set("published", false);
+          }}>
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
                 {n} star{n === 1 ? "" : "s"}
@@ -99,7 +105,16 @@ export function ReviewForm({ initial, projects }: { initial: ReviewInput; projec
           data-field="permission"
         />
         {err("permission") && <p className="text-sm font-medium text-danger-700">{err("permission")}</p>}
-        <Checkbox id="published" label="Published" hint="Shows on the Reviews page and, if featured, the home page." checked={v.published} onChange={(e) => set("published", e.target.checked)} />
+        <Checkbox
+          id="published"
+          label="Published"
+          hint={publicOk ? "Shows on the Reviews page and, if featured, the home page." : `Reviews under ${PUBLIC_MIN_RATING} stars stay private. They're never shown on the site.`}
+          checked={!!v.published && publicOk}
+          disabled={!publicOk}
+          onChange={(e) => set("published", e.target.checked)}
+          data-field="published"
+        />
+        {err("published") && <p className="text-sm font-medium text-danger-700">{err("published")}</p>}
         <Checkbox id="featured" label="Featured" hint="Shown first and large on the home page." checked={v.featured} onChange={(e) => set("featured", e.target.checked)} />
       </fieldset>
 

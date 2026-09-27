@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Lock, Mail, Phone } from "lucide-react";
+import { CalendarCheck, CheckCircle2, Lock, Mail, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,18 +8,14 @@ import { Textarea } from "@/components/ui/field";
 import { RadioTiles } from "@/components/ui/radio-tiles";
 import { track } from "@/lib/analytics";
 import { formatCents } from "@/lib/money";
-import { declineReasons, type DeclineReason, type PaymentOption, type PortalState } from "@/lib/quotes/state";
+import { declineReasons, type DeclineReason, type PortalState } from "@/lib/quotes/state";
 import { useSite } from "@/components/site-provider";
-import { cn } from "@/lib/utils";
 
 export type ActionProps = {
   token: string;
   number: number;
   state: PortalState;
   totalCents: number;
-  /** e.g. "Deposit (50%)"; null when the quote is paid in one go. */
-  depositLabel: string | null;
-  depositCents: number;
   balanceCents: number;
   payments: { id: string; amountCents: number; paidAt: string; method: string; receiptUrl: string | null }[];
   declinedAt: string | null;
@@ -35,7 +31,8 @@ export function QuoteActions(props: ActionProps) {
     <>
       <div id="pay" className="scroll-mt-6 rounded-panel bg-navy-950 p-6 text-stone-50 sm:p-8">
         {state === "open" && <OpenPanel {...props} />}
-        {state === "partially_paid" && <BalancePanel {...props} />}
+        {state === "accepted" && <AcceptedPanel {...props} />}
+        {state === "payment_due" && <PaymentDuePanel {...props} />}
         {state === "paid" && <PaidPanel {...props} />}
         {state === "declined" && (
           <StatusPanel title="You declined this quote" body={`Declined on ${props.declinedAt ? fmtDate(props.declinedAt) : "an earlier date"}. Thanks for letting us know. If you change your mind, contact us and we'll reopen it or put together a new one.`} number={props.number} />
@@ -48,16 +45,16 @@ export function QuoteActions(props: ActionProps) {
         )}
       </div>
 
-      {(state === "open" || state === "partially_paid") && (
+      {(state === "open" || state === "payment_due") && (
         // Phones: keep the next step in reach while reading the breakdown.
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-navy-800 bg-navy-950 px-5 py-3 text-stone-50 lg:hidden">
           <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-navy-300">{state === "open" ? "Quote total" : "Balance due"}</p>
+              <p className="text-sm text-navy-300">{state === "open" ? "Quote total" : "Amount due"}</p>
               <p className="font-wide text-xl font-extrabold tabular-nums">{formatCents(state === "open" ? props.totalCents : props.balanceCents)}</p>
             </div>
             <a href="#pay" className={buttonVariants({ size: "md" })}>
-              {state === "open" ? "Review and pay" : "Pay balance"}
+              {state === "open" ? "Review and accept" : "Pay now"}
             </a>
           </div>
         </div>
@@ -68,32 +65,23 @@ export function QuoteActions(props: ActionProps) {
 
 // ─── States ─────────────────────────────────────────────────────────────────
 
-function OpenPanel({ token, totalCents, depositLabel, depositCents }: ActionProps) {
-  const hasDeposit = depositLabel !== null;
-  const [option, setOption] = useState<PaymentOption>(hasDeposit ? "deposit" : "full");
-  const amount = option === "deposit" ? depositCents : totalCents;
+function OpenPanel({ token, totalCents }: ActionProps) {
   const decline = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <h2 className="font-semiwide text-lg font-bold">Accept this quote</h2>
-      {hasDeposit ? (
-        <fieldset className="mt-5">
-          <legend className="text-sm text-navy-300">How much would you like to pay now?</legend>
-          <div className="mt-2 flex flex-col gap-2">
-            <PayOption name="pay" checked={option === "deposit"} onChange={() => setOption("deposit")} label={depositLabel!} amount={depositCents} note="Balance due when the work is done" />
-            <PayOption name="pay" checked={option === "full"} onChange={() => setOption("full")} label="Pay in full" amount={totalCents} note="Nothing more to pay later" />
-          </div>
-        </fieldset>
-      ) : (
-        <div className="mt-5">
-          <p className="text-sm text-navy-300">Amount due</p>
-          <p className="font-wide text-4xl font-extrabold tabular-nums">{formatCents(totalCents)}</p>
-        </div>
-      )}
+      <div className="mt-5">
+        <p className="text-sm text-navy-300">Quote total</p>
+        <p className="font-wide text-4xl font-extrabold tabular-nums">{formatCents(totalCents)}</p>
+      </div>
+      <p className="mt-4 rounded-control border border-navy-800 px-4 py-3 text-sm text-navy-300">
+        <span className="font-semibold text-stone-50">Nothing to pay today.</span> Payment is due when the work is complete and
+        you&apos;re happy with it. No deposit, no payment plan.
+      </p>
 
-      <PayButton token={token} option={option} amountCents={amount} label={`Accept and pay ${formatCents(amount)}`} />
+      <AcceptButton token={token} />
       <p className="mt-3 text-sm text-navy-300">By accepting, you approve the scope and price in this quote.</p>
 
       <div className="mt-6 border-t border-navy-800 pt-5">
@@ -111,23 +99,41 @@ function OpenPanel({ token, totalCents, depositLabel, depositCents }: ActionProp
   );
 }
 
-function BalancePanel({ token, balanceCents, totalCents, payments }: ActionProps) {
+function AcceptedPanel({ totalCents }: ActionProps) {
   return (
     <>
       <p className="inline-flex items-center gap-2 text-sm font-semibold text-copper-500">
         <CheckCircle2 aria-hidden className="size-4" />
         Accepted
       </p>
-      <h2 className="mt-2 font-semiwide text-lg font-bold">Deposit received</h2>
+      <h2 className="mt-2 font-semiwide text-lg font-bold">You&apos;re on our schedule</h2>
+      <p className="mt-3 text-navy-300">We&apos;ll be in touch to confirm your start date.</p>
+      <div className="mt-5 flex gap-3 border-t border-navy-800 pt-5">
+        <CalendarCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-copper-500" />
+        <p className="text-sm text-navy-300">
+          <span className="font-semibold text-stone-50">Nothing is due yet.</span> Once the work is done and we&apos;ve walked it with
+          you, we&apos;ll email a link to pay the {formatCents(totalCents)} total here by card or Apple Pay.
+        </p>
+      </div>
+    </>
+  );
+}
+
+function PaymentDuePanel({ token, balanceCents, totalCents, payments }: ActionProps) {
+  return (
+    <>
+      <p className="inline-flex items-center gap-2 text-sm font-semibold text-copper-500">
+        <CheckCircle2 aria-hidden className="size-4" />
+        Work complete
+      </p>
+      <h2 className="mt-2 font-semiwide text-lg font-bold">Payment due</h2>
       <PaymentList payments={payments} />
       <div className="mt-5 flex items-baseline justify-between gap-4 border-t border-navy-800 pt-4">
-        <p className="text-navy-300">Balance due</p>
+        <p className="text-navy-300">Amount due</p>
         <p className="font-wide text-3xl font-extrabold tabular-nums">{formatCents(balanceCents)}</p>
       </div>
-      <p className="mt-1 text-sm text-navy-300">
-        Of {formatCents(totalCents)} total. It&apos;s due when the work is done; you can also pay it now.
-      </p>
-      <PayButton token={token} option="balance" amountCents={balanceCents} label={`Pay remaining ${formatCents(balanceCents)}`} variant="outline-light" />
+      {balanceCents < totalCents && <p className="mt-1 text-sm text-navy-300">Of {formatCents(totalCents)} total.</p>}
+      <PayButton token={token} amountCents={balanceCents} label={`Pay ${formatCents(balanceCents)}`} />
     </>
   );
 }
@@ -168,31 +174,42 @@ function StatusPanel({ title, body, number, ask = "Contact us" }: { title: strin
 
 // ─── Pieces ─────────────────────────────────────────────────────────────────
 
-function PayOption({ name, checked, onChange, label, amount, note }: { name: string; checked: boolean; onChange: () => void; label: string; amount: number; note: string }) {
+function AcceptButton({ token }: { token: string }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function accept() {
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/quotes/${token}/accept`, { method: "POST" });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Your response didn't save. Try again.");
+      track("quote_accepted");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Your response didn't save. Try again.");
+      setPending(false);
+    }
+  }
+
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center justify-between gap-4 rounded-control border px-4 py-3 transition-colors",
-        "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500",
-        checked ? "border-copper-500 bg-navy-900" : "border-navy-700 hover:border-navy-400",
+    <div className="mt-6">
+      <Button type="button" size="lg" onClick={accept} disabled={pending} className="w-full whitespace-normal text-center">
+        <CheckCircle2 aria-hidden />
+        {pending ? "Accepting…" : "Accept quote"}
+      </Button>
+      {error && (
+        <p role="alert" className="mt-3 rounded-control bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
+          {error}
+        </p>
       )}
-    >
-      <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
-      <span className="flex items-center gap-3">
-        <span aria-hidden className={cn("flex size-4 shrink-0 items-center justify-center rounded-full border-2", checked ? "border-copper-500" : "border-navy-400")}>
-          {checked && <span className="size-2 rounded-full bg-copper-500" />}
-        </span>
-        <span>
-          <span className="block font-semibold">{label}</span>
-          <span className="block text-sm text-navy-300">{note}</span>
-        </span>
-      </span>
-      <span className="font-wide text-lg font-extrabold tabular-nums">{formatCents(amount)}</span>
-    </label>
+    </div>
   );
 }
 
-function PayButton({ token, option, label, amountCents, variant = "primary" }: { token: string; option: PaymentOption; label: string; amountCents: number; variant?: "primary" | "outline-light" }) {
+function PayButton({ token, label, amountCents }: { token: string; label: string; amountCents: number }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -202,12 +219,10 @@ function PayButton({ token, option, label, amountCents, variant = "primary" }: {
     try {
       const res = await fetch(`/api/quotes/${token}/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ option }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout didn't open. Try again.");
-      track("begin_checkout", { currency: "USD", value: amountCents / 100, payment_option: option });
+      track("begin_checkout", { currency: "USD", value: amountCents / 100 });
       window.location.assign(data.url);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout didn't open. Try again.");
@@ -217,11 +232,11 @@ function PayButton({ token, option, label, amountCents, variant = "primary" }: {
 
   return (
     <div className="mt-6">
-      <Button type="button" size="lg" variant={variant} onClick={pay} disabled={pending} className="w-full whitespace-normal text-center">
+      <Button type="button" size="lg" onClick={pay} disabled={pending} className="w-full whitespace-normal text-center">
         <Lock aria-hidden />
         {pending ? "Opening secure checkout…" : label}
       </Button>
-      <p className="mt-3 text-sm text-navy-300">Secure checkout by Stripe. Pay by card, Apple Pay or Cash App Pay.</p>
+      <p className="mt-3 text-sm text-navy-300">Secure checkout by Stripe. Pay by card or Apple Pay.</p>
       {error && (
         <p role="alert" className="mt-3 rounded-control bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
           {error}

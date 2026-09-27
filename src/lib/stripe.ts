@@ -22,7 +22,9 @@ export function getStripe(): Stripe | null {
 }
 
 /**
- * Card covers Visa, Mastercard, American Express and Discover, and Checkout shows
- * Apple Pay and Google Pay automatically on supported devices. Cash App Pay is its own type.
+ * Standard cards and Apple Pay. "card" covers Visa, Mastercard, American Express and Discover, and hosted
+ * Checkout shows Apple Pay (and Google Pay) automatically on supported devices; no domain verification is
+ * needed for hosted Checkout. Apple Pay must be enabled under Settings > Payment methods in the Stripe dashboard.
+ * Payouts, receipts and dispute notices go to the Stripe account's email: set it to the business inbox.
  */
-export const PAYMENT_METHOD_TYPES = ["card", "cashapp"] as const;
+export const PAYMENT_METHOD_TYPES = ["card"] as const;

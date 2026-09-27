@@ -89,63 +89,77 @@ async function clickPay(page, label) {
 
 try {
   // ── Open quote: document renders ────────────────────────────
-  let page = await open(quotes["open-deposit"]);
+  let page = await open(quotes.open);
   let body = await text(page);
   check("open quote shows title, badge and customer", body.includes("Front door trim replacement") && body.includes("Awaiting your approval") && body.includes("Prepared for"));
   const rows = await page.$$eval("table tbody tr td:last-child", (els) => els.length);
   check("itemized breakdown lists all 5 line items", rows === 5, `${rows} rows`);
   check("groups labor, materials and trip fee", ["Labor", "Materials", "Trip fee"].every((g) => body.includes(g)));
-  check("shows valid-until date and deposit", body.includes("Valid until") && body.includes("Deposit to start (50%)"));
+  check("shows valid-until date and payment on completion", body.includes("Valid until") && body.includes("Due on completion, no deposit") && !body.includes("Deposit to start"));
+  check("says nothing is due today", body.includes("Nothing to pay today"));
   const photoCount = await page.$$eval("#photos-heading ~ ul img", (els) => els.length);
   const photoStatus = photoCount ? (await fetch(await page.$eval("#photos-heading ~ ul img", (el) => el.src))).status : 0;
   check("request photos load through the token-scoped route", photoCount > 0 && photoStatus === 200, `${photoCount} photos, HTTP ${photoStatus}`);
-  await shot(page, "open-deposit");
+  await shot(page, "open");
 
-  // ── Pay deposit via Checkout, then webhook ─────────────────
-  const openToken = tokenOf(quotes["open-deposit"]);
+  // ── Accept: no payment taken ────────────────────────────────
+  const openToken = tokenOf(quotes.open);
   const openQuote = await quoteRow(openToken);
   check("first view marks quote VIEWED", openQuote.status === "VIEWED", openQuote.status);
-  let checkoutUrl = await clickPay(page, "Accept and pay $497");
-  check("accept sends the browser to Stripe Checkout", !!checkoutUrl, checkoutUrl?.slice(0, 40));
-  let pays = await payments(openQuote.id);
-  check("a pending deposit payment is recorded", pays.length === 1 && pays[0].status === "PENDING" && pays[0].isDeposit);
+  const earlyPay = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST" });
+  check("an open quote can't be paid up front", earlyPay.status === 409, `HTTP ${earlyPay.status}`);
+  await page.click("button::-p-text(Accept quote)");
+  await page.waitForFunction(() => document.body.innerText.includes("on our schedule"), { timeout: 10000 });
+  check("accepting charges nothing", (await payments(openQuote.id)).length === 0 && (await quoteRow(openToken)).status === "ACCEPTED");
+  body = await text(page);
+  check("accepted state says payment is due on completion", body.includes("Nothing is due yet") && !body.includes("Pay "));
+  await shot(page, "accepted");
+  await page.close();
+  const stillEarly = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST" });
+  check("an accepted quote can't be paid before the job is complete", stillEarly.status === 409, `HTTP ${stillEarly.status}`);
+  const acceptEmail = (await db.query(`select subject from "EmailLog" where "quoteId" = $1 and type = 'QUOTE_ACCEPTED_NOTICE'`, [openQuote.id])).rows[0];
+  check("contractor is told the quote was accepted", !!acceptEmail?.subject.includes("accepted"), acceptEmail?.subject);
+
+  // ── Job complete (the admin "Mark complete" step, done directly here), then pay ─
+  await db.query(`update "Quote" set "paymentRequestedAt" = now() where id = $1`, [openQuote.id]);
+  page = await open(quotes.open);
+  body = await text(page);
+  check("payment-due state shows the full amount", body.includes("Work complete") && body.includes("Amount due") && body.includes("Pay $994"));
+  let checkoutUrl = await clickPay(page, "Pay $994");
+  check("pay sends the browser to Stripe Checkout", !!checkoutUrl, checkoutUrl?.slice(0, 40));
+  const pays = await payments(openQuote.id);
+  check("a pending full payment is recorded", pays.length === 1 && pays[0].status === "PENDING" && !pays[0].isDeposit && pays[0].amountCents === (await db.query(`select "totalCents" from "Quote" where id = $1`, [openQuote.id])).rows[0].totalCents, JSON.stringify(pays[0]));
   await page.close();
 
   let { session, result } = await completeCheckout(openQuote.id);
-  check("webhook fulfills the deposit", result.status === 200 && result.body.result === "fulfilled", JSON.stringify(result.body));
+  check("webhook fulfills the payment", result.status === 200 && result.body.result === "fulfilled", JSON.stringify(result.body));
   const replay = await sendWebhook("checkout.session.completed", session);
   check("replayed webhook is idempotent", replay.status === 200 && replay.body.result === "already", replay.body.result);
-  check("quote is ACCEPTED after the deposit", (await quoteRow(openToken)).status === "ACCEPTED");
+  check("quote is PAID", (await quoteRow(openToken)).status === "PAID");
 
-  page = await open(`${quotes["open-deposit"]}?session_id=${session.id}`);
+  page = await open(`${quotes.open}?session_id=${session.id}`);
   body = await text(page);
-  check("return from Checkout shows payment received", body.includes("Payment received"));
-  check("deposit-paid state shows the balance", body.includes("Deposit received") && body.includes("Balance due"));
-  await shot(page, "deposit-paid");
-
-  // Tampering: asking for "full" after a deposit must fail; only the balance is payable.
-  const tamper = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ option: "full" }) });
-  check("server refuses to charge the full amount twice", tamper.status === 409, `HTTP ${tamper.status}`);
-
-  checkoutUrl = await clickPay(page, "Pay remaining");
-  check("balance payment opens Checkout", !!checkoutUrl);
-  await page.close();
-  ({ result } = await completeCheckout(openQuote.id));
-  check("webhook fulfills the balance", result.body.result === "fulfilled");
-  check("quote is PAID once the balance is in", (await quoteRow(openToken)).status === "PAID");
-  page = await open(quotes["open-deposit"]);
-  body = await text(page);
-  check("paid state lists both payments", body.includes("Paid in full") && (body.match(/Visa ending|Card/g) ?? []).length >= 2);
+  check("return from Checkout shows payment received and paid in full", body.includes("Payment received") && body.includes("Paid in full"));
   await shot(page, "paid-after-flow");
   await page.close();
+  const tamper = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST" });
+  check("server refuses to charge a paid quote again", tamper.status === 409, `HTTP ${tamper.status}`);
 
   const emails = (await db.query(`select type from "EmailLog" where "quoteId" = $1`, [openQuote.id])).rows.map((r) => r.type);
-  check("receipts and accepted notices were sent for each payment", emails.filter((t) => t === "PAYMENT_RECEIPT").length === 2 && emails.includes("QUOTE_ACCEPTED_NOTICE"), emails.join(","));
+  check("receipt and business notices were sent", emails.filter((t) => t === "PAYMENT_RECEIPT").length === 1 && emails.filter((t) => t === "QUOTE_ACCEPTED_NOTICE").length === 2, emails.join(","));
+
+  // ── Legacy deposit quote can still pay its balance ─────────
+  page = await open(quotes["legacy-deposit"]);
+  body = await text(page);
+  check("legacy deposit quote shows the balance due", body.includes("Payment due") && /Of \$994\.\d\d total/.test(body));
+  checkoutUrl = await clickPay(page, "Pay $497");
+  check("legacy balance opens Checkout", !!checkoutUrl);
+  await page.close();
 
   // ── Decline ─────────────────────────────────────────────────
   page = await open(quotes["open-full"]);
   body = await text(page);
-  check("no-deposit quote offers a single full payment", body.includes("Amount due") && !body.includes("Deposit ("));
+  check("open quote offers accept, not payment", body.includes("Accept quote") && !body.includes("Deposit ("));
   await page.click("button::-p-text(Decline this quote)");
   await page.waitForFunction(() => document.querySelector("dialog[open]"));
   await new Promise((r) => setTimeout(r, 250));
@@ -164,13 +178,14 @@ try {
   check("contractor is notified of the decline", declineEmail === 1);
   await shot(page, "declined");
   await page.close();
-  const payDeclined = await fetch(`${BASE}/api/quotes/${tokenOf(quotes["open-full"])}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ option: "full" }) });
+  const payDeclined = await fetch(`${BASE}/api/quotes/${tokenOf(quotes["open-full"])}/checkout`, { method: "POST" });
   check("a declined quote can't be paid", payDeclined.status === 409);
 
   // ── Other states ───────────────────────────────────────────
   for (const [key, expected] of [
     ["expired", "This quote has expired"],
-    ["deposit-paid", "Deposit received"],
+    ["accepted", "Nothing is due yet"],
+    ["payment-due", "Payment due"],
     ["paid", "Paid in full"],
     ["void", "This quote was withdrawn"],
     ["declined", "You declined this quote"],
@@ -181,7 +196,7 @@ try {
     if (key === "expired") await shot(page, "expired");
     await page.close();
   }
-  const payExpired = await fetch(`${BASE}/api/quotes/${tokenOf(quotes.expired)}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ option: "full" }) });
+  const payExpired = await fetch(`${BASE}/api/quotes/${tokenOf(quotes.expired)}/checkout`, { method: "POST" });
   check("an expired quote can't be paid", payExpired.status === 409);
 
   // ── Invalid links and security ─────────────────────────────
@@ -202,11 +217,11 @@ try {
 
   // ── Mobile ─────────────────────────────────────────────────
   const fresh = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
-  page = await open(fresh["open-deposit"], 390, 844);
+  page = await open(fresh.open, 390, 844);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check("portal has no horizontal scroll at 390px", !overflow);
   const bar = await page.$eval("a[href='#pay']", (el) => getComputedStyle(el.closest("div.fixed")).position).catch(() => null);
-  check("phones get a fixed pay bar", bar === "fixed");
+  check("phones get a fixed accept bar", bar === "fixed");
   await shot(page, "mobile-open", false);
   await shot(page, "mobile-open-full");
   await page.close();

@@ -11,10 +11,10 @@ import puppeteer from "puppeteer-core";
 config({ quiet: true });
 const BASE = process.env.BASE_URL ?? "http://localhost:3100";
 const SHOTS = process.env.SHOTS ?? "./.e2e-shots/team";
-const OWNER_EMAIL = "e2e.team.owner@hillandstone.com";
+const OWNER_EMAIL = "e2e.team.owner@hillstone.com";
 const OWNER_PASSWORD = `e2e-${randomBytes(9).toString("base64url")}`;
 const tag = randomBytes(2).toString("hex");
-const TECH_EMAIL = `e2e.tech.${tag}@hillandstone.com`;
+const TECH_EMAIL = `e2e.tech.${tag}@hillstone.com`;
 const TECH_NEW_PASSWORD = `my own sturdy phrase ${tag}`;
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
@@ -209,7 +209,15 @@ try {
   const strip = (h) => h.replaceAll("<!-- -->", "");
   const home = strip(await (await fetch(`${BASE}/`)).text());
   check("new phone and hours show site-wide right away", home.includes("(479) 200-4455") && home.includes("tel:+14792004455") && home.includes("Mon–Sat 7am–5pm") && !home.includes("555-0142"));
-  check("license and insurance appear in the footer", home.includes("Arkansas home improvement license 0123456") && home.includes("Insured: $2,000,000 per occurrence general liability"));
+  check(
+    "license number and insurer stay hidden until made public",
+    home.includes("Licensed and insured for minor home repair") && !home.includes("0123456") && !home.includes("Insured: $2,000,000"),
+  );
+  await owner.click("#credentialsPublic");
+  await owner.click("button::-p-text(Save settings)");
+  await owner.waitForFunction(() => document.body.innerText.includes("The site shows the new details now"));
+  const shown = strip(await (await fetch(`${BASE}/`)).text());
+  check("license and insurance appear in the footer once public", shown.includes("Arkansas license 0123456") && shown.includes("Insured: $2,000,000 per occurrence general liability"));
   const ld = JSON.parse(home.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1] ?? "{}");
   check("a real phone number goes into structured data", ld.telephone === "+14792004455" && ld.sameAs?.[0]?.includes("g.page"));
   check("Google review buttons appear once the link is set", strip(await (await fetch(`${BASE}/reviews`)).text()).includes("Read our reviews on Google"));

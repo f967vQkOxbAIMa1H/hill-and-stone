@@ -226,37 +226,14 @@ export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: Qu
         </section>
 
         <section aria-labelledby="tax-h" className="space-y-4">
-          <h2 id="tax-h" className="font-bold">Tax and deposit</h2>
-          <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+          <h2 id="tax-h" className="font-bold">Tax and payment</h2>
+          <div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-start">
             <Field id="taxRatePercent" label="Sales tax (%)" error={err("taxRatePercent")}>
               <Input id="taxRatePercent" data-field="taxRatePercent" inputMode="decimal" value={form.taxRatePercent} onChange={(e) => set("taxRatePercent", e.target.value)} aria-invalid={!!err("taxRatePercent") || undefined} />
             </Field>
-            <fieldset>
-              <legend className="text-sm font-semibold">Deposit to start</legend>
-              <div className="mt-1.5 flex flex-wrap items-start gap-2">
-                {(["none", "percent", "fixed"] as const).map((m) => (
-                  <label key={m} className="flex h-11 cursor-pointer items-center gap-2 rounded-control border border-navy-300 bg-white px-3 has-[:checked]:border-navy-950 has-[:checked]:bg-navy-950 has-[:checked]:text-stone-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500">
-                    <input type="radio" name="depositMode" value={m} checked={form.depositMode === m} onChange={() => set("depositMode", m)} className="sr-only" />
-                    {m === "none" ? "No deposit" : m === "percent" ? "Percent" : "Fixed amount"}
-                  </label>
-                ))}
-                {form.depositMode === "percent" && (
-                  <div className="relative w-28">
-                    <label htmlFor="depositPercent" className="sr-only">Deposit percent</label>
-                    <Input id="depositPercent" data-field="depositPercent" inputMode="numeric" value={form.depositPercent} onChange={(e) => set("depositPercent", e.target.value)} className="pr-8" aria-invalid={!!err("depositPercent") || undefined} />
-                    <span aria-hidden className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-navy-600">%</span>
-                  </div>
-                )}
-                {form.depositMode === "fixed" && (
-                  <div className="relative w-36">
-                    <label htmlFor="depositFixed" className="sr-only">Deposit amount in dollars</label>
-                    <span aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-600">$</span>
-                    <Input id="depositFixed" data-field="depositFixed" inputMode="decimal" value={form.depositFixed} onChange={(e) => set("depositFixed", e.target.value)} className="pl-6" aria-invalid={!!err("depositFixed") || undefined} />
-                  </div>
-                )}
-              </div>
-              {(err("depositPercent") || err("depositFixed")) && <p className="mt-1.5 text-sm font-medium text-danger-700">{err("depositPercent") ?? err("depositFixed")}</p>}
-            </fieldset>
+            <p className="text-sm text-navy-600 sm:pt-7">
+              Payment is due on completion, with no deposit. The client accepts for free; mark the job complete on the quote page to send them the payment link.
+            </p>
           </div>
         </section>
 
@@ -286,7 +263,7 @@ export function QuoteBuilder({ lead, initial }: { lead: BuilderLead; initial: Qu
               <dt className="font-bold">Total</dt>
               <dd className="font-wide text-2xl font-extrabold" data-testid="builder-total">{formatCents(totals?.totalCents ?? 0)}</dd>
             </div>
-            {form.depositMode !== "none" && <Row term="Deposit due at approval" value={formatCents(totals?.depositCents ?? 0)} />}
+            <Row term="Due" value="On completion" />
           </dl>
           <div className="space-y-2 border-t border-navy-200 p-5">
             {notice && (

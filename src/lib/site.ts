@@ -14,13 +14,27 @@ import type { Settings } from "@/lib/settings/schema";
 /** Brand facts that change with a rebrand, not day to day. Edited here, in code. */
 export const brand = {
   name: "Hill & Stone",
-  legalName: "Hill & Stone Home Repair LLC",
+  /** Trade name until the LLC is registered; add "LLC" here once it is. */
+  legalName: "Hill & Stone Home Company",
+  /**
+   * Primary domain ("Hillstone"). Not purchased yet: set the real one here and NEXT_PUBLIC_APP_URL
+   * once it is. Used for the default contact email; `npm run check:launch` flags it until confirmed.
+   */
+  domain: "hillstone.com",
+  domainConfirmed: false,
   tagline: "Reliable Northwest Arkansas home repairs, done right.",
-  licenseLabel: "Arkansas home improvement license",
-  /** Photos in /public/images for the About page. Missing photos show a brand graphic instead. */
+  /** What the site says about licensing, with or without the details below. */
+  licenseStatement: "Licensed and insured for minor home repair",
+  /** Prefix for the license number, shown only once license details are made public in settings. */
+  licenseLabel: "Arkansas license",
+  /**
+   * Photos in /public/images. Each missing photo keeps its reserved frame with a brand graphic instead.
+   * founder = Tucker, coFounder = his co-founder (Our Story section on the home and About pages).
+   */
   photos: {
-    team: null as string | null, // "/images/team.jpg"
-    founder: null as string | null,
+    founder: null as string | null, // "/images/founder.jpg"
+    coFounder: null as string | null, // "/images/co-founder.jpg"
+    team: null as string | null,
     crew: null as string | null,
   },
 };
@@ -29,10 +43,10 @@ export const brand = {
 export const defaultSettings: Settings = {
   contact: {
     phone: "(479) 555-0142", // fictional 555-01xx number: replace it
-    email: "hello@hillandstone.com",
+    email: `hello@${brand.domain}`,
     hours: "Mon–Fri 7am–6pm, Sat by appointment",
   },
-  license: { number: null },
+  license: { number: null, showPublicly: false },
   insurance: [
     { type: "General liability", detail: null },
     { type: "Workers' compensation", detail: null },
@@ -40,9 +54,9 @@ export const defaultSettings: Settings = {
   ],
   warrantyMonths: 12,
   googleReviewsUrl: null,
-  story: { founderName: null, foundedYear: null, hometown: null, crewSize: null, founderBackground: null },
+  story: { founderName: "Tucker", coFounderName: null, foundedYear: null, hometown: null, crewSize: null, founderBackground: null },
   policies: { replyBusinessDays: 1, coiBusinessDays: 2, backgroundRecheckYears: 2, confirmed: false },
-  quoteDefaults: { tripFee: "75", taxRatePercent: "9.75", depositPercent: "50", validDays: 30, confirmed: false },
+  quoteDefaults: { tripFee: "75", taxRatePercent: "9.75", validDays: 30, confirmed: false },
 };
 
 /* ─── Derived values used by the site. ─── */
@@ -55,7 +69,11 @@ export const isPlaceholderPhone = (phone: string) => /555-?01\d\d$/.test(phone.r
 /** Everything pages, emails and components read, built from the current settings. */
 export function buildSite(settings: Settings) {
   const digits = settings.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
-  const insured = settings.insurance.filter((i): i is { type: Settings["insurance"][number]["type"]; detail: string } => !!i.detail);
+  // License numbers and insurer details are hidden until the owner makes them public in settings.
+  const credentialsPublic = settings.license.showPublicly;
+  const insured = credentialsPublic
+    ? settings.insurance.filter((i): i is { type: Settings["insurance"][number]["type"]; detail: string } => !!i.detail)
+    : [];
   const months = settings.warrantyMonths;
   return {
     name: brand.name,
@@ -66,8 +84,11 @@ export function buildSite(settings: Settings) {
     phoneIsPlaceholder: isPlaceholderPhone(settings.contact.phone),
     email: settings.contact.email,
     hours: settings.contact.hours,
+    domain: brand.domain,
+    licenseStatement: brand.licenseStatement,
     licenseLabel: brand.licenseLabel,
-    licenseNumber: settings.license.number,
+    /** Null unless a number is saved and license details are public. */
+    licenseNumber: credentialsPublic ? settings.license.number : null,
     /** Insurance rows that have real details. */
     insurance: insured,
     /** Short line for footers, or null when no details are set. */
@@ -102,7 +123,8 @@ export type ServiceArea = {
 };
 
 export const serviceAreas: ServiceArea[] = [
-  { slug: "fayetteville", name: "Fayetteville", county: "Washington", core: true, zips: ["72701", "72703", "72704"], lat: 36.0626, lng: -94.1574 },
+  // 72702 is Fayetteville's PO-box ZIP; customers sometimes give it as their address.
+  { slug: "fayetteville", name: "Fayetteville", county: "Washington", core: true, zips: ["72701", "72702", "72703", "72704"], lat: 36.0626, lng: -94.1574 },
   { slug: "springdale", name: "Springdale", county: "Washington", core: true, zips: ["72762", "72764"], lat: 36.1867, lng: -94.1288 },
   { slug: "rogers", name: "Rogers", county: "Benton", core: true, zips: ["72756", "72758"], lat: 36.332, lng: -94.1185 },
   { slug: "bentonville", name: "Bentonville", county: "Benton", core: true, zips: ["72712", "72713"], lat: 36.3729, lng: -94.2088 },

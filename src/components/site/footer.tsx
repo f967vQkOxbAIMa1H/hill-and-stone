@@ -79,7 +79,7 @@ export async function Footer() {
       <div className="border-t border-navy-800">
         <Container className="flex flex-col gap-2 py-6 text-sm text-navy-400 md:flex-row md:justify-between">
           <p>
-            {[site.licenseNumber && `${site.licenseLabel} ${site.licenseNumber}.`, site.insuranceSummary ? `${site.insuranceSummary}.` : "Licensed and insured."]
+            {[`${site.licenseStatement}.`, site.licenseNumber && `${site.licenseLabel} ${site.licenseNumber}.`, site.insuranceSummary && `${site.insuranceSummary}.`]
               .filter(Boolean)
               .join(" ")}
           </p>

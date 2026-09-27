@@ -1,5 +1,5 @@
 // FAQ content. Answers are plain strings so they also feed the FAQPage structured data.
-// TODO(owner): these describe business policies (deposits, trip fee, warranty terms,
+// TODO(owner): these describe business policies (payment on completion, trip fee, warranty terms,
 // scheduling). Confirm or correct every answer before launch.
 
 import type { SiteConfig } from "@/lib/site";
@@ -21,7 +21,7 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
       },
       {
         q: "How do you price the work?",
-        a: "Every quote is itemized: labor, materials and a trip fee, listed separately. You see exactly what you're paying for before you approve anything.",
+        a: "Every job is priced on its own, so we don't post rates or a price list. You get a custom written quote, itemized into labor, materials and a trip fee, or we price it during a maintenance visit. You see exactly what you're paying for before you approve anything.",
       },
       {
         q: "What's the trip fee for?",
@@ -65,19 +65,19 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
   },
   {
     slug: "payment",
-    title: "Payment and deposits",
+    title: "Payment",
     items: [
       {
         q: "How do I pay?",
-        a: "You approve your quote online and pay through a secure checkout. We accept Visa, Mastercard, American Express, Discover, Apple Pay and Cash App Pay.",
+        a: "You accept your quote online for free. When the job is done, we email a link to pay through a secure checkout. We accept Visa, Mastercard, American Express, Discover and Apple Pay.",
       },
       {
         q: "Do you require a deposit?",
-        a: "Smaller repairs are paid in full when the work is done. Larger projects need a deposit at approval, usually to cover materials we order for your job. The quote shows the deposit amount before you approve.",
+        a: "No. There are no deposits and no payment plans. Payment is due once, upon completion of the work.",
       },
       {
-        q: "When is the final payment due?",
-        a: "After we walk the finished job together and you're satisfied. We send the final invoice with a payment link the same day.",
+        q: "When is payment due?",
+        a: "Upon completion, after we walk the finished job together and you're satisfied. We send the invoice with a payment link the same day.",
       },
       {
         q: "Is paying online safe?",

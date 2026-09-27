@@ -36,24 +36,9 @@ export const quoteDraftSchema = z
       .trim()
       .regex(/^\d{1,2}(\.\d{1,3})?$/, "Enter a rate like 9.75.")
       .refine((v) => Number(v) <= 20, "That tax rate looks too high."),
-    depositMode: z.enum(["none", "percent", "fixed"]),
-    depositPercent: z.string().trim().optional().default(""),
-    depositFixed: z.string().trim().optional().default(""),
     lines: z.array(lineSchema).min(1, "Add at least one line item.").max(60),
   })
   .superRefine((q, ctx) => {
-    if (q.depositMode === "percent") {
-      const n = Number(q.depositPercent);
-      if (!/^\d{1,3}$/.test(q.depositPercent) || n < 1 || n > 99) {
-        ctx.addIssue({ code: "custom", path: ["depositPercent"], message: "Enter a whole percent from 1 to 99." });
-      }
-    }
-    if (q.depositMode === "fixed") {
-      const cents = toCents(q.depositFixed);
-      const { totalCents } = computeTotals(q);
-      if (cents === null || cents <= 0) ctx.addIssue({ code: "custom", path: ["depositFixed"], message: "Enter a deposit amount like 250." });
-      else if (cents >= totalCents) ctx.addIssue({ code: "custom", path: ["depositFixed"], message: "The deposit must be less than the total." });
-    }
     if (computeTotals(q).totalCents <= 0) ctx.addIssue({ code: "custom", path: ["lines"], message: "The total must be more than $0." });
   });
 
@@ -85,17 +70,12 @@ export function toLineItems(lines: z.input<typeof lineSchema>[]) {
 
 export const taxBps = (percent: string) => Math.round(Number(percent || 0) * 100);
 
-/** Totals exactly as the server stores them. The editor uses this for its live preview. */
-export function computeTotals(q: Pick<QuoteDraftInput, "lines" | "taxRatePercent" | "depositMode" | "depositPercent" | "depositFixed">) {
+/**
+ * Totals exactly as the server stores them. The editor uses this for its live preview.
+ * No deposits: payment is due upon completion, so the whole total is billed when the job is done.
+ */
+export function computeTotals(q: Pick<QuoteDraftInput, "lines" | "taxRatePercent">) {
   const items = toLineItems(q.lines);
-  const depositBps = q.depositMode === "percent" ? Math.round(Number(q.depositPercent || 0) * 100) : 0;
-  const t = quoteTotals(items, taxBps(q.taxRatePercent), depositBps);
-  const fixed = q.depositMode === "fixed" ? toCents(q.depositFixed ?? "") : null;
-  return {
-    items,
-    ...t,
-    depositBps,
-    depositFixedCents: fixed,
-    depositCents: fixed !== null ? Math.min(fixed, t.totalCents) : q.depositMode === "percent" ? t.depositCents : 0,
-  };
+  const { subtotalCents, taxCents, totalCents } = quoteTotals(items, taxBps(q.taxRatePercent), 0);
+  return { items, subtotalCents, taxCents, totalCents, depositBps: 0, depositFixedCents: null };
 }

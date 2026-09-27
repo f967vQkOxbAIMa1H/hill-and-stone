@@ -22,7 +22,11 @@ export const settingsSchema = z.object({
     email: z.string().trim().toLowerCase().pipe(z.email("Enter an email like hello@yourdomain.com.")),
     hours: text(120).min(3, "Enter your hours, like Mon–Fri 7am–6pm."),
   }),
-  license: z.object({ number: nullableText(40) }),
+  /**
+   * License and insurance details stay off the site until `showPublicly` is ticked (after the LLC is set up
+   * with the City of Fayetteville and the state). The site always says "licensed and insured for minor home repair".
+   */
+  license: z.object({ number: nullableText(40), showPublicly: z.boolean().default(false) }),
   insurance: z
     .array(z.object({ type: z.enum(insuranceTypes), detail: nullableText(120) }))
     .length(insuranceTypes.length),
@@ -30,6 +34,7 @@ export const settingsSchema = z.object({
   googleReviewsUrl: nullableText(300).refine((v) => !v || /^https:\/\/\S+$/.test(v), "Use a full https:// link, or leave it blank."),
   story: z.object({
     founderName: nullableText(80),
+    coFounderName: nullableText(80),
     foundedYear: z
       .union([z.literal(""), z.null(), z.coerce.number().int().min(1950, "Use a year like 2019.").max(2100, "Use a year like 2019.")])
       .transform((v) => (v === "" || v === null ? null : v)),
@@ -52,11 +57,6 @@ export const settingsSchema = z.object({
       .trim()
       .regex(/^\d{1,2}(\.\d{1,3})?$/, "Enter a rate like 9.75.")
       .refine((v) => Number(v) <= 20, "That tax rate looks too high."),
-    depositPercent: z
-      .string()
-      .trim()
-      .regex(/^\d{1,2}$/, "Enter a whole percent from 1 to 99.")
-      .refine((v) => Number(v) >= 1, "Enter a whole percent from 1 to 99."),
     validDays: intIn(1, 120, "Quote validity"),
     confirmed: z.boolean(),
   }),

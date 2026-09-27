@@ -16,13 +16,17 @@ type SendArgs = {
   replyTo?: string;
   leadId?: string;
   quoteId?: string;
+  /** Extra headers, e.g. a category for inbox filters. */
+  headers?: Record<string, string>;
+  /** Resend tags (letters, numbers, _ and - only), for filtering in the Resend dashboard. */
+  tags?: { name: string; value: string }[];
 };
 
 /**
  * Sends through Resend and records every attempt in EmailLog.
  * Never throws: email failure must not fail the request that triggered it.
  */
-export async function sendEmail({ type, to, subject, html, text, replyTo, leadId, quoteId }: SendArgs) {
+export async function sendEmail({ type, to, subject, html, text, replyTo, leadId, quoteId, headers, tags }: SendArgs) {
   const log = await db.emailLog
     .create({ data: { type, to, subject, leadId, quoteId } })
     .catch((e) => (console.error("EmailLog create failed", e), null));
@@ -37,7 +41,7 @@ export async function sendEmail({ type, to, subject, html, text, replyTo, leadId
   }
 
   try {
-    const { data, error } = await resend.emails.send({ from: FROM, to, subject, html, text, replyTo });
+    const { data, error } = await resend.emails.send({ from: FROM, to, subject, html, text, replyTo, headers, tags });
     if (error) throw new Error(`${error.name}: ${error.message}`);
     await update({ status: "SENT", providerMessageId: data?.id });
     return { ok: true as const, id: data?.id };

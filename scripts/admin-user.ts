@@ -1,5 +1,5 @@
 // Creates or updates an admin login.
-// Usage: npx tsx scripts/admin-user.ts owner@hillandstone.com "Owner Name"   (prompts for a password)
+// Usage: npx tsx scripts/admin-user.ts owner@hillstone.com "Owner Name"   (prompts for a password)
 //        ADMIN_PASSWORD=... npx tsx scripts/admin-user.ts email "Name"      (non-interactive)
 import { config } from "dotenv";
 config({ quiet: true });

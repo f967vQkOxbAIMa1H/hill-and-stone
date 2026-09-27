@@ -16,7 +16,7 @@ import { env } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { stripTags } from "@/lib/sanitize";
-import { balanceCents, depositCents, paidCents, portalState } from "@/lib/quotes/state";
+import { balanceCents, canRequestPayment, paidCents } from "@/lib/quotes/state";
 import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
@@ -199,7 +199,6 @@ async function emailQuote(quote: Awaited<ReturnType<typeof loadQuoteForEmail>>) 
       address: a ? `${a.line1}${a.line2 ? `, ${a.line2}` : ""}, ${a.city}, ${a.state} ${a.postalCode}` : "",
       url: quoteLink(quote.publicToken),
       validUntil: quote.validUntil,
-      depositCents: depositCents(quote),
     })),
   });
 }
@@ -218,13 +217,18 @@ export async function resendQuote(quoteId: string) {
   return result.ok ? { ok: true } : { error: `The email didn't send (${result.error}). Copy the link and send it yourself.` };
 }
 
-/** Emails the client their remaining balance with a link to pay it on their quote. */
+/**
+ * Marks the job complete and emails the client a payment request with a link to pay on their quote.
+ * Payment is due upon completion, so this is what opens checkout. Safe to send again as a reminder.
+ */
 export async function requestBalancePayment(quoteId: string, note: string): Promise<{ ok: boolean; message: string }> {
   const site = await getSite();
   const admin = await requireCan("manageQuotes");
   const quote = await db.quote.findUnique({ where: { id: quoteId }, include: { customer: true, address: true, payments: true } });
   if (!quote) return { ok: false, message: "That quote no longer exists." };
-  if (portalState(quote) !== "partially_paid") return { ok: false, message: "Only accepted quotes with a balance due can be billed." };
+  if (!canRequestPayment(quote)) return { ok: false, message: "Only accepted quotes with a balance due can be billed." };
+  await db.quote.update({ where: { id: quoteId }, data: { paymentRequestedAt: quote.paymentRequestedAt ?? new Date() } });
+  if (quote.leadId) await db.lead.update({ where: { id: quote.leadId }, data: { status: "COMPLETED" } });
   const text = note.trim().slice(0, 1000) || null;
   const a = quote.address;
   const result = await sendEmail({
@@ -252,7 +256,7 @@ export async function requestBalancePayment(quoteId: string, note: string): Prom
   });
   revalidatePath(`/admin/quotes/${quoteId}`);
   return result.ok
-    ? { ok: true, message: `Balance request for ${formatCents(balanceCents(quote))} sent to ${quote.customer.email}.` }
+    ? { ok: true, message: `Payment request for ${formatCents(balanceCents(quote))} sent to ${quote.customer.email}.` }
     : { ok: false, message: `Logged, but the email didn't send (${result.error}). Copy the client link and send it yourself.` };
 }
 

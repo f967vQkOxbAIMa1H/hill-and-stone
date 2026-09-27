@@ -14,7 +14,7 @@ import { getLead, getQuoteForAdmin, type AdminQuote } from "@/lib/admin/queries"
 import { env } from "@/lib/env";
 import { getSite } from "@/lib/settings";
 import { formatCents } from "@/lib/money";
-import { balanceCents, depositCents, hasDeposit, paidCents, portalState } from "@/lib/quotes/state";
+import { balanceCents, canRequestPayment, depositCents, hasDeposit, paidCents, portalState } from "@/lib/quotes/state";
 import { declineReasons } from "@/lib/quotes/state";
 
 export async function generateMetadata({ params }: PageProps<"/admin/quotes/[id]">): Promise<Metadata> {
@@ -93,7 +93,8 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
             url={quote.status === "VOID" ? null : url}
             canResend={state === "open" && can(me.role, "manageQuotes")}
             canVoid={!["ACCEPTED", "PAID", "VOID"].includes(quote.status) && can(me.role, "voidQuotes")}
-            balanceDue={state === "partially_paid" && can(me.role, "manageQuotes") ? formatCents(balanceCents(quote)) : null}
+            balanceDue={canRequestPayment(quote) && can(me.role, "manageQuotes") ? formatCents(balanceCents(quote)) : null}
+            paymentRequested={state === "payment_due"}
             clientEmail={quote.customer.email}
           />
         </div>
@@ -135,7 +136,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
                   <tr><Spacer /><td className="px-4 whitespace-nowrap pt-3 text-right text-navy-600">Subtotal</td><td className="px-4 pt-3 text-right">{formatCents(quote.subtotalCents)}</td></tr>
                   <tr><Spacer /><td className="px-4 whitespace-nowrap text-right text-navy-600">Tax ({quote.taxRateBps / 100}%)</td><td className="px-4 text-right">{formatCents(quote.taxCents)}</td></tr>
                   <tr><Spacer /><td className="px-4 whitespace-nowrap py-2 text-right font-bold">Total</td><td className="px-4 py-2 text-right font-wide text-lg font-extrabold whitespace-nowrap">{formatCents(quote.totalCents)}</td></tr>
-                  {hasDeposit(quote) && <tr><Spacer /><td className="px-4 whitespace-nowrap pb-3 text-right text-navy-600">Deposit to start</td><td className="px-4 pb-3 text-right">{formatCents(depositCents(quote))}</td></tr>}
+                  {hasDeposit(quote) && <tr><Spacer /><td className="px-4 whitespace-nowrap pb-3 text-right text-navy-600">Deposit (legacy)</td><td className="px-4 pb-3 text-right">{formatCents(depositCents(quote))}</td></tr>}
                 </tfoot>
               </table>
             </div>
@@ -207,7 +208,7 @@ function Timeline({ quote }: { quote: AdminQuote }) {
         label = `${payment?.isDeposit ? "Deposit paid" : "Payment received"}: ${formatCents(meta.amountCents)}`;
       }
       if (e.type === "SENT" && meta.resend) label = "Email sent again";
-      if (e.type === "BALANCE_REQUESTED" && meta.amountCents) label = `Balance payment requested: ${formatCents(meta.amountCents)}`;
+      if (e.type === "BALANCE_REQUESTED" && meta.amountCents) label = `Job complete, payment requested: ${formatCents(meta.amountCents)}`;
       if (e.type === "DECLINED" && meta.reason) label = `Declined by client (${declineReasons.find((r) => r.value === meta.reason)?.label.toLowerCase() ?? meta.reason})`;
       return { at: e.createdAt, label, tone: e.type === "PAID" || e.type === "ACCEPTED" ? "good" : e.type === "DECLINED" || e.type === "VOIDED" || e.type === "PAYMENT_FAILED" ? "bad" : "plain", id: e.id };
     }),

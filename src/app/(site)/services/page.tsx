@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CtaBand } from "@/components/site/cta-band";
 import { PageIntro } from "@/components/site/page-intro";
+import { PricingNote } from "@/components/site/pricing-note";
 import { ScopeSheet } from "@/components/site/scope-sheet";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Container } from "@/components/ui/container";
@@ -21,7 +22,9 @@ export default async function ServicesPage() {
       <PageIntro
         title="Services"
         lede="Every service below lists what we do and what we don't take on, so you know before you call. If your job isn't on either list, ask. We'll tell you straight, and point you to someone good if it isn't us."
-      />
+      >
+        <PricingNote className="mt-8" />
+      </PageIntro>
 
       <Container className="grid gap-10 py-16 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14 lg:py-20">
         <nav aria-label="Services on this page" className="lg:sticky lg:top-28 lg:self-start">

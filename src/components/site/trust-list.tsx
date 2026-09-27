@@ -10,10 +10,13 @@ export const commitments = (site: SiteConfig) => [
     icon: FileCheck2,
     title: "Licensed and insured",
     body: [
-      site.licenseNumber ? `${site.licenseLabel} ${site.licenseNumber}.` : "Licensed for home improvement work in Arkansas.",
-      site.insuranceSummary ? `${site.insuranceSummary}.` : "Fully insured.",
+      `${site.licenseStatement}.`,
+      site.licenseNumber && `${site.licenseLabel} ${site.licenseNumber}.`,
+      site.insuranceSummary && `${site.insuranceSummary}.`,
       "We send a certificate of insurance on request.",
-    ].join(" "),
+    ]
+      .filter(Boolean)
+      .join(" "),
   },
   {
     icon: UserCheck,

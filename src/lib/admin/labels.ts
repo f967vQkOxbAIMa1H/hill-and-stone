@@ -30,7 +30,7 @@ export const quoteStatus: Record<QuoteStatus, { label: string; tone: Tone }> = {
   DRAFT: { label: "Draft", tone: "neutral" },
   SENT: { label: "Sent", tone: "dark" },
   VIEWED: { label: "Viewed", tone: "copper" },
-  ACCEPTED: { label: "Deposit paid", tone: "success" },
+  ACCEPTED: { label: "Accepted", tone: "success" },
   DECLINED: { label: "Declined", tone: "danger" },
   PAID: { label: "Paid", tone: "success" },
   EXPIRED: { label: "Expired", tone: "danger" },

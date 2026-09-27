@@ -65,8 +65,8 @@ export default async function TrustPage() {
           <section id="insurance" aria-labelledby="insurance-heading" className="scroll-mt-28">
             <Heading id="insurance-heading">Insurance and license</Heading>
             <p className="mt-4 text-lg text-navy-700">
-              If something goes wrong on your property, you shouldn&apos;t be the one paying for it. We carry the coverage below
-              and keep it current.
+              Hill &amp; Stone is {site.licenseStatement.toLowerCase()}. If something goes wrong on your property, you shouldn&apos;t
+              be the one paying for it.
             </p>
             <dl className="mt-8 border-t border-navy-200">
               {site.licenseNumber && (
@@ -79,7 +79,7 @@ export default async function TrustPage() {
               )}
               {site.insurance.length === 0 && (
                 <div className="grid gap-1 border-b border-navy-200 py-4 sm:grid-cols-[240px_1fr]">
-                  <dt className="font-semibold">Coverage details</dt>
+                  <dt className="font-semibold">Coverage and license details</dt>
                   <dd className="text-navy-700">Listed on our certificate of insurance. Request one below and it comes straight from our insurer.</dd>
                 </div>
               )}
@@ -172,14 +172,15 @@ export default async function TrustPage() {
           <section id="payments" aria-labelledby="payments-heading" className="scroll-mt-28">
             <Heading id="payments-heading">Secure payments</Heading>
             <p className="mt-4 text-lg text-navy-700">
-              You approve quotes and pay online through Stripe, a payment processor used by millions of businesses.
+              You accept your quote online, then pay once the work is done through Stripe, a payment processor used by millions of
+              businesses.
             </p>
             <dl className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
               {[
                 ["Your card never touches our servers", "Card details go straight to Stripe, a PCI Level 1 certified processor. We never see or store your full card number."],
                 ["Private quote links", "Each quote has its own unguessable link. Only people you share it with can open it."],
-                ["Pay the way you like", "Visa, Mastercard, American Express, Discover, Apple Pay and Cash App Pay."],
-                ["Nothing charged without approval", "You see the itemized total, and the deposit if there is one, before you pay anything."],
+                ["Card or Apple Pay", "Visa, Mastercard, American Express, Discover and Apple Pay."],
+                ["Nothing charged until the work is done", "You accept an itemized quote for free. No deposits: you pay once the job is complete and you're happy with it."],
               ].map(([t, d]) => (
                 <div key={t} className="border-t border-navy-200 pt-4">
                   <dt className="flex items-center gap-2 font-bold">

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  amountFor,
+  amountDue,
   balanceCents,
+  canAccept,
+  canRequestPayment,
   depositCents,
   isValidTokenFormat,
   portalState,
@@ -14,7 +16,7 @@ const quote = (over: Partial<QuoteForState> = {}): QuoteForState => ({
   status: "SENT",
   validUntil: new Date("2026-10-22T12:00:00Z"),
   totalCents: 100_000,
-  depositBps: 5000,
+  depositBps: 0,
   payments: [],
   ...over,
 });
@@ -31,8 +33,12 @@ describe("portalState", () => {
     expect(portalState(quote({ status: "EXPIRED" }), now)).toBe("expired");
   });
   it("stays open with no expiry date", () => expect(portalState(quote({ validUntil: null }), now)).toBe("open"));
-  it("reports deposit-paid and paid", () => {
-    expect(portalState(quote({ status: "ACCEPTED", payments: [paid(50_000)] }), now)).toBe("partially_paid");
+  it("is accepted with nothing due until payment is requested", () => {
+    expect(portalState(quote({ status: "ACCEPTED" }), now)).toBe("accepted");
+    expect(portalState(quote({ status: "ACCEPTED", paymentRequestedAt: now }), now)).toBe("payment_due");
+  });
+  it("reports legacy deposit-paid quotes as payment due, and paid", () => {
+    expect(portalState(quote({ status: "ACCEPTED", payments: [paid(50_000)] }), now)).toBe("payment_due");
     expect(portalState(quote({ status: "ACCEPTED", payments: [paid(100_000)] }), now)).toBe("paid");
     expect(portalState(quote({ status: "PAID" }), now)).toBe("paid");
   });
@@ -53,20 +59,30 @@ describe("amounts", () => {
     expect(balanceCents(quote({ payments: [paid(120_000)] }))).toBe(0); // never negative
   });
 
-  it("offers deposit and full only while open", () => {
-    expect(amountFor(quote(), "deposit", now)).toBe(50_000);
-    expect(amountFor(quote(), "full", now)).toBe(100_000);
-    expect(amountFor(quote(), "balance", now)).toBeNull();
-    expect(amountFor(quote({ depositBps: 0 }), "deposit", now)).toBeNull();
-    expect(amountFor(quote({ status: "DECLINED" }), "full", now)).toBeNull();
-    expect(amountFor(quote({ validUntil: new Date("2026-09-01T00:00:00Z") }), "full", now)).toBeNull();
+  it("charges nothing at acceptance: payment is due on completion", () => {
+    expect(amountDue(quote(), now)).toBeNull();
+    expect(canAccept(quote(), now)).toBe(true);
+    expect(amountDue(quote({ status: "ACCEPTED" }), now)).toBeNull();
+    expect(canAccept(quote({ status: "ACCEPTED" }), now)).toBe(false);
+    expect(canAccept(quote({ validUntil: new Date("2026-09-01T00:00:00Z") }), now)).toBe(false);
   });
 
-  it("offers only the balance after a deposit", () => {
-    const q = quote({ status: "ACCEPTED", payments: [paid(50_000)] });
-    expect(amountFor(q, "balance", now)).toBe(50_000);
-    expect(amountFor(q, "full", now)).toBeNull();
-    expect(amountFor(q, "deposit", now)).toBeNull();
+  it("opens payment for the full balance once the job is complete", () => {
+    const done = quote({ status: "ACCEPTED", paymentRequestedAt: now });
+    expect(amountDue(done, now)).toBe(100_000);
+    expect(amountDue({ ...done, payments: [paid(100_000)] }, now)).toBeNull();
+    expect(amountDue(quote({ status: "DECLINED", paymentRequestedAt: now }), now)).toBeNull();
+  });
+
+  it("lets the owner request payment only on accepted quotes", () => {
+    expect(canRequestPayment(quote(), now)).toBe(false);
+    expect(canRequestPayment(quote({ status: "ACCEPTED" }), now)).toBe(true);
+    expect(canRequestPayment(quote({ status: "ACCEPTED", paymentRequestedAt: now }), now)).toBe(true);
+    expect(canRequestPayment(quote({ status: "PAID" }), now)).toBe(false);
+  });
+
+  it("still bills the balance on legacy deposit quotes", () => {
+    expect(amountDue(quote({ status: "ACCEPTED", depositBps: 5000, payments: [paid(50_000)] }), now)).toBe(50_000);
   });
 
   it("moves to PAID only when the balance is zero", () => {
@@ -84,13 +100,9 @@ describe("token format", () => {
   });
 });
 
-describe("fixed deposits", () => {
+describe("legacy fixed deposits", () => {
   it("uses the fixed amount over the percentage, capped at the total", () => {
     expect(depositCents(quote({ depositBps: 5000, depositFixedCents: 25_000 }))).toBe(25_000);
     expect(depositCents(quote({ depositFixedCents: 500_000 }))).toBe(100_000);
-    expect(amountFor(quote({ depositBps: 0, depositFixedCents: 25_000 }), "deposit", now)).toBe(25_000);
-  });
-  it("offers no deposit option when the deposit equals the total", () => {
-    expect(amountFor(quote({ depositFixedCents: 100_000 }), "deposit", now)).toBeNull();
   });
 });

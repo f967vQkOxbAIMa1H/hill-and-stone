@@ -8,7 +8,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { attributionSchema, flattenErrors, quoteRequestSchema, type FieldErrors } from "@/lib/quote-request/schema";
 import { getSite } from "@/lib/settings";
-import { serviceAreas } from "@/lib/site";
+import { serviceAreaSlug } from "@/lib/service-area";
 import { deleteFiles, putFile, sniffImage, type StoredFile } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       stored.push({ ...s, fileName: img.file.name.slice(0, 200), mimeType: img.mime });
     }
 
-    const serviceArea = serviceAreas.find((a) => a.zips.includes(req.postalCode))?.slug ?? null;
+    const serviceArea = serviceAreaSlug(req.postalCode);
 
     const lead = await db.$transaction(async (tx) => {
       const customer = await tx.customer.upsert({

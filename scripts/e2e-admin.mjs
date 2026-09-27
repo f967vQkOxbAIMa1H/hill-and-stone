@@ -15,7 +15,7 @@ config({ quiet: true });
 const BASE = process.env.BASE_URL ?? "http://localhost:3100";
 const SHOTS = process.env.SHOTS ?? "./.e2e-shots/admin";
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_e2e";
-const ADMIN_EMAIL = "e2e.admin@hillandstone.com";
+const ADMIN_EMAIL = "e2e.admin@hillstone.com";
 const ADMIN_PASSWORD = `e2e-${randomBytes(9).toString("base64url")}`;
 const stripe = new Stripe("sk_test_signing_only");
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
@@ -133,36 +133,33 @@ try {
   await fill("[aria-label='Line 2 description']", "PVC brickmould and casing");
   await fill("[aria-label='Line 2 quantity']", "3");
   await fill("[aria-label='Line 2 unit price in dollars']", "42");
+  // The trip fee line starts from the saved quote defaults; set it so totals don't depend on settings.
+  await fill("[aria-label='Line 3 unit price in dollars']", "75");
   await page.click("button::-p-text(Discount)");
   await fill("[aria-label='Line 4 description']", "Returning customer");
   await fill("[aria-label='Line 4 unit price in dollars']", "25");
-  await page.click("label:has(input[name=depositMode][value=percent])");
   await fill("#scopeOfWork", "Remove rotted casing and brickmould at the back door. Install PVC trim, adjust hinges so the door closes cleanly, seal and paint.");
   await fill("#exclusions", "Door slab replacement.");
   const total = await page.$eval("[data-testid=builder-total]", (el) => el.textContent);
   check("live total matches server math", total === "$612.95", total);
   body = await text();
-  check("percent deposit previews 50%", body.includes("$306.48"));
+  check("builder shows no deposit option; payment due on completion", !(await page.$("input[name=depositMode]")) && body.includes("On completion"));
   await shot("builder");
 
   await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("button::-p-text(Save draft)")]);
   const quoteId = page.url().split("/admin/quotes/")[1];
   let q = (await db.query(`select status, "totalCents", "depositBps", "publicToken" from "Quote" where id=$1`, [quoteId])).rows[0];
-  check("draft saved with server-computed total", q?.status === "DRAFT" && q.totalCents === 61295 && q.depositBps === 5000, JSON.stringify(q));
+  check("draft saved with server-computed total", q?.status === "DRAFT" && q.totalCents === 61295 && q.depositBps === 0, JSON.stringify(q));
   const draftToken = q.publicToken;
   const draftPortal = await fetch(`${BASE}/quote/${draftToken}`);
   check("draft isn't visible to clients", draftPortal.status === 404);
 
-  await page.click("label:has(input[name=depositMode][value=fixed])");
-  await fill("#depositFixed", "200");
-  body = await text();
-  check("fixed deposit previews $200", body.includes("$200.00"));
   await page.click("button::-p-text(Send quote)");
   await page.waitForSelector("[role=alertdialog]");
   check("send asks for confirmation with the client email", (await text()).includes(`to ${email}?`));
   await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("button::-p-text(Confirm and send)")]);
   q = (await db.query(`select status, "publicToken", "depositFixedCents" from "Quote" where id=$1`, [quoteId])).rows[0];
-  check("send marks the quote SENT with a new 43-char token", q.status === "SENT" && q.publicToken !== draftToken && q.publicToken.length === 43 && q.depositFixedCents === 20000);
+  check("send marks the quote SENT with a new 43-char token", q.status === "SENT" && q.publicToken !== draftToken && q.publicToken.length === 43 && q.depositFixedCents === null);
   const leadAfter = (await db.query(`select status from "Lead" where id=$1`, [lead.id])).rows[0].status;
   check("request moves to QUOTE_SENT", leadAfter === "QUOTE_SENT", leadAfter);
   const sentEmail = (await db.query(`select "to", subject from "EmailLog" where "quoteId"=$1 and type='QUOTE_SENT'`, [quoteId])).rows[0];
@@ -172,34 +169,45 @@ try {
   const clientUrl = await page.$eval("a::-p-text(Open client view)", (a) => a.href).catch(() => page.$$eval("a", (as) => as.find((a) => a.textContent.includes("Open client view")).href));
   await shot("quote-sent");
 
-  // ── Client views and pays the deposit ───────────────────────────────────
+  // ── Client accepts (no payment), owner marks complete, client pays ─────
   const client = await browser.newPage();
   await client.setViewport({ width: 1280, height: 900 });
   await client.goto(clientUrl, { waitUntil: "networkidle0" });
-  const clientBody = await client.evaluate(() => document.body.innerText);
-  check("client portal shows the sent quote", clientBody.includes("Back door trim and adjustment") && clientBody.includes("$612.95") && clientBody.includes("$200.00"));
+  let clientBody = await client.evaluate(() => document.body.innerText);
+  check("client portal shows the sent quote", clientBody.includes("Back door trim and adjustment") && clientBody.includes("$612.95") && clientBody.includes("Nothing to pay today"));
+  await client.click("button::-p-text(Accept quote)");
+  await client.waitForFunction(() => document.body.innerText.includes("on our schedule"), { timeout: 10000 });
+  check("client accepts without paying", (await db.query(`select count(*)::int n from "Payment" where "quoteId"=$1`, [quoteId])).rows[0].n === 0);
+  check("request moves to ACCEPTED", (await db.query(`select status from "Lead" where id=$1`, [lead.id])).rows[0].status === "ACCEPTED");
+
+  await go(`/admin/quotes/${quoteId}`);
+  await page.click("button::-p-text(Mark complete and request payment)");
+  await page.waitForSelector("#bill-note");
+  await page.click("button::-p-text(Send request for)");
+  await page.waitForFunction(() => /Payment request for|didn't send/.test(document.body.innerText));
+  check("marking complete moves the request to COMPLETED", (await db.query(`select status from "Lead" where id=$1`, [lead.id])).rows[0].status === "COMPLETED");
+
+  await client.reload({ waitUntil: "networkidle0" });
   let checkoutUrl = null;
   client.on("request", (r) => { if (r.url().startsWith("https://checkout.stripe.com")) checkoutUrl ??= r.url(); });
-  await client.click("button::-p-text(Accept and pay $200.00)");
+  await client.click("button::-p-text(Pay $612.95)");
   for (let i = 0; i < 50 && !checkoutUrl; i++) await sleep(200);
-  check("client is sent to Stripe for the $200 deposit", !!checkoutUrl);
+  check("client is sent to Stripe for the full $612.95", !!checkoutUrl);
   await client.close();
   const pending = (await db.query(`select id, "amountCents", "stripeCheckoutSessionId" from "Payment" where "quoteId"=$1 and status='PENDING'`, [quoteId])).rows[0];
   const wh = await sendWebhook({ id: pending.stripeCheckoutSessionId, object: "checkout.session", status: "complete", payment_status: "paid", amount_total: pending.amountCents, currency: "usd", payment_intent: `pi_${randomBytes(6).toString("hex")}`, metadata: { paymentId: pending.id, quoteId } });
-  check("deposit webhook fulfilled", wh.result === "fulfilled");
+  check("payment webhook fulfilled", wh.result === "fulfilled");
 
   await go(`/admin/quotes/${quoteId}`);
   body = await text();
   const history = await page.$$eval("#log-h ~ ol li p:first-of-type", (els) => els.map((e) => e.textContent));
-  check("history shows sent, viewed and deposit paid in order", ["Sent to client", "Viewed by client", "Deposit paid: $200.00"].every((l, i, arr) => history.indexOf(l) > -1 && (i === 0 || history.indexOf(l) > history.indexOf(arr[i - 1]))), history.join(" | "));
-  check("quote shows deposit paid and balance", body.includes("Deposit paid") && body.includes("$412.95"));
+  check("history shows sent, viewed, accepted, completed and paid in order", ["Sent to client", "Viewed by client", "Job complete, payment requested: $612.95", "Payment received: $612.95"].every((l, i, arr) => history.indexOf(l) > -1 && (i === 0 || history.indexOf(l) > history.indexOf(arr[i - 1]))), history.join(" | "));
   await shot("quote-lifecycle");
-  check("request moves to ACCEPTED", (await db.query(`select status from "Lead" where id=$1`, [lead.id])).rows[0].status === "ACCEPTED");
 
   await go("/admin");
   const revenueAfter = await page.$eval("dl a:nth-child(3) dd", (el) => el.textContent);
   const cents = (s) => Math.round(Number(s.replace(/[$,]/g, "")) * 100);
-  check("revenue metric includes the deposit", cents(revenueAfter) - cents(revenueBefore) === 20000, `${revenueBefore} → ${revenueAfter}`);
+  check("revenue metric includes the payment", cents(revenueAfter) - cents(revenueBefore) === 61295, `${revenueBefore} → ${revenueAfter}`);
 
   // ── Resend and void on another quote ────────────────────────────────────
   const samples = JSON.parse(execFileSync("npx", ["tsx", "scripts/sample-quotes.ts", "--json"], { env: { ...process.env, NEXT_PUBLIC_APP_URL: BASE }, encoding: "utf8" }).trim().split("\n").pop());
@@ -215,18 +223,15 @@ try {
   await page.waitForFunction(() => document.body.innerText.includes("Quote voided."));
   const voidPortal = await (await fetch(samples["open-full"])).text();
   check("voided quote shows as withdrawn to the client", voidPortal.includes("This quote was withdrawn"));
-  const payVoid = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ option: "full" }) });
+  const payVoid = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST" });
   check("voided quote can't be paid", payVoid.status === 409);
 
-  // ── Complete the job ────────────────────────────────────────────────────
-  await go(`/admin/requests/${lead.id}`);
-  await page.select("#lead-status", "COMPLETED");
-  await page.click("button::-p-text(Update)");
-  await page.waitForFunction(() => document.body.innerText.includes("Status set to completed"));
+  // ── The job is complete (marked above, then paid in full) ──────────────
+  check("paid request stays COMPLETED", (await db.query(`select status from "Lead" where id=$1`, [lead.id])).rows[0].status === "COMPLETED");
   await go("/admin/requests?status=COMPLETED");
   check("completed filter shows the finished job", (await text()).includes(`#${lead.number} Casey Morgan`));
 
-  await go("/admin/quotes?status=ACCEPTED");
+  await go("/admin/quotes?status=PAID");
   check("quotes list filters by status", (await text()).includes("Back door trim and adjustment"));
   await shot("quotes");
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CtaBand } from "@/components/site/cta-band";
+import { ReviewForm } from "@/components/site/review-form";
 import { GoogleG, GoogleReviewsLink, Stars } from "@/components/site/review-bits";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
@@ -79,11 +80,24 @@ export default async function ReviewsPage() {
             ))}
           </ul>
         )}
-        <p className="mt-4 text-sm text-navy-600">
-          Reviews are shared with permission. To leave one,{" "}
-          {site.googleReviewsUrl ? "use the Google link above or " : ""}reply to your final invoice email from {site.email}.
+        <p className="mt-4 max-w-[70ch] text-sm text-navy-600">
+          Reviews on this page are shared with permission and come from customers who rated us 4 or 5 stars. Lower ratings
+          come to us privately so we can make things right.
+          {site.googleReviewsUrl ? " Every review, whatever the rating, is on our Google profile." : ""}
         </p>
       </Container>
+
+      <section id="leave-a-review" aria-labelledby="leave-heading" className="scroll-mt-20 border-t border-navy-200 bg-stone-100">
+        <Container className="grid gap-10 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16 lg:py-20">
+          <div>
+            <Heading id="leave-heading">Had us out recently?</Heading>
+            <Lede className="mt-4">Tell us how it went. It takes a minute.</Lede>
+          </div>
+          <div className="slate rounded-panel p-5 sm:p-8">
+            <ReviewForm ownerName={site.story.founderName} />
+          </div>
+        </Container>
+      </section>
 
       <CtaBand />
     </>

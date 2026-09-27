@@ -12,14 +12,17 @@ export function QuoteActionsBar({
   canResend,
   canVoid,
   balanceDue,
+  paymentRequested,
   clientEmail,
 }: {
   quoteId: string;
   url: string | null;
   canResend: boolean;
   canVoid: boolean;
-  /** Formatted balance (e.g. "$412.95") when a balance request can be sent. */
+  /** Formatted balance (e.g. "$412.95") when the job can be marked complete and billed. */
   balanceDue: string | null;
+  /** True once the client has been asked to pay; the button then sends a reminder. */
+  paymentRequested: boolean;
   clientEmail: string;
 }) {
   const [billing, setBilling] = useState(false);
@@ -73,7 +76,7 @@ export function QuoteActionsBar({
         {balanceDue && !billing && (
           <Button type="button" size="sm" onClick={() => setBilling(true)}>
             <Receipt aria-hidden />
-            Request balance payment
+            {paymentRequested ? "Resend payment request" : "Mark complete and request payment"}
           </Button>
         )}
         {canVoid && !confirmVoid && (
@@ -86,9 +89,11 @@ export function QuoteActionsBar({
       {billing && balanceDue && (
         <div role="alertdialog" aria-labelledby="bill-h" className="mt-3 max-w-lg rounded-control border border-navy-200 bg-white p-4">
           <p id="bill-h" className="font-semibold">
-            Email {clientEmail} a request for the {balanceDue} balance?
+            {paymentRequested ? `Remind ${clientEmail} that ${balanceDue} is due?` : `Mark the job complete and ask ${clientEmail} to pay ${balanceDue}?`}
           </p>
-          <p className="mt-1 text-sm text-navy-600">They get a link to pay it online from their quote. Send this once the job is finished.</p>
+          <p className="mt-1 text-sm text-navy-600">
+            Payment is due on completion. They get an email with a link to pay online by card or Apple Pay; their quote can&apos;t be paid until you send this.
+          </p>
           <label htmlFor="bill-note" className="mt-3 block text-sm font-semibold">
             Note to include <span className="font-normal text-navy-600">(optional)</span>
           </label>

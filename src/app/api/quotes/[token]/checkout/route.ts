@@ -1,24 +1,19 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { createCheckout, QuoteActionError } from "@/lib/quotes/payments";
 import { getQuoteByToken } from "@/lib/quotes/queries";
 
-const body = z.object({ option: z.enum(["deposit", "full", "balance"]) });
-
+/** Opens Stripe Checkout for the balance due. Only works once the job is complete and payment was requested. */
 export async function POST(request: Request, { params }: RouteContext<"/api/quotes/[token]/checkout">) {
   const { token } = await params;
   if (!rateLimit(`checkout:${clientIp(request.headers)}`, 10, 10 * 60_000)) {
     return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
   }
-  const parsed = body.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Choose how much to pay." }, { status: 400 });
-
   const quote = await getQuoteByToken(token);
   if (!quote) return NextResponse.json({ error: "This quote link isn't valid." }, { status: 404 });
 
   try {
-    const url = await createCheckout(quote, parsed.data.option);
+    const url = await createCheckout(quote);
     return NextResponse.json({ url });
   } catch (error) {
     if (error instanceof QuoteActionError) {

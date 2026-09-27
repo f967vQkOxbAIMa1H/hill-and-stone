@@ -31,6 +31,16 @@ function prune(now: number) {
   }
 }
 
+/**
+ * The caller's IP, for rate limits and audit logs. Never trust the leftmost X-Forwarded-For entry:
+ * the client writes it, so rotating it would slip past every rate limit.
+ * - Vercel sets x-vercel-forwarded-for itself; clients can't forge it.
+ * - Behind one reverse proxy (nginx, Caddy, a load balancer), the proxy appends the address it saw as
+ *   the last X-Forwarded-For entry, so that's the one to use.
+ */
 export function clientIp(headers: Headers) {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || "unknown";
+  const vercel = headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+  if (vercel) return vercel;
+  const forwarded = headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
+  return forwarded || headers.get("x-real-ip")?.trim() || "unknown";
 }

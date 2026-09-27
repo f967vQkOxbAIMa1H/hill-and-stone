@@ -9,7 +9,7 @@ import { Container } from "@/components/ui/container";
 import { clientIp } from "@/lib/rate-limit";
 import { fulfillCheckoutSession } from "@/lib/quotes/payments";
 import { getQuoteByToken, recordView, type PortalQuote } from "@/lib/quotes/queries";
-import { balanceCents, depositCents, hasDeposit, portalState } from "@/lib/quotes/state";
+import { balanceCents, portalState } from "@/lib/quotes/state";
 import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
@@ -40,7 +40,6 @@ async function confirmReturn(quote: PortalQuote, sessionId: string): Promise<Not
 
 function methodLabel(p: PortalQuote["payments"][number]) {
   if (p.cardBrand && p.cardLast4) return `${p.cardBrand[0].toUpperCase()}${p.cardBrand.slice(1)} ending ${p.cardLast4}`;
-  if (p.method === "cashapp") return "Cash App Pay";
   if (p.method === "apple_pay") return "Apple Pay";
   return "Card";
 }
@@ -70,8 +69,6 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
     number: quote.number,
     state,
     totalCents: quote.totalCents,
-    depositLabel: hasDeposit(quote) ? (quote.depositFixedCents != null ? "Deposit" : `Deposit (${quote.depositBps / 100}%)`) : null,
-    depositCents: depositCents(quote),
     balanceCents: balanceCents(quote),
     payments: succeeded.map((p) => ({
       id: p.id,
@@ -91,7 +88,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
         <TrackOnce
           event="purchase"
           onceKey={sp.session_id}
-          params={{ transaction_id: `quote-${quote.number}-${paidNow.id.slice(-6)}`, value: paidNow.amountCents / 100, currency: "USD", payment_type: paidNow.isDeposit ? "deposit" : "payment" }}
+          params={{ transaction_id: `quote-${quote.number}-${paidNow.id.slice(-6)}`, value: paidNow.amountCents / 100, currency: "USD", payment_type: "payment" }}
         />
       )}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
@@ -110,7 +107,7 @@ function NoticeBanner({ notice, email, replyWindow }: { notice: Exclude<Notice, 
       icon: CheckCircle2,
       className: "border-success-700/30 bg-success-100 text-success-700",
       title: "Payment received. Thank you.",
-      body: `A receipt is on its way to ${email}. We'll be in touch within ${replyWindow} to confirm your start date.`,
+      body: `A receipt is on its way to ${email}. Thanks for choosing us, and call anytime within ${replyWindow} if you have questions about the work.`,
     },
     processing: {
       icon: Clock,

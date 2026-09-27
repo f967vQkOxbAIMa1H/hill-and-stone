@@ -1,5 +1,6 @@
 // Portfolio project and review inputs, shared by admin forms (client) and server actions.
 import { z } from "zod";
+import { isPublicRating, PUBLIC_MIN_RATING } from "@/lib/reviews";
 import { stripTags } from "@/lib/sanitize";
 import { ServiceCategory } from "@/generated/prisma/enums";
 
@@ -57,6 +58,7 @@ export const reviewSources = [
   { value: "facebook", label: "Facebook" },
   { value: "nextdoor", label: "Nextdoor" },
   { value: "direct", label: "Sent to us directly" },
+  { value: "website", label: "Submitted on our website" },
 ] as const;
 
 export const reviewSchema = z
@@ -82,5 +84,9 @@ export const reviewSchema = z
   .refine((r) => !r.published || r.permission, {
     path: ["permission"],
     message: "Confirm you have the customer's permission before publishing.",
+  })
+  .refine((r) => !r.published || isPublicRating(r.rating), {
+    path: ["published"],
+    message: `Reviews under ${PUBLIC_MIN_RATING} stars stay private and can't be published.`,
   });
 export type ReviewInput = z.input<typeof reviewSchema>;
