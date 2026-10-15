@@ -5,7 +5,8 @@ import { z } from "zod";
 const optional = z.string().trim().optional().transform((v) => v || undefined);
 
 const schema = z.object({
-  DATABASE_URL: z.url(),
+  // Required everywhere except Netlify, where Netlify Database supplies the connection (see src/lib/db.ts).
+  DATABASE_URL: z.url().optional().or(z.literal("").transform(() => undefined)),
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   CONTRACTOR_NOTIFY_EMAIL: z.email().optional(),
   RESEND_API_KEY: optional,

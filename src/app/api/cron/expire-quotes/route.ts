@@ -13,7 +13,8 @@ function authorized(request: Request) {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
-// Called daily by Vercel Cron (see vercel.json) or `npm run quotes:expire` from a server crontab.
+// Called daily by Vercel Cron (vercel.json), the Netlify scheduled function (netlify/functions/expire-quotes.mts),
+// or `npm run quotes:expire` from a server crontab.
 export async function GET(request: Request) {
   if (!env.CRON_SECRET) return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 503 });
   if (!authorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

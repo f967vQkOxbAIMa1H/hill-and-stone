@@ -2,9 +2,10 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { DeleteObjectsCommand, GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getStore } from "@netlify/blobs";
 
 export interface StorageDriver {
-  readonly name: "local" | "s3";
+  readonly name: "local" | "s3" | "netlify";
   put(key: string, data: Buffer, contentType: string): Promise<void>;
   /** The file's bytes, or null if it doesn't exist. */
   get(key: string): Promise<Buffer | null>;
@@ -104,9 +105,41 @@ export function s3Driver(cfg: S3Config): StorageDriver {
   };
 }
 
-/** Picks the driver from environment variables. STORAGE_DRIVER=s3 needs the bucket and keys. */
+// ─── Netlify Blobs ──────────────────────────────────────────────────────────
+// For Netlify deploys. A site-wide store, so files survive redeploys. Blobs have no access control of
+// their own: files are only reachable through the routes that check access (/media, quote photos, admin).
+
+export function netlifyBlobsDriver(storeName = "uploads"): StorageDriver {
+  // Strong consistency: an admin uploads a photo and views it straight away.
+  const store = () => getStore({ name: storeName, consistency: "strong" });
+  return {
+    name: "netlify",
+    async put(key, data, contentType) {
+      assertSafeKey(key);
+      const bytes = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+      const { modified } = await store().set(key, bytes, { onlyIfNew: true, metadata: { contentType } });
+      if (!modified) throw new Error(`Storage key already exists: ${key}`);
+    },
+    async get(key) {
+      assertSafeKey(key);
+      const data = await store().get(key, { type: "arrayBuffer" });
+      return data ? Buffer.from(data) : null;
+    },
+    async delete(keys) {
+      await Promise.allSettled(keys.map((k) => (assertSafeKey(k), store().delete(k))));
+    },
+  };
+}
+
+/**
+ * Picks the driver from environment variables: local (default), s3 (needs the bucket and keys), or
+ * netlify (Netlify Blobs; NETLIFY_BLOBS_STORE names the store, so previews can use their own).
+ */
 export function driverFromEnv(env: Record<string, string | undefined> = process.env): StorageDriver {
-  if ((env.STORAGE_DRIVER ?? "local") === "local") return localDriver();
+  const kind = (env.STORAGE_DRIVER ?? "local").trim().toLowerCase();
+  if (kind === "local") return localDriver();
+  if (kind === "netlify") return netlifyBlobsDriver(env.NETLIFY_BLOBS_STORE || "uploads");
+  if (kind !== "s3") throw new Error(`Unknown STORAGE_DRIVER "${env.STORAGE_DRIVER}". Use local, s3 or netlify.`);
   const missing = ["STORAGE_BUCKET", "STORAGE_ACCESS_KEY_ID", "STORAGE_SECRET_ACCESS_KEY"].filter((k) => !env[k]);
   if (missing.length) throw new Error(`STORAGE_DRIVER=s3 but ${missing.join(", ")} not set`);
   return s3Driver({

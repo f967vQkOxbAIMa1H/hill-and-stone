@@ -16,7 +16,7 @@ Everything customer-facing that's specific to Hill & Stone lives in one block at
 | `business.story` | Founder name, year, hometown, crew size and background for the About page. Sentences with missing facts are left out. |
 | `business.photos` | About page photos in `public/images/`. A brand graphic shows until they're added. |
 | `business.policies` | Reply time, certificate turnaround, background-check interval, used across the FAQ, Trust page and emails |
-| `quoteDefaults` | Starting trip fee, sales tax and deposit in the admin quote builder |
+| `quoteDefaults` | Starting trip fee and sales tax in the admin quote builder (no deposits: payment is due on completion) |
 
 Then read `src/lib/faq.ts` and the Trust page (`src/app/(site)/trust/page.tsx`). When the wording matches how you
 work, set `business.policies.confirmed = true`. When the quote defaults match your pricing, set
@@ -52,7 +52,8 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
 ## 4. Services
 
 - **Resend**: verify your sending domain, set `RESEND_API_KEY` and `EMAIL_FROM`.
-- **Stripe**: turn on Cash App Pay under Payment methods. Add the webhook endpoint
+- **Stripe**: turn on Apple Pay under Payment methods (cards are on by default), and set the Stripe account email
+  to the business inbox. Add the webhook endpoint
   `https://<your-domain>/api/webhooks/stripe` with `checkout.session.completed`,
   `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and
   `checkout.session.expired`, and set `STRIPE_WEBHOOK_SECRET`.
@@ -67,6 +68,25 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
   Other events: `click_to_call`, `quote_declined`, `coi_request`. If you serve visitors in regions that require
   consent before analytics, add a consent banner first.
 - **Rate limiting** is in memory, per server instance. Fine for one instance; move it to Redis if you scale out.
+
+## Netlify
+
+`netlify.toml` builds the Next.js app with Netlify's adapter. On Netlify:
+
+- **Database**: Netlify Database, connected automatically (`src/lib/db.ts` uses it whenever `NETLIFY_DB_URL` is
+  present, ignoring `DATABASE_URL`). Migrations are mirrored from `prisma/migrations` into
+  `netlify/database/migrations`, which Netlify applies on every deploy: deploy previews get their own database
+  branch (a copy of production), production gets them just before publish. Create migrations with
+  `npm run db:migrate`, which mirrors them; a unit test fails if the two folders drift. Never run
+  `prisma migrate deploy` against Netlify Database, and never edit a deployed migration.
+- **Uploads**: set `STORAGE_DRIVER=netlify` (Netlify Blobs). Set `NETLIFY_BLOBS_STORE=uploads-preview` for the
+  deploy-preview and branch-deploy contexts so previews don't share production's photos.
+- **Quote expiry**: `netlify/functions/expire-quotes.mts` runs daily on the published production deploy. Set
+  `CRON_SECRET`.
+- **Request size**: functions accept about 4.5 MB per request, so quote requests with several full-size phone
+  photos are rejected. Shrink photos in the browser before upload before relying on photo uploads in production.
+- **First owner login**: a new database has no users. Run `npm run admin:user` with `DATABASE_URL` set to the
+  database's connection string (`netlify database status --show-credentials`).
 
 ## Local development
 

@@ -1,0 +1,9 @@
+# Netlify: Next.js runs on the OpenNext adapter (@netlify/plugin-nextjs, added automatically).
+# Secrets and per-context values (CRON_SECRET, STORAGE_DRIVER, NETLIFY_BLOBS_STORE, Stripe, Resend)
+# are set in the Netlify UI/CLI, never here: this file is committed and isn't read at runtime.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"

@@ -9,7 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:up": "docker compose up -d",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev && tsx scripts/sync-netlify-migrations.ts",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "typecheck": "tsc --noEmit",
@@ -25,10 +25,13 @@
     "db:deploy": "prisma migrate deploy",
     "quotes:expire": "tsx scripts/expire-quotes.ts",
     "test:e2e:content": "node scripts/e2e-content.mjs",
-    "test:e2e:team": "node scripts/e2e-team.mjs"
+    "test:e2e:team": "node scripts/e2e-team.mjs",
+    "db:sync-netlify": "tsx scripts/sync-netlify-migrations.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1138.0",
+    "@netlify/blobs": "^11.1.4",
+    "@netlify/database": "^2.0.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "class-variance-authority": "^0.7.1",
@@ -46,6 +49,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@netlify/functions": "^6.0.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",

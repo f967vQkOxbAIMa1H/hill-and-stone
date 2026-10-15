@@ -50,3 +50,6 @@ next-env.d.ts
 
 # local Claude Code settings (per-developer)
 /.claude/settings.local.json
+
+# Netlify CLI link state
+.netlify

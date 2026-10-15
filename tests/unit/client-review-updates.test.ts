@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { reviewSchema } from "@/lib/admin/content-schema";
 import { clientIp } from "@/lib/rate-limit";
+import { driverFromEnv } from "@/lib/storage/drivers";
 import { isPublicRating, LOW_RATING_SUBJECT_TAG, reviewSubmissionSchema, routeReview } from "@/lib/reviews";
 import { lookupZip, serviceAreaSlug } from "@/lib/service-area";
 import { settingsSchema } from "@/lib/settings/schema";
@@ -102,6 +103,16 @@ describe("security hardening", () => {
     expect(clientIp(h({ "x-forwarded-for": "6.6.6.6, 203.0.113.7" }))).toBe("203.0.113.7");
     expect(clientIp(h({ "x-forwarded-for": "7.7.7.7, 203.0.113.7" }))).toBe("203.0.113.7");
     expect(clientIp(h({ "x-vercel-forwarded-for": "198.51.100.2", "x-forwarded-for": "6.6.6.6" }))).toBe("198.51.100.2");
+    expect(clientIp(h({ "x-nf-client-connection-ip": "192.0.2.44", "x-forwarded-for": "6.6.6.6" }))).toBe("192.0.2.44");
     expect(clientIp(h({}))).toBe("unknown");
+  });
+});
+
+describe("storage driver selection", () => {
+  it("picks Netlify Blobs, local or S3, and refuses typos", () => {
+    expect(driverFromEnv({ STORAGE_DRIVER: "netlify" }).name).toBe("netlify");
+    expect(driverFromEnv({}).name).toBe("local");
+    expect(() => driverFromEnv({ STORAGE_DRIVER: "S3 " })).toThrow(/STORAGE_BUCKET/);
+    expect(() => driverFromEnv({ STORAGE_DRIVER: "netlfy" })).toThrow(/Unknown STORAGE_DRIVER/);
   });
 });
