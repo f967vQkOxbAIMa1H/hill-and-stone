@@ -1,12 +1,50 @@
 import "server-only";
+import { createHash } from "node:crypto";
+import { db } from "@/lib/db";
 
-// Sliding-window limiter held in memory: each key keeps the timestamps of its recent hits, and a
-// request is allowed while fewer than `limit` fall inside the last `windowMs`. Good enough for a
-// single instance; swap for Redis/Upstash when running more than one server.
+/**
+ * Rate limiter shared by every server instance, so it holds on serverless hosts where instances come and
+ * go. Counts live in Postgres (RateLimitHit) per fixed window, incremented atomically by an upsert, and
+ * the previous window's count is blended in so a burst straddling a window boundary can't get double.
+ * If the database is unreachable it falls back to a per-instance in-memory limiter rather than failing.
+ * Returns true when the request is allowed.
+ */
+export async function rateLimit(key: string, limit: number, windowMs: number): Promise<boolean> {
+  const now = Date.now();
+  const start = Math.floor(now / windowMs) * windowMs;
+  const hashed = createHash("sha256").update(key).digest("base64url");
+  try {
+    const [current, previous] = await Promise.all([
+      db.rateLimitHit.upsert({
+        where: { key_windowStart: { key: hashed, windowStart: new Date(start) } },
+        create: { key: hashed, windowStart: new Date(start), expiresAt: new Date(start + 2 * windowMs) },
+        update: { count: { increment: 1 } },
+        select: { count: true },
+      }),
+      db.rateLimitHit.findUnique({ where: { key_windowStart: { key: hashed, windowStart: new Date(start - windowMs) } }, select: { count: true } }),
+    ]);
+    // Occasional cleanup; the daily cron job also clears expired rows.
+    if (Math.random() < 0.01) void pruneRateLimits().catch(() => {});
+    return slidingEstimate(previous?.count ?? 0, current.count, (now - start) / windowMs) <= limit;
+  } catch (error) {
+    console.error("rateLimit: database unavailable, using the in-memory fallback", error);
+    return memoryLimit(key, limit, windowMs);
+  }
+}
+
+/** Hits in the last full window's length: this window's, plus the previous window's still-overlapping share. */
+export function slidingEstimate(previousCount: number, currentCount: number, elapsedFraction: number) {
+  return currentCount + previousCount * (1 - Math.min(1, Math.max(0, elapsedFraction)));
+}
+
+export const pruneRateLimits = () => db.rateLimitHit.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+
+// ─── In-memory fallback ─────────────────────────────────────────────────────
+// Sliding window per process: each key keeps the timestamps of its recent hits.
 const hits = new Map<string, { times: number[]; windowMs: number }>();
 const MAX_KEYS = 10_000;
 
-export function rateLimit(key: string, limit: number, windowMs: number) {
+function memoryLimit(key: string, limit: number, windowMs: number) {
   const now = Date.now();
   if (hits.size > MAX_KEYS) prune(now);
   const recent = (hits.get(key)?.times ?? []).filter((t) => now - t < windowMs);

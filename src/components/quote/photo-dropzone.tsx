@@ -3,25 +3,33 @@
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/ui/safe-image";
+import { compressImage, QUOTE_PHOTO } from "@/lib/image-compress";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { cn } from "@/lib/utils";
 
-export type Photo = { id: string; file: File; url: string };
+/** `file` is the shrunk copy that gets uploaded; `source` identifies the original, to skip duplicates. */
+export type Photo = { id: string; file: File; url: string; source: string };
+
+const sourceKey = (f: File) => `${f.name}:${f.size}:${f.lastModified}`;
 
 const mb = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
 
 export function PhotoDropzone({
   photos,
   onChange,
+  onPreparingChange,
   error,
 }: {
   photos: Photo[];
   onChange: (photos: Photo[]) => void;
+  /** True while attached photos are still being shrunk; the form waits for them. */
+  onPreparingChange?: (preparing: boolean) => void;
   error?: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [rejected, setRejected] = useState<string[]>([]);
+  const [preparing, setPreparing] = useState(0);
 
   // Free preview URLs when the component goes away.
   const latest = useRef(photos);
@@ -30,22 +38,40 @@ export function PhotoDropzone({
   }, [photos]);
   useEffect(() => () => latest.current.forEach((p) => URL.revokeObjectURL(p.url)), []);
 
-  function add(list: FileList | File[]) {
-    const next = [...photos];
+  async function add(list: FileList | File[]) {
+    // One batch at a time, so two batches can't both pass the photo-count check.
+    if (preparing) return;
+    const accepted: File[] = [];
     const problems: string[] = [];
     for (const file of Array.from(list)) {
       if (!(UPLOAD_LIMITS.types as readonly string[]).includes(file.type)) {
         problems.push(`${file.name}: only JPG, PNG and WebP photos can be attached.`);
-      } else if (file.size > UPLOAD_LIMITS.maxBytes) {
-        problems.push(`${file.name}: ${mb(file.size)} is over the 10 MB limit.`);
-      } else if (next.length >= UPLOAD_LIMITS.maxFiles) {
+      } else if (file.size > UPLOAD_LIMITS.maxSourceBytes) {
+        problems.push(`${file.name}: ${mb(file.size)} is over the 30 MB limit.`);
+      } else if (photos.length + accepted.length >= UPLOAD_LIMITS.maxFiles) {
         problems.push(`${file.name}: you can attach up to ${UPLOAD_LIMITS.maxFiles} photos.`);
-      } else if (!next.some((p) => p.file.name === file.name && p.file.size === file.size && p.file.lastModified === file.lastModified)) {
-        next.push({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) });
+      } else if (!photos.some((p) => p.source === sourceKey(file)) && !accepted.some((f) => sourceKey(f) === sourceKey(file))) {
+        accepted.push(file);
       }
     }
     setRejected(problems);
-    onChange(next);
+    if (!accepted.length) return;
+    // Shrink before upload: keeps the request under the host's size limit and strips location data.
+    setPreparing(accepted.length);
+    onPreparingChange?.(true);
+    try {
+      const shrunk = await Promise.all(accepted.map((f) => compressImage(f, QUOTE_PHOTO)));
+      const tooBig = shrunk.filter((f) => f.size > UPLOAD_LIMITS.maxBytes);
+      if (tooBig.length) setRejected([...problems, ...tooBig.map((f) => `${f.name}: couldn't be shrunk below 10 MB. Try a screenshot of it instead.`)]);
+      const added = shrunk
+        .map((file, i) => ({ file, source: sourceKey(accepted[i]) }))
+        .filter(({ file }) => file.size <= UPLOAD_LIMITS.maxBytes)
+        .map(({ file, source }) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file), source }));
+      onChange([...latest.current, ...added]);
+    } finally {
+      setPreparing(0);
+      onPreparingChange?.(false);
+    }
   }
 
   function remove(photo: Photo) {
@@ -81,7 +107,9 @@ export function PhotoDropzone({
         <ImagePlus aria-hidden className={cn("size-9", dragging ? "text-copper-700" : "text-navy-600")} />
         <p className="mt-3 font-semibold">{dragging ? "Drop to attach" : "Drag photos here, or choose files"}</p>
         <p id="photos-hint" className="mt-1 text-sm text-navy-600">
-          JPG, PNG or WebP, up to 10 MB each. {remaining > 0 ? `${remaining} of ${UPLOAD_LIMITS.maxFiles} left.` : "Limit reached."}
+          {preparing
+            ? `Preparing ${preparing} photo${preparing === 1 ? "" : "s"}…`
+            : `JPG, PNG or WebP. We shrink them before sending. ${remaining > 0 ? `${remaining} of ${UPLOAD_LIMITS.maxFiles} left.` : "Limit reached."}`}
         </p>
         {/* The input covers the zone so a click anywhere opens the picker. */}
         <input
@@ -90,7 +118,7 @@ export function PhotoDropzone({
           type="file"
           multiple
           accept={UPLOAD_LIMITS.accept}
-          disabled={remaining <= 0}
+          disabled={remaining <= 0 || preparing > 0}
           aria-label="Choose photos to attach"
           aria-describedby={error ? "photos-error" : "photos-hint"}
           onChange={(e) => {

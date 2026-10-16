@@ -1,6 +1,6 @@
 import "server-only";
 import { formatCents } from "@/lib/money";
-import { declineReasons } from "@/lib/quotes/state";
+import { declineReasons, paymentMethodLabel } from "@/lib/quotes/state";
 import { getSite } from "@/lib/settings";
 import { esc, layout, rows } from "./templates";
 
@@ -25,12 +25,7 @@ type PaymentInfo = {
   isDeposit: boolean;
 };
 
-const methodLabel = (p: PaymentInfo) =>
-  p.cardBrand && p.cardLast4
-    ? `${p.cardBrand[0].toUpperCase()}${p.cardBrand.slice(1)} ending ${p.cardLast4}`
-    : p.method === "cashapp"
-      ? "Cash App Pay"
-      : (p.method ?? "Card");
+const methodLabel = (p: PaymentInfo) => paymentMethodLabel(p);
 
 const dateFmt = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "America/Chicago" });
 

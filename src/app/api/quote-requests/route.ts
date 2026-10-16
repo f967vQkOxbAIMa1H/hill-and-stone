@@ -18,7 +18,7 @@ const fail = (status: number, errors: FieldErrors) => NextResponse.json({ ok: fa
 export async function POST(request: Request) {
   const site = await getSite();
   // 5 requests per connection every 15 minutes.
-  if (!rateLimit(`quote:${clientIp(request.headers)}`, 5, 15 * 60_000)) {
+  if (!(await rateLimit(`quote:${clientIp(request.headers)}`, 5, 15 * 60_000))) {
     return fail(429, { form: "Too many requests from this connection. Wait a few minutes, or call us." });
   }
 

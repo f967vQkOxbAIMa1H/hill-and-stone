@@ -6,9 +6,11 @@ import { sendEmail } from "@/lib/email/send";
 import { acceptedNotice, declinedNotice, paymentReceipt } from "@/lib/email/quote-templates";
 import { env } from "@/lib/env";
 import { getSite } from "@/lib/settings";
+import { sendReviewInvite } from "@/lib/review-invites";
 import { getStripe, PAYMENT_METHOD_TYPES } from "@/lib/stripe";
 import type { PortalQuote } from "./queries";
-import { amountDue, balanceCents, canAccept, portalState, statusAfterPayment, type DeclineReason } from "./state";
+import { formatCents } from "@/lib/money";
+import { amountDue, balanceCents, canAccept, canRequestPayment, portalState, statusAfterPayment, type DeclineReason, type OfflineMethod } from "./state";
 
 export class QuoteActionError extends Error {
   constructor(
@@ -54,11 +56,7 @@ export async function createCheckout(quote: PortalQuote) {
   }
 
   // Close any earlier unfinished checkouts so the same quote can't be paid twice from two tabs.
-  const stale = quote.payments.filter((p) => p.status === "PENDING" && p.stripeCheckoutSessionId);
-  await Promise.allSettled(stale.map((p) => stripe.checkout.sessions.expire(p.stripeCheckoutSessionId!)));
-  if (stale.length) {
-    await db.payment.updateMany({ where: { id: { in: stale.map((p) => p.id) }, status: "PENDING" }, data: { status: "CANCELED" } });
-  }
+  await closeOpenCheckouts(quote.payments);
 
   const payment = await db.payment.create({
     data: { quoteId: quote.id, amountCents: amount, currency: quote.currency },
@@ -104,6 +102,15 @@ export async function createCheckout(quote: PortalQuote) {
     await db.payment.update({ where: { id: payment.id }, data: { status: "FAILED" } });
     throw new QuoteActionError("stripe_error", `Checkout didn't open. Try again, or call ${site.phone} to pay by phone.`);
   }
+}
+
+/** Expires unfinished Stripe Checkout sessions and marks their payments canceled. */
+async function closeOpenCheckouts(payments: { id: string; status: string; stripeCheckoutSessionId: string | null }[]) {
+  const stale = payments.filter((p) => p.status === "PENDING" && p.stripeCheckoutSessionId);
+  if (!stale.length) return;
+  const stripe = getStripe();
+  if (stripe) await Promise.allSettled(stale.map((p) => stripe.checkout.sessions.expire(p.stripeCheckoutSessionId!)));
+  await db.payment.updateMany({ where: { id: { in: stale.map((p) => p.id) }, status: "PENDING" }, data: { status: "CANCELED" } });
 }
 
 // ─── Fulfillment (webhook and return page both call this) ───────────────────
@@ -191,6 +198,8 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
     if (env.CONTRACTOR_NOTIFY_EMAIL) {
       await sendEmail({ type: "QUOTE_ACCEPTED_NOTICE", to: env.CONTRACTOR_NOTIFY_EMAIL, quoteId: quote.id, replyTo: quote.customer.email, ...(await acceptedNotice(info, pay)) });
     }
+    // Paid in full: the job is done, so ask for a review.
+    if (result.balance === 0) await sendReviewInvite(quote.id);
   });
 
   return { state: "fulfilled" };
@@ -306,4 +315,65 @@ export async function declineQuote(
       ...(await declinedNotice(quoteInfo(quote), reason, note)),
     });
   });
+}
+
+// ─── Offline payments (cash, check), recorded by hand in the admin ─────────
+
+export type OfflinePaymentInput = { method: OfflineMethod; amountCents: number; note: string | null };
+
+/**
+ * Records a payment taken outside Stripe. Allowed once the quote is accepted (payment is due on
+ * completion, so this is normally after the job). The amount can't exceed the balance; that's re-checked
+ * inside the transaction so a Stripe payment landing at the same moment can't cause an overpayment.
+ */
+export async function recordOfflinePayment(quoteId: string, input: OfflinePaymentInput, recordedBy: { id: string; email: string }) {
+  const quote = await db.quote.findUnique({ where: { id: quoteId }, include: { payments: true } });
+  if (!quote) throw new QuoteActionError("not_available", "That quote no longer exists.");
+  if (!canRequestPayment(quote)) throw new QuoteActionError("not_available", "Payments can only be recorded on accepted quotes with a balance due.");
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) throw new QuoteActionError("not_available", "Enter an amount more than $0.");
+
+  // The customer is paying in person: close any checkout they opened so they can't pay twice.
+  await closeOpenCheckouts(quote.payments);
+
+  const now = new Date();
+  const result = await db.$transaction(async (tx) => {
+    const fresh = await tx.quote.findUniqueOrThrow({ where: { id: quoteId }, include: { payments: true } });
+    const due = balanceCents(fresh);
+    if (input.amountCents > due) return { error: `That's more than the ${formatCents(due)} balance.` } as const;
+    const payment = await tx.payment.create({
+      data: {
+        quoteId,
+        amountCents: input.amountCents,
+        currency: fresh.currency,
+        status: "SUCCEEDED",
+        method: input.method,
+        note: input.note,
+        recordedById: recordedBy.id,
+        paidAt: now,
+      },
+    });
+    const withPayment = { ...fresh, payments: [...fresh.payments, payment] };
+    const nextStatus = statusAfterPayment(withPayment);
+    await tx.quote.update({ where: { id: quoteId }, data: { status: nextStatus, paymentRequestedAt: fresh.paymentRequestedAt ?? now } });
+    await tx.quoteEvent.create({
+      data: { quoteId, type: "PAID", metadata: { paymentId: payment.id, amountCents: input.amountCents, method: input.method, by: recordedBy.email } },
+    });
+    if (fresh.leadId && nextStatus === "PAID") {
+      await tx.lead.updateMany({ where: { id: fresh.leadId, status: { not: "ARCHIVED" } }, data: { status: "COMPLETED" } });
+    }
+    await tx.conversionEvent.create({ data: { name: "quote_paid", quoteId, valueCents: input.amountCents, properties: { method: input.method } } });
+    return { payment, balance: balanceCents(withPayment) } as const;
+  });
+  if ("error" in result) throw new QuoteActionError("not_available", result.error!);
+
+  after(async () => {
+    const q = await db.quote.findUnique({ where: { id: quoteId }, include: { customer: true, address: true } });
+    if (!q) return;
+    const site = await getSite();
+    const pay = { amountCents: input.amountCents, balanceCents: result.balance, paidAt: now, isDeposit: false, method: input.method, cardBrand: null, cardLast4: null, receiptUrl: null };
+    await sendEmail({ type: "PAYMENT_RECEIPT", to: q.customer.email, quoteId, replyTo: site.email, ...(await paymentReceipt({ ...quoteInfo(q), customerName: q.customer.firstName }, pay)) });
+    if (result.balance === 0) await sendReviewInvite(quoteId);
+  });
+
+  return { amountCents: input.amountCents, balanceCents: result.balance };
 }

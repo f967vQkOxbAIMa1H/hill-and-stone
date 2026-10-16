@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { compressionSteps, fitWithin } from "@/lib/image-compress";
+import { paymentMethodLabel } from "@/lib/quotes/state";
 import { reviewSchema } from "@/lib/admin/content-schema";
 import { clientIp } from "@/lib/rate-limit";
 import { driverFromEnv } from "@/lib/storage/drivers";
@@ -7,6 +9,8 @@ import { lookupZip, serviceAreaSlug } from "@/lib/service-area";
 import { settingsSchema } from "@/lib/settings/schema";
 import { brand, buildSite, defaultSettings } from "@/lib/site";
 import { storyParagraphs } from "@/lib/story";
+
+const TOKEN = "p3ja2bqo940LWNsckO1gpfJCEDKCJ1Zlf-ZClJyPlHA";
 
 describe("review routing", () => {
   it("publishes 4 and 5 stars and holds anything lower", () => {
@@ -20,10 +24,17 @@ describe("review routing", () => {
     expect(LOW_RATING_SUBJECT_TAG).toBe("[Feedback/Low-Rating]");
   });
   it("validates submissions and strips HTML", () => {
-    const ok = reviewSubmissionSchema.safeParse({ rating: "4", authorName: "Jordan E.", city: "Fayetteville", email: "J@Example.com", body: "Fixed our <b>sticking</b> door in an hour." });
-    expect(ok.success && ok.data).toMatchObject({ rating: 4, email: "j@example.com", body: "Fixed our sticking door in an hour." });
-    expect(reviewSubmissionSchema.safeParse({ rating: 0, authorName: "Jo", city: "Rogers", email: "a@b.co", body: "Long enough text" }).success).toBe(false);
-    expect(reviewSubmissionSchema.safeParse({ rating: 6, authorName: "Jo", city: "Rogers", email: "a@b.co", body: "Long enough text" }).success).toBe(false);
+    const ok = reviewSubmissionSchema.safeParse({ rating: "4", authorName: "Jordan E.", city: "Fayetteville", token: TOKEN, body: "Fixed our <b>sticking</b> door in an hour." });
+    expect(ok.success && ok.data).toMatchObject({ rating: 4, body: "Fixed our sticking door in an hour." });
+    expect(reviewSubmissionSchema.safeParse({ rating: 0, authorName: "Jo", city: "Rogers", token: TOKEN, body: "Long enough text" }).success).toBe(false);
+    expect(reviewSubmissionSchema.safeParse({ rating: 6, authorName: "Jo", city: "Rogers", token: TOKEN, body: "Long enough text" }).success).toBe(false);
+  });
+  it("requires a well-formed private review link token", () => {
+    const base = { rating: 5, authorName: "Jo E.", city: "Rogers", body: "Long enough text here" };
+    expect(reviewSubmissionSchema.safeParse({ ...base, token: TOKEN }).success).toBe(true);
+    for (const token of ["", "short", "' OR 1=1 --", TOKEN + "x", { $ne: "" }]) {
+      expect(reviewSubmissionSchema.safeParse({ ...base, token }).success).toBe(false);
+    }
   });
   it("won't let an admin publish a review under 4 stars", () => {
     const base = { authorName: "Dana R.", city: "Rogers", body: "They came back and fixed it.", source: "direct", permission: true, published: true };
@@ -90,7 +101,7 @@ describe("origin story", () => {
 });
 
 describe("security hardening", () => {
-  const valid = { authorName: "Jo E.", city: "Rogers", email: "a@b.co", body: "Long enough text here" };
+  const valid = { authorName: "Jo E.", city: "Rogers", token: TOKEN, body: "Long enough text here" };
   it("only accepts a plain number or numeric string as a rating", () => {
     for (const rating of [[5], { $gt: 0 }, "5 OR 1=1", true, null]) {
       expect(reviewSubmissionSchema.safeParse({ ...valid, rating }).success).toBe(false);
@@ -114,5 +125,29 @@ describe("storage driver selection", () => {
     expect(driverFromEnv({}).name).toBe("local");
     expect(() => driverFromEnv({ STORAGE_DRIVER: "S3 " })).toThrow(/STORAGE_BUCKET/);
     expect(() => driverFromEnv({ STORAGE_DRIVER: "netlfy" })).toThrow(/Unknown STORAGE_DRIVER/);
+  });
+});
+
+describe("photo shrinking plan", () => {
+  it("fits the long edge and never upscales", () => {
+    expect(fitWithin(4032, 3024, 2000)).toEqual({ width: 2000, height: 1500 });
+    expect(fitWithin(3024, 4032, 2000)).toEqual({ width: 1500, height: 2000 });
+    expect(fitWithin(800, 600, 2000)).toEqual({ width: 800, height: 600 });
+  });
+  it("steps size and quality down until a photo fits", () => {
+    const steps = compressionSteps(2000);
+    expect(steps[0]).toEqual({ edge: 2000, quality: 0.82 });
+    expect(steps.every((s, i) => i === 0 || (s.edge < steps[i - 1].edge && s.quality < steps[i - 1].quality))).toBe(true);
+  });
+});
+
+describe("payment method labels", () => {
+  it("names card, wallet and offline payments", () => {
+    expect(paymentMethodLabel({ method: "card", cardBrand: "visa", cardLast4: "4242" })).toBe("Visa ending 4242");
+    expect(paymentMethodLabel({ method: "apple_pay" })).toBe("Apple Pay");
+    expect(paymentMethodLabel({ method: "cash" })).toBe("Cash");
+    expect(paymentMethodLabel({ method: "check" })).toBe("Check");
+    expect(paymentMethodLabel({ method: "other" })).toBe("Paid in person");
+    expect(paymentMethodLabel({ method: null })).toBe("Card");
   });
 });

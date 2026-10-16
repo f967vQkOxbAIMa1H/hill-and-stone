@@ -20,6 +20,9 @@ const ADMIN_PASSWORD = `e2e-${randomBytes(9).toString("base64url")}`;
 const stripe = new Stripe("sk_test_signing_only");
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
+// Every suite signs in and submits forms from the same local address, and rate limits now persist in the
+// database, so start each run with fresh counters (local test database only).
+await db.query(`delete from "RateLimitHit"`);
 
 const results = [];
 const check = (name, ok, detail = "") => {

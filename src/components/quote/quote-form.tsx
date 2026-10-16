@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { describedBy, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { RadioTiles } from "@/components/ui/radio-tiles";
 import { formatDay } from "@/lib/dates";
-import { budgetOptions, categoryOptions, contactOptions, timelineOptions } from "@/lib/quote-request/options";
+import { budgetOptions, categoryOptions, contactOptions, timelineOptions, UPLOAD_LIMITS } from "@/lib/quote-request/options";
 import { flattenErrors, quoteRequestSchema, type FieldErrors, type QuoteRequestInput } from "@/lib/quote-request/schema";
 import { useSite } from "@/components/site-provider";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -40,6 +40,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
   const site = useSite();
   const [values, setValues] = useState<Values>({ ...empty, category: defaultCategory ?? "" });
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [preparingPhotos, setPreparingPhotos] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<Status>({ state: "idle" });
   const [submitted, setSubmitted] = useState(false);
@@ -74,6 +75,15 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
     }
     setErrors({});
 
+    // Photos are shrunk on attach, so this only trips if a photo couldn't be shrunk.
+    const total = photos.reduce((sum, p) => sum + p.file.size, 0);
+    if (total > UPLOAD_LIMITS.maxTotalBytes) {
+      const errs = { photos: "These photos are too large to send together. Remove one or two and try again." };
+      setErrors(errs);
+      focusFirstError(errs);
+      return;
+    }
+
     const body = new FormData();
     for (const [k, v] of Object.entries(values)) body.append(k, v);
     for (const p of photos) body.append("photos", p.file, p.file.name);
@@ -97,7 +107,11 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
         requestAnimationFrame(() => doneHeading.current?.focus());
         track("generate_lead", { form: "quote_request", service_category: values.category, photos: photos.length });
       } else {
-        const errs = res?.errors ?? { form: `Your request didn't send. Try again, or call us at ${site.phone}.` };
+        const errs =
+          res?.errors ??
+          (xhr.status === 413
+            ? { photos: "The photos were too large to send. Remove one or two and try again." }
+            : { form: `Your request didn't send. Try again, or call us at ${site.phone}.` });
         setErrors(errs);
         setStatus({ state: "idle" });
         requestAnimationFrame(() => focusFirstError(errs));
@@ -207,7 +221,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
             Photos <span className="font-normal text-navy-600">(optional, but they help us price faster)</span>
           </p>
           <ScrollReveal delay={0.1} className="mt-2">
-            <PhotoDropzone photos={photos} onChange={setPhotos} error={err("photos")} />
+            <PhotoDropzone photos={photos} onChange={setPhotos} onPreparingChange={setPreparingPhotos} error={err("photos")} />
           </ScrollReveal>
         </div>
       </Section>
@@ -243,8 +257,8 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
           </p>
         )}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <Button type="submit" size="lg" disabled={sending} className="sm:min-w-56">
-            {sending ? (photos.length && status.progress < 100 ? `Uploading photos… ${status.progress}%` : "Sending…") : "Send request"}
+          <Button type="submit" size="lg" disabled={sending || preparingPhotos} className="sm:min-w-56">
+            {preparingPhotos ? "Preparing photos…" : sending ? (photos.length && status.progress < 100 ? `Uploading photos… ${status.progress}%` : "Sending…") : "Send request"}
           </Button>
           <a href={site.phoneHref} className="inline-flex items-center gap-2 font-semibold text-navy-700 hover:text-copper-700">
             <Phone aria-hidden className="size-4" />

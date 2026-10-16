@@ -97,3 +97,22 @@ export const declineReasons = [
   { value: "OTHER", label: "Something else" },
 ] as const;
 export type DeclineReason = (typeof declineReasons)[number]["value"];
+
+/** Payments the owner records by hand in the admin, outside Stripe. */
+export const offlineMethods = [
+  { value: "cash", label: "Cash" },
+  { value: "check", label: "Check" },
+  { value: "other", label: "Other" },
+] as const;
+export type OfflineMethod = (typeof offlineMethods)[number]["value"];
+
+/** How a payment was made, for receipts, the client's quote page and the admin. */
+export function paymentMethodLabel(p: { method?: string | null; cardBrand?: string | null; cardLast4?: string | null }) {
+  if (p.cardBrand && p.cardLast4) return `${p.cardBrand[0].toUpperCase()}${p.cardBrand.slice(1)} ending ${p.cardLast4}`;
+  const offline = offlineMethods.find((m) => m.value === p.method);
+  if (offline) return offline.value === "other" ? "Paid in person" : offline.label;
+  if (p.method === "apple_pay") return "Apple Pay";
+  if (p.method === "google_pay") return "Google Pay";
+  if (p.method === "cashapp") return "Cash App Pay";
+  return "Card";
+}

@@ -13,7 +13,7 @@ const body = z.object({
 
 export async function POST(request: Request, { params }: RouteContext<"/api/quotes/[token]/decline">) {
   const { token } = await params;
-  if (!rateLimit(`decline:${clientIp(request.headers)}`, 10, 10 * 60_000)) {
+  if (!(await rateLimit(`decline:${clientIp(request.headers)}`, 10, 10 * 60_000))) {
     return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
   }
   const parsed = body.safeParse(await request.json().catch(() => null));

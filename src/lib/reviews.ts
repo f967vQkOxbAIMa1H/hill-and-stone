@@ -1,5 +1,6 @@
 // Review rules shared by the public form, the API route, content queries and tests. Client-safe.
 import { z } from "zod";
+import { TOKEN_PATTERN } from "@/lib/quotes/state";
 import { stripTags } from "@/lib/sanitize";
 
 /** Reviews at or above this rating show on the site automatically. Anything lower never does. */
@@ -28,7 +29,8 @@ export const reviewSubmissionSchema = z.object({
     .pipe(z.number().int(starError).min(1, starError).max(5, starError)),
   authorName: text(80).min(2, "Enter your name as you'd like it shown, like Jordan E."),
   city: text(60).min(2, "Enter your town, like Fayetteville."),
-  email: z.string().trim().toLowerCase().pipe(z.email("Enter an email like you@example.com.")),
+  // The private link's token: only customers emailed a link after a paid job can leave a review.
+  token: z.string().regex(TOKEN_PATTERN, "This review link isn't valid."),
   body: text(2000)
     .min(10, "Tell us a little about the job, at least a sentence.")
     .max(2000, "Keep your review under 2,000 characters."),

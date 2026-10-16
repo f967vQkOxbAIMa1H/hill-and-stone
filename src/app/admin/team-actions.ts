@@ -136,7 +136,7 @@ export async function setStaffActive(userId: string, active: boolean): Promise<R
 
 export async function changeOwnPassword(input: ChangePasswordInput): Promise<Result> {
   const me = await requireAdmin({ allowPasswordChange: true });
-  if (!rateLimit(`pw:${me.id}`, 10, 15 * 60_000)) return { ok: false, errors: { form: "Too many attempts. Wait 15 minutes and try again." } };
+  if (!(await rateLimit(`pw:${me.id}`, 10, 15 * 60_000))) return { ok: false, errors: { form: "Too many attempts. Wait 15 minutes and try again." } };
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: flatten(parsed.error) };
   const user = await db.user.findUniqueOrThrow({ where: { id: me.id } });

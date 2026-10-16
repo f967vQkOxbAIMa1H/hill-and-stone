@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CtaBand } from "@/components/site/cta-band";
-import { ReviewForm } from "@/components/site/review-form";
 import { GoogleG, GoogleReviewsLink, Stars } from "@/components/site/review-bits";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
@@ -91,10 +90,20 @@ export default async function ReviewsPage() {
         <Container className="grid gap-10 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16 lg:py-20">
           <div>
             <Heading id="leave-heading">Had us out recently?</Heading>
-            <Lede className="mt-4">Tell us how it went. It takes a minute.</Lede>
           </div>
-          <div className="slate rounded-panel p-5 sm:p-8">
-            <ReviewForm ownerName={site.story.founderName} />
+          <div className="max-w-[60ch] space-y-4 text-lg text-navy-700">
+            <p>
+              Every review on this page comes from a real, finished job. When your job is paid, we email you a private link to
+              tell us how it went. It takes a minute.
+            </p>
+            <p>
+              Can&apos;t find the email? Write to{" "}
+              <a href={`mailto:${site.email}?subject=${encodeURIComponent("Review link")}`} className="font-semibold text-copper-700 underline underline-offset-4">
+                {site.email}
+              </a>{" "}
+              and we&apos;ll send it again.
+            </p>
+            {site.googleReviewsUrl && <GoogleReviewsLink />}
           </div>
         </Container>
       </section>

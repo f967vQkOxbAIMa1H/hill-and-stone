@@ -6,7 +6,7 @@ import { getQuoteByToken } from "@/lib/quotes/queries";
 /** Accepting a quote charges nothing: payment is due upon completion. */
 export async function POST(request: Request, { params }: RouteContext<"/api/quotes/[token]/accept">) {
   const { token } = await params;
-  if (!rateLimit(`accept:${clientIp(request.headers)}`, 10, 10 * 60_000)) {
+  if (!(await rateLimit(`accept:${clientIp(request.headers)}`, 10, 10 * 60_000))) {
     return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
   }
 

@@ -119,8 +119,9 @@ export function getQuoteForAdmin(id: string) {
       lineItems: { orderBy: { sortOrder: "asc" } },
       events: { orderBy: { createdAt: "asc" } },
       emails: { orderBy: { createdAt: "asc" } },
-      payments: { orderBy: { createdAt: "asc" } },
+      payments: { orderBy: { createdAt: "asc" }, include: { recordedBy: { select: { name: true, email: true } } } },
       lead: { select: { id: true, number: true, category: true } },
+      reviewInvite: { select: { token: true, createdAt: true, expiresAt: true, usedAt: true } },
     },
   });
 }

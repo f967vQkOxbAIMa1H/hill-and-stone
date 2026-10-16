@@ -18,6 +18,9 @@ const TECH_EMAIL = `e2e.tech.${tag}@hillstone.com`;
 const TECH_NEW_PASSWORD = `my own sturdy phrase ${tag}`;
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
+// Every suite signs in and submits forms from the same local address, and rate limits now persist in the
+// database, so start each run with fresh counters (local test database only).
+await db.query(`delete from "RateLimitHit"`);
 const savedSettings = (await db.query(`select data, "updatedById" from "SiteSettings" where id='site'`)).rows[0] ?? null;
 
 const results = [];

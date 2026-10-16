@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle2, Star } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { describedBy, Field, Input, Textarea } from "@/components/ui/field";
@@ -10,14 +9,27 @@ import { flattenErrors } from "@/lib/quote-request/schema";
 import { reviewSubmissionSchema } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
 
-type Values = { rating: number; body: string; authorName: string; city: string; email: string };
+type Values = { rating: number; body: string; authorName: string; city: string; token: string };
 type Errors = Partial<Record<keyof Values | "form", string>>;
 
 const ratingWords = ["", "Poor", "Fair", "Okay", "Good", "Excellent"];
 
-export function ReviewForm({ ownerName }: { ownerName: string | null }) {
-  const router = useRouter();
-  const [values, setValues] = useState<Values>({ rating: 0, body: "", authorName: "", city: "", email: "" });
+/** Only reachable from a private review link, so the token, name and town come from the paid job. */
+export function ReviewForm({
+  ownerName,
+  token,
+  defaultName,
+  defaultCity,
+  email,
+}: {
+  ownerName: string | null;
+  token: string;
+  defaultName: string;
+  defaultCity: string;
+  /** Shown in the low-rating confirmation; it's already on file, so the form doesn't ask for it. */
+  email: string;
+}) {
+  const [values, setValues] = useState<Values>({ rating: 0, body: "", authorName: defaultName, city: defaultCity, token });
   const [hover, setHover] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
   const [state, setState] = useState<"idle" | "sending" | { published: boolean }>("idle");
@@ -49,8 +61,8 @@ export function ReviewForm({ ownerName }: { ownerName: string | null }) {
       const data = await res.json();
       if (!res.ok || !data.ok) throw data.errors ?? {};
       track("review_submitted", { rating: values.rating });
+      // No refresh: the link is now used, so re-rendering would replace this thank-you with "already used".
       setState({ published: !!data.published });
-      if (data.published) router.refresh();
     } catch (errs) {
       setErrors({ form: "Your review didn't send. Check your connection and try again.", ...(errs as Errors) });
       setState("idle");
@@ -71,7 +83,7 @@ export function ReviewForm({ ownerName }: { ownerName: string | null }) {
             <>
               <p className="font-bold">Thanks for telling us, {values.authorName.split(" ")[0]}.</p>
               <p className="mt-1 text-navy-600">
-                Your feedback went straight to {ownerName ?? "the owner"}, who will reach out at {values.email} to make it right.
+                Your feedback went straight to {ownerName ?? "the owner"}, who will reach out at {email} to make it right.
               </p>
             </>
           )}
@@ -140,10 +152,6 @@ export function ReviewForm({ ownerName }: { ownerName: string | null }) {
       <Field id="review-city" label="Town" error={err("city")}>
         <Input id="review-city" autoComplete="address-level2" placeholder="Fayetteville" value={values.city} onChange={(e) => set("city", e.target.value)} {...describedBy("review-city", { error: err("city") })} />
       </Field>
-      <Field id="review-email" label="Email" hint="So we can follow up. Never shown on the site." error={err("email")} className="sm:col-span-2">
-        <Input id="review-email" type="email" autoComplete="email" value={values.email} onChange={(e) => set("email", e.target.value)} {...describedBy("review-email", { hint: "So we can follow up. Never shown on the site.", error: err("email") })} />
-      </Field>
-
       <div className="sm:col-span-2">
         {err("form") && (
           <p role="alert" className="mb-4 rounded-control bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
@@ -153,7 +161,7 @@ export function ReviewForm({ ownerName }: { ownerName: string | null }) {
         <Button type="submit" variant="dark" disabled={state === "sending"}>
           {state === "sending" ? "Sending…" : "Send review"}
         </Button>
-        <p className="mt-3 text-sm text-navy-600">By sending, you agree we can show your review, name and town on this site.</p>
+        <p className="mt-3 text-sm text-navy-600">By sending, you agree we can show your review, name and town on this site. This link works once.</p>
       </div>
     </form>
   );

@@ -6,7 +6,7 @@ import { getQuoteByToken } from "@/lib/quotes/queries";
 /** Opens Stripe Checkout for the balance due. Only works once the job is complete and payment was requested. */
 export async function POST(request: Request, { params }: RouteContext<"/api/quotes/[token]/checkout">) {
   const { token } = await params;
-  if (!rateLimit(`checkout:${clientIp(request.headers)}`, 10, 10 * 60_000)) {
+  if (!(await rateLimit(`checkout:${clientIp(request.headers)}`, 10, 10 * 60_000))) {
     return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
   }
   const quote = await getQuoteByToken(token);

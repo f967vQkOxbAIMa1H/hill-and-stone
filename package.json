@@ -26,7 +26,8 @@
     "quotes:expire": "tsx scripts/expire-quotes.ts",
     "test:e2e:content": "node scripts/e2e-content.mjs",
     "test:e2e:team": "node scripts/e2e-team.mjs",
-    "db:sync-netlify": "tsx scripts/sync-netlify-migrations.ts"
+    "db:sync-netlify": "tsx scripts/sync-netlify-migrations.ts",
+    "test:e2e:launch": "node scripts/e2e-launch.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1138.0",

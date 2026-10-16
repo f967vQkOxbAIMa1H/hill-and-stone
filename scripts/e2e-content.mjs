@@ -19,6 +19,9 @@ const ADMIN_EMAIL = "e2e.content@hillstone.com";
 const ADMIN_PASSWORD = `e2e-${randomBytes(9).toString("base64url")}`;
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
+// Every suite signs in and submits forms from the same local address, and rate limits now persist in the
+// database, so start each run with fresh counters (local test database only).
+await db.query(`delete from "RateLimitHit"`);
 
 const results = [];
 const check = (name, ok, detail = "") => {
@@ -165,7 +168,7 @@ try {
   const mediaUrl = sliderImgs[0]?.src ?? "";
   const directKey = (await db.query(`select "storageKey" from "ProjectImage" where "projectId"=$1 limit 1`, [projectId])).rows[0].storageKey;
   const direct = await fetch(`${BASE}/media/${directKey}`);
-  check("published photos are served from /media", direct.ok && direct.headers.get("content-type") === "image/png", mediaUrl.slice(0, 60));
+  check("published photos are served from /media", direct.ok && direct.headers.get("content-type") === "image/jpeg" /* shrunk to JPEG in the browser */, mediaUrl.slice(0, 60));
 
   // ── Reviews: permission rule, publish, unpublish ─────────────────────────
   await go("/admin/reviews/new");

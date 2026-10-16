@@ -38,7 +38,12 @@ export const labelFor = <T extends string>(options: { value: T; label: string }[
 
 export const UPLOAD_LIMITS = {
   maxFiles: 10,
+  /** Per file, as received by the server (after the browser shrinks it). */
   maxBytes: 10 * 1024 * 1024,
+  /** Per file, as chosen on the device, before shrinking. */
+  maxSourceBytes: 30 * 1024 * 1024,
+  /** Whole request: serverless hosts reject bodies over ~4.5 MB, so stay under it with room for fields. */
+  maxTotalBytes: 4 * 1024 * 1024,
   types: ["image/jpeg", "image/png", "image/webp"] as const,
   accept: ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp",
 };

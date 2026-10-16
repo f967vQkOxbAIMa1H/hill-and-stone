@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
       // Customer quote pages carry a secret token in the URL: never cache, index or leak it.
       // Listed last because later rules override earlier ones for the same header.
       { source: "/quote/:path*", headers: privateHeaders },
+      { source: "/review/:path*", headers: privateHeaders },
       { source: "/api/quotes/:path*", headers: privateHeaders },
       { source: "/admin/:path*", headers: privateHeaders },
       { source: "/admin", headers: privateHeaders },

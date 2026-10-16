@@ -103,6 +103,7 @@ enum QuoteEventType {
   PAYMENT_FAILED
   EXPIRED
   VOIDED
+  REVIEW_REQUESTED
 }
 
 enum EmailType {
@@ -117,6 +118,7 @@ enum EmailType {
   BALANCE_REQUEST // to customer: job done, balance due, with quote link
   STAFF_ACCOUNT_NOTICE // to a team member: your admin login is ready (never includes the password)
   LOW_RATING_FEEDBACK // to the business inbox: a review under 4 stars, kept off the site
+  REVIEW_INVITE // to customer: job paid, here's your private link to leave a review
 }
 
 enum EmailStatus {
@@ -163,9 +165,10 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  notes      LeadNote[]
-  quotesMade Quote[]    @relation("QuoteCreatedBy")
-  sessions   Session[]
+  notes            LeadNote[]
+  quotesMade       Quote[]    @relation("QuoteCreatedBy")
+  paymentsRecorded Payment[]  @relation("PaymentRecordedBy")
+  sessions         Session[]
 }
 
 /// Business settings edited from /admin/settings/site. One row (id "site"); the JSON is validated
@@ -352,10 +355,11 @@ model Quote {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  lineItems QuoteLineItem[]
-  payments  Payment[]
-  events    QuoteEvent[]
-  emails    EmailLog[]
+  lineItems    QuoteLineItem[]
+  payments     Payment[]
+  events       QuoteEvent[]
+  reviewInvite ReviewInvite?
+  emails       EmailLog[]
 
   @@index([status, createdAt])
   @@index([customerId])
@@ -391,6 +395,11 @@ model Payment {
   stripeCheckoutSessionId String?       @unique
   stripePaymentIntentId   String?       @unique
   receiptUrl              String?
+  /// Set for payments recorded by hand in the admin (cash, check); null for Stripe payments.
+  recordedById            String?
+  recordedBy              User?         @relation("PaymentRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  /// Admin note on an offline payment, e.g. a check number.
+  note                    String?
   paidAt                  DateTime?
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt
@@ -493,22 +502,50 @@ model ProjectImage {
 }
 
 model Testimonial {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   projectId   String?
-  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project     Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
   authorName  String
   city        String
   body        String
   /// Reviews under 4 stars never show publicly (see src/lib/reviews.ts); they go to the business inbox instead.
-  rating      Int       @default(5)
-  source      String    @default("google") // google, facebook, direct, website
+  rating      Int           @default(5)
+  source      String        @default("google") // google, facebook, direct, website
   /// Private contact for reviews submitted on the site, so the owner can follow up. Never shown publicly.
   authorEmail String?
   sourceUrl   String?
-  featured    Boolean   @default(false)
-  published   Boolean   @default(true)
+  invite      ReviewInvite?
+  featured    Boolean       @default(false)
+  published   Boolean       @default(true)
   reviewedAt  DateTime?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime      @default(now())
+}
+
+/// A private, single-use link to leave a review, emailed when a quote is paid in full. Only these links
+/// can submit reviews, so every review on the site comes from a real, paid job.
+model ReviewInvite {
+  id            String       @id @default(cuid())
+  /// Unguessable token in the /review/[token] URL, like Quote.publicToken.
+  token         String       @unique
+  quoteId       String       @unique
+  quote         Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  expiresAt     DateTime
+  usedAt        DateTime?
+  testimonialId String?      @unique
+  testimonial   Testimonial? @relation(fields: [testimonialId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+}
+
+/// Fixed-window rate-limit counters, shared by every server instance (serverless-safe).
+/// `key` is a SHA-256 hash of the limiter name and client, so no raw IPs or emails are stored.
+model RateLimitHit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+  expiresAt   DateTime
+
+  @@id([key, windowStart])
+  @@index([expiresAt])
 }
 
 model CareerApplication {

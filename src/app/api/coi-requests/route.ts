@@ -10,7 +10,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 export async function POST(request: Request) {
   const site = await getSite();
-  if (!rateLimit(`coi:${clientIp(request.headers)}`, 3, 10 * 60_000)) {
+  if (!(await rateLimit(`coi:${clientIp(request.headers)}`, 3, 10 * 60_000))) {
     return NextResponse.json({ ok: false, errors: { form: "Too many requests. Wait a few minutes, or email us." } }, { status: 429 });
   }
   const body = await request.json().catch(() => null);

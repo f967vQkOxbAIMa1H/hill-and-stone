@@ -110,7 +110,8 @@ try {
   check("non-image rejected with reason", rejectedText);
   await shot(page, "quote-filled");
 
-  await page.click("button::-p-text(Remove ceiling-stain.png)");
+  // Photos are shrunk to JPEG in the browser, so the PNG shows up as ceiling-stain.jpg.
+  await page.click("button::-p-text(Remove ceiling-stain.jpg)");
   thumbs = await page.$$eval("ul[aria-label='Attached photos'] li", (els) => els.length);
   check("remove button removes a photo", thumbs === 1, `${thumbs} left`);
 

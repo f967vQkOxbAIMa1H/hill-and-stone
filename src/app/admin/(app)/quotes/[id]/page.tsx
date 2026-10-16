@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { fmtDateTime, fmtDay } from "@/components/admin/format";
 import { QuoteActionsBar } from "@/components/admin/quote-actions-bar";
 import { QuoteBuilder } from "@/components/admin/quote-builder";
+import { ReviewLink } from "@/components/admin/review-link";
 import { Badge } from "@/components/ui/badge";
 import { builderLead, draftInput } from "@/lib/admin/builder-initial";
 import { eventLabel, quoteStatus } from "@/lib/admin/labels";
@@ -14,7 +15,7 @@ import { getLead, getQuoteForAdmin, type AdminQuote } from "@/lib/admin/queries"
 import { env } from "@/lib/env";
 import { getSite } from "@/lib/settings";
 import { formatCents } from "@/lib/money";
-import { balanceCents, canRequestPayment, depositCents, hasDeposit, paidCents, portalState } from "@/lib/quotes/state";
+import { balanceCents, canRequestPayment, depositCents, hasDeposit, paidCents, paymentMethodLabel, portalState } from "@/lib/quotes/state";
 import { declineReasons } from "@/lib/quotes/state";
 
 export async function generateMetadata({ params }: PageProps<"/admin/quotes/[id]">): Promise<Metadata> {
@@ -94,6 +95,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
             canResend={state === "open" && can(me.role, "manageQuotes")}
             canVoid={!["ACCEPTED", "PAID", "VOID"].includes(quote.status) && can(me.role, "voidQuotes")}
             balanceDue={canRequestPayment(quote) && can(me.role, "manageQuotes") ? formatCents(balanceCents(quote)) : null}
+            balanceDollars={canRequestPayment(quote) && can(me.role, "manageQuotes") ? (balanceCents(quote) / 100).toFixed(2) : null}
             paymentRequested={state === "payment_due"}
             clientEmail={quote.customer.email}
           />
@@ -164,6 +166,14 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
 
         <aside className="space-y-6">
           <Money quote={quote} />
+          {quote.status === "PAID" && (
+            <ReviewLink
+              quoteId={quote.id}
+              url={quote.reviewInvite ? `${env.NEXT_PUBLIC_APP_URL}/review/${quote.reviewInvite.token}` : null}
+              used={!!quote.reviewInvite?.usedAt}
+              canSend={can(me.role, "manageQuotes")}
+            />
+          )}
           <Timeline quote={quote} />
         </aside>
       </div>
@@ -186,7 +196,8 @@ function Money({ quote }: { quote: AdminQuote }) {
             <li key={p.id} className="flex justify-between gap-3">
               <span className="text-navy-700">
                 {p.paidAt ? fmtDay(p.paidAt) : ""}, {p.isDeposit ? "deposit" : "payment"}
-                {p.cardBrand ? ` (${p.cardBrand} ${p.cardLast4})` : p.method ? ` (${p.method})` : ""}
+                {` (${paymentMethodLabel(p).toLowerCase()})`}
+                {p.recordedBy && <span className="block text-navy-600">Recorded by {p.recordedBy.name ?? p.recordedBy.email}{p.note ? `: ${p.note}` : ""}</span>}
               </span>
               <span className="font-semibold tabular-nums">{formatCents(p.amountCents)}</span>
             </li>
@@ -205,7 +216,7 @@ function Timeline({ quote }: { quote: AdminQuote }) {
       let label = eventLabel[e.type];
       if (e.type === "PAID" && meta.amountCents) {
         const payment = quote.payments.find((p) => p.id === meta.paymentId);
-        label = `${payment?.isDeposit ? "Deposit paid" : "Payment received"}: ${formatCents(meta.amountCents)}`;
+        label = `${payment?.isDeposit ? "Deposit paid" : "Payment received"}: ${formatCents(meta.amountCents)}${payment?.recordedById ? ` (${paymentMethodLabel(payment).toLowerCase()}, recorded by hand)` : ""}`;
       }
       if (e.type === "SENT" && meta.resend) label = "Email sent again";
       if (e.type === "BALANCE_REQUESTED" && meta.amountCents) label = `Job complete, payment requested: ${formatCents(meta.amountCents)}`;

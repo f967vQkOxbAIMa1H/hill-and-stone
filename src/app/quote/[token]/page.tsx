@@ -9,7 +9,7 @@ import { Container } from "@/components/ui/container";
 import { clientIp } from "@/lib/rate-limit";
 import { fulfillCheckoutSession } from "@/lib/quotes/payments";
 import { getQuoteByToken, recordView, type PortalQuote } from "@/lib/quotes/queries";
-import { balanceCents, portalState } from "@/lib/quotes/state";
+import { balanceCents, paymentMethodLabel, portalState } from "@/lib/quotes/state";
 import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
@@ -36,12 +36,6 @@ async function confirmReturn(quote: PortalQuote, sessionId: string): Promise<Not
     console.error("confirmReturn failed", error);
     return "processing";
   }
-}
-
-function methodLabel(p: PortalQuote["payments"][number]) {
-  if (p.cardBrand && p.cardLast4) return `${p.cardBrand[0].toUpperCase()}${p.cardBrand.slice(1)} ending ${p.cardLast4}`;
-  if (p.method === "apple_pay") return "Apple Pay";
-  return "Card";
 }
 
 export default async function QuotePage({ params, searchParams }: PageProps<"/quote/[token]">) {
@@ -74,7 +68,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
       id: p.id,
       amountCents: p.amountCents,
       paidAt: p.paidAt!.toISOString(),
-      method: methodLabel(p),
+      method: paymentMethodLabel(p),
       receiptUrl: p.receiptUrl,
     })),
     declinedAt: quote.declinedAt?.toISOString() ?? null,

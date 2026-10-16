@@ -52,4 +52,5 @@ export const eventLabel: Record<QuoteEventType, string> = {
   PAYMENT_FAILED: "Payment failed",
   EXPIRED: "Expired",
   VOIDED: "Voided",
+  REVIEW_REQUESTED: "Review link sent to client",
 };

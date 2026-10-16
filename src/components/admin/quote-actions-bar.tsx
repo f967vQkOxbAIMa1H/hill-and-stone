@@ -1,9 +1,10 @@
 "use client";
 
-import { Ban, Check, Copy, ExternalLink, Mail, Receipt } from "lucide-react";
+import { Ban, Banknote, Check, Copy, ExternalLink, Mail, Receipt } from "lucide-react";
 import { useState, useTransition } from "react";
-import { requestBalancePayment, resendQuote, voidQuote } from "@/app/admin/actions";
-import { Textarea } from "@/components/ui/field";
+import { recordPaymentOffline, requestBalancePayment, resendQuote, voidQuote } from "@/app/admin/actions";
+import { Input, Textarea } from "@/components/ui/field";
+import { offlineMethods, type OfflineMethod } from "@/lib/quotes/state";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 export function QuoteActionsBar({
@@ -12,6 +13,7 @@ export function QuoteActionsBar({
   canResend,
   canVoid,
   balanceDue,
+  balanceDollars,
   paymentRequested,
   clientEmail,
 }: {
@@ -21,6 +23,8 @@ export function QuoteActionsBar({
   canVoid: boolean;
   /** Formatted balance (e.g. "$412.95") when the job can be marked complete and billed. */
   balanceDue: string | null;
+  /** The same balance as plain dollars ("412.95"), to prefill a cash or check payment. */
+  balanceDollars: string | null;
   /** True once the client has been asked to pay; the button then sends a reminder. */
   paymentRequested: boolean;
   clientEmail: string;
@@ -30,6 +34,10 @@ export function QuoteActionsBar({
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [confirmVoid, setConfirmVoid] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [payMethod, setPayMethod] = useState<OfflineMethod>("cash");
+  const [payAmount, setPayAmount] = useState(balanceDollars ?? "");
+  const [payNote, setPayNote] = useState("");
   const [pending, start] = useTransition();
 
   return (
@@ -79,6 +87,12 @@ export function QuoteActionsBar({
             {paymentRequested ? "Resend payment request" : "Mark complete and request payment"}
           </Button>
         )}
+        {balanceDue && !recording && (
+          <Button type="button" variant="outline" size="sm" onClick={() => setRecording(true)}>
+            <Banknote aria-hidden />
+            Record cash or check payment
+          </Button>
+        )}
         {canVoid && !confirmVoid && (
           <Button type="button" variant="ghost" size="sm" className="text-danger-700" onClick={() => setConfirmVoid(true)}>
             <Ban aria-hidden />
@@ -116,6 +130,60 @@ export function QuoteActionsBar({
               {pending ? "Sending…" : `Send request for ${balanceDue}`}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setBilling(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      {recording && balanceDue && (
+        <div role="alertdialog" aria-labelledby="pay-h" className="mt-3 max-w-lg rounded-control border border-navy-200 bg-white p-4">
+          <p id="pay-h" className="font-semibold">Record a payment you received in person</p>
+          <p className="mt-1 text-sm text-navy-600">For cash, a check or anything outside online checkout. {balanceDue} is due. The client gets a receipt.</p>
+          <fieldset className="mt-3">
+            <legend className="text-sm font-semibold">How they paid</legend>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {offlineMethods.map((m) => (
+                <label key={m.value} className="flex h-11 cursor-pointer items-center rounded-control border border-navy-300 bg-white px-3 has-[:checked]:border-navy-950 has-[:checked]:bg-navy-950 has-[:checked]:text-stone-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500">
+                  <input type="radio" name="payMethod" value={m.value} checked={payMethod === m.value} onChange={() => setPayMethod(m.value)} className="sr-only" />
+                  {m.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <div className="mt-3 grid gap-3 sm:grid-cols-[160px_1fr]">
+            <div>
+              <label htmlFor="pay-amount" className="text-sm font-semibold">Amount</label>
+              <div className="relative mt-1">
+                <span aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-600">$</span>
+                <Input id="pay-amount" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="pl-6" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="pay-note" className="text-sm font-semibold">
+                Note <span className="font-normal text-navy-600">(optional)</span>
+              </label>
+              <Input id="pay-note" className="mt-1" maxLength={200} placeholder="Check #1042" value={payNote} onChange={(e) => setPayNote(e.target.value)} />
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  const r = await recordPaymentOffline(quoteId, { method: payMethod, amount: payAmount, note: payNote });
+                  if (r.ok) {
+                    setRecording(false);
+                    setPayNote("");
+                  }
+                  setMessage({ tone: r.ok ? "ok" : "error", text: r.message });
+                })
+              }
+            >
+              {pending ? "Recording…" : `Record ${payAmount ? `$${payAmount.replace(/^\$/, "")}` : "payment"}`}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setRecording(false)}>
               Cancel
             </Button>
           </div>

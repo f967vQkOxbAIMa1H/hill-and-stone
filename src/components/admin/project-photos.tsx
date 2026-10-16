@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { SafeImage } from "@/components/ui/safe-image";
 import type { ImageRole } from "@/lib/admin/content-schema";
+import { compressImage, PORTFOLIO_PHOTO } from "@/lib/image-compress";
 import { UPLOAD_LIMITS } from "@/lib/quote-request/options";
 
 export type AdminPhoto = { id: string; alt: string; role: ImageRole };
@@ -25,20 +26,26 @@ export function ProjectPhotos({ projectId, photos }: { projectId: string; photos
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
-    const body = new FormData();
-    body.append("role", role);
-    for (const f of Array.from(files)) body.append("photos", f, f.name);
     setUploading(true);
     setMessage(null);
+    let added = 0;
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}/images`, { method: "POST", body });
-      const data = (await res.json()) as { error?: string; count?: number };
-      if (!res.ok) throw new Error(data.error ?? "Upload failed. Try again.");
-      setMessage({ ok: true, text: `${data.count} photo${data.count === 1 ? "" : "s"} added as ${roleLabel[role].toLowerCase()}.` });
-      router.refresh();
+      // One photo per request, shrunk first: serverless hosts reject request bodies over ~4.5 MB.
+      for (const original of Array.from(files)) {
+        const file = await compressImage(original, PORTFOLIO_PHOTO);
+        const body = new FormData();
+        body.append("role", role);
+        body.append("photos", file, file.name);
+        const res = await fetch(`/api/admin/projects/${projectId}/images`, { method: "POST", body });
+        const data = (await res.json().catch(() => ({}))) as { error?: string; count?: number };
+        if (!res.ok) throw new Error(`${original.name}: ${data.error ?? (res.status === 413 ? "too large to upload." : "upload failed. Try again.")}`);
+        added += data.count ?? 1;
+      }
+      setMessage({ ok: true, text: `${added} photo${added === 1 ? "" : "s"} added as ${roleLabel[role].toLowerCase()}.` });
     } catch (e) {
-      setMessage({ ok: false, text: (e as Error).message });
+      setMessage({ ok: false, text: added ? `${added} added, then: ${(e as Error).message}` : (e as Error).message });
     } finally {
+      router.refresh();
       setUploading(false);
       if (input.current) input.current.value = "";
     }

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { LeadStatus } from "@/generated/prisma/enums";
-import { quoteDraftSchema, computeTotals, type QuoteDraftInput } from "@/lib/admin/quote-schema";
+import { quoteDraftSchema, computeTotals, toCents, type QuoteDraftInput } from "@/lib/admin/quote-schema";
 import { fakeVerify, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession, requireCan } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -16,7 +16,9 @@ import { env } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { stripTags } from "@/lib/sanitize";
-import { balanceCents, canRequestPayment, paidCents } from "@/lib/quotes/state";
+import { QuoteActionError, recordOfflinePayment } from "@/lib/quotes/payments";
+import { balanceCents, canRequestPayment, offlineMethods, paidCents, type OfflineMethod } from "@/lib/quotes/state";
+import { sendReviewInvite } from "@/lib/review-invites";
 import { getSite } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 
@@ -32,7 +34,7 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
   const next = String(form.get("next") ?? "");
   const ip = clientIp(await headers());
 
-  if (!rateLimit(`login:${ip}`, 10, 15 * 60_000) || !rateLimit(`login:${email}`, 5, 15 * 60_000)) {
+  if (!(await rateLimit(`login:${ip}`, 10, 15 * 60_000)) || !(await rateLimit(`login:${email}`, 5, 15 * 60_000))) {
     return { error: "Too many sign-in attempts. Wait 15 minutes and try again.", email };
   }
   if (!email || !password) return { error: "Enter your email and password.", email };
@@ -258,6 +260,43 @@ export async function requestBalancePayment(quoteId: string, note: string): Prom
   return result.ok
     ? { ok: true, message: `Payment request for ${formatCents(balanceCents(quote))} sent to ${quote.customer.email}.` }
     : { ok: false, message: `Logged, but the email didn't send (${result.error}). Copy the client link and send it yourself.` };
+}
+
+const offlinePaymentSchema = z.object({
+  method: z.enum(offlineMethods.map((m) => m.value) as [OfflineMethod, ...OfflineMethod[]], { error: "Choose how they paid." }),
+  amount: z.string().trim(),
+  note: z.string().overwrite(stripTags).trim().max(200, "Keep the note under 200 characters.").optional().default(""),
+});
+
+/** Records a cash, check or other in-person payment. Sends the customer a receipt, and a review link once paid in full. */
+export async function recordPaymentOffline(quoteId: string, input: z.input<typeof offlinePaymentSchema>): Promise<{ ok: boolean; message: string }> {
+  const admin = await requireCan("manageQuotes");
+  const parsed = offlinePaymentSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the payment details." };
+  const amountCents = toCents(parsed.data.amount);
+  if (amountCents === null || amountCents <= 0) return { ok: false, message: "Enter the amount received, like 412.95." };
+  try {
+    const r = await recordOfflinePayment(quoteId, { method: parsed.data.method, amountCents, note: parsed.data.note || null }, admin);
+    revalidatePath(`/admin/quotes/${quoteId}`);
+    return {
+      ok: true,
+      message:
+        r.balanceCents === 0
+          ? `Recorded ${formatCents(r.amountCents)}. The quote is paid in full; the client gets a receipt and a review link.`
+          : `Recorded ${formatCents(r.amountCents)}. ${formatCents(r.balanceCents)} is still due.`,
+    };
+  } catch (error) {
+    if (error instanceof QuoteActionError) return { ok: false, message: error.message };
+    throw error;
+  }
+}
+
+/** Emails (or re-emails) the client their private review link. Paid quotes only. */
+export async function sendReviewRequest(quoteId: string): Promise<{ ok: boolean; message: string; url?: string }> {
+  const admin = await requireCan("manageQuotes");
+  const r = await sendReviewInvite(quoteId, admin.email);
+  revalidatePath(`/admin/quotes/${quoteId}`);
+  return r;
 }
 
 export async function voidQuote(quoteId: string) {
