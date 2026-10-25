@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 import { HeroHouse } from "@/components/illustrations/hero-house";
 import { PortfolioRow } from "@/components/illustrations/portfolio-row";
+import { ServiceIllustration } from "@/components/illustrations/service-illustration";
 import { CtaBand } from "@/components/site/cta-band";
 import { GoogleReviewsLink, Stars } from "@/components/site/review-bits";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import {
   propertyManagerServices,
   quoteHref,
   serviceAreas,
-  serviceCategories,
+  services,
 } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -106,15 +107,16 @@ export default async function HomePage() {
           </div>
 
           <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {serviceCategories.map((s, i) => (
+            {services.map((s, i) => (
               <ScrollReveal as="li" key={s.slug} delay={(i % 4) * 0.06}>
                 <Link
-                  href="/services"
+                  href={`/services#${s.slug}`}
                   className="group flex h-full flex-col rounded-panel border border-navy-200 bg-white p-6 transition-colors hover:border-navy-950"
                 >
                   <span className="numeral text-lg text-navy-600">{two(i)}</span>
-                  <h3 className="mt-6 font-serif text-2xl leading-tight group-hover:text-accent-700">{s.name}</h3>
-                  <p className="mt-3 text-navy-700">{s.description}</p>
+                  <ServiceIllustration category={s.category} replayFrom="a" className="mx-auto mt-2 aspect-[3/2] w-full max-w-64" />
+                  <h3 className="mt-4 font-serif text-2xl leading-tight group-hover:text-accent-700">{s.name}</h3>
+                  <p className="mt-3 text-navy-700">{s.summary}</p>
                 </Link>
               </ScrollReveal>
             ))}

@@ -12,7 +12,7 @@ import { services } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Home repairs, carpentry, drywall and painting, flooring and fixtures, exterior repair and small renovations in Northwest Arkansas. See what we do and what we don't take on.",
+    "Interior repairs, exterior repairs, property maintenance and home improvements in Northwest Arkansas. See what we do and what we don't take on.",
 };
 
 export default async function ServicesPage() {
@@ -46,17 +46,17 @@ export default async function ServicesPage() {
         <div className="flex flex-col gap-8">
           {/* Sheets stack, so each rises as it scrolls in; only the two in view on arrival are staggered. */}
           {services.map((s, i) => (
-            <ScopeSheet key={s.slug} service={s} headingAs="h2" delay={i < 2 ? i * 0.15 : 0} />
+            <ScopeSheet key={s.slug} service={s} number={String(i + 1).padStart(2, "0")} headingAs="h2" delay={i < 2 ? i * 0.1 : 0} />
           ))}
 
           <ScrollReveal as="aside" className="rounded-panel border border-dashed border-navy-300 p-6 sm:p-8">
             <h2 className="text-xl font-bold">Not sure where your job fits?</h2>
             <p className="mt-2 max-w-[60ch] text-navy-600">
-              Send us photos through the quote form, or call{" "}
+              Send us photos through the estimate request, or call{" "}
               <a href={site.phoneHref} className="font-semibold text-accent-700 underline-offset-4 hover:underline">
                 {site.phone}
               </a>
-              . Plenty of jobs are a mix of two or three of these.
+              . Plenty of jobs are a mix of two of these.
             </p>
           </ScrollReveal>
         </div>

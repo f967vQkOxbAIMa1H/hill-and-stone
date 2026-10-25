@@ -20,7 +20,7 @@ export default async function NewProjectPage() {
       </header>
       <div className="max-w-4xl px-5 py-6 sm:px-8">
         <ProjectForm
-          initial={{ title: "", slug: "", category: "GENERAL_REPAIRS", city: "", summary: "", scopeOfWork: "", results: "", materials: "", durationDays: "", completedAt: "", featured: false, published: false }}
+          initial={{ title: "", slug: "", category: "INTERIOR_REPAIRS", city: "", summary: "", scopeOfWork: "", results: "", materials: "", durationDays: "", completedAt: "", featured: false, published: false }}
         />
       </div>
     </>

@@ -2,13 +2,11 @@
 import type { BudgetRange, ContactMethod, ProjectTimeline, ServiceCategory } from "@/generated/prisma/enums";
 
 export const categoryOptions: { value: ServiceCategory; label: string }[] = [
-  { value: "GENERAL_REPAIRS", label: "General repairs" },
-  { value: "CARPENTRY_DOORS_TRIM", label: "Carpentry, doors & trim" },
-  { value: "DRYWALL_PAINTING", label: "Drywall & painting" },
-  { value: "FLOORING_FIXTURES_HARDWARE", label: "Flooring, fixtures & hardware" },
+  { value: "INTERIOR_REPAIRS", label: "Interior repairs" },
   { value: "EXTERIOR_REPAIRS", label: "Exterior repairs" },
-  { value: "RENOVATIONS_CUSTOM", label: "Small renovation or custom project" },
-  { value: "OTHER", label: "Something else" },
+  { value: "PROPERTY_MAINTENANCE", label: "Property maintenance" },
+  { value: "HOME_IMPROVEMENTS", label: "Home improvements" },
+  { value: "OTHER", label: "Not sure / something else" },
 ];
 
 export const timelineOptions: { value: ProjectTimeline; label: string }[] = [

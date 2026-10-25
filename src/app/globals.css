@@ -354,6 +354,16 @@
     transform-origin: left center;
     animation: ill-wipe var(--dur, 800ms) cubic-bezier(0.65, 0, 0.35, 1) var(--at, 0ms) both;
   }
+  .ill-autoplay .ill-wipe-down,
+  [data-play] .ill-wipe-down {
+    transform-box: fill-box;
+    transform-origin: center top;
+    animation: ill-wipe-down var(--dur, 800ms) cubic-bezier(0.65, 0, 0.35, 1) var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-flash,
+  [data-play] .ill-flash {
+    animation: ill-flash var(--dur, 800ms) linear var(--at, 0ms) both;
+  }
   .ill-autoplay .ill-swing,
   [data-play] .ill-swing {
     transform-box: fill-box;
@@ -376,6 +386,9 @@
   [data-anim="ready"]:not([data-play]) .ill-wipe {
     transform: scaleX(0);
   }
+  [data-anim="ready"]:not([data-play]) .ill-wipe-down {
+    transform: scaleY(0);
+  }
   [data-anim="ready"]:not([data-play]) .ill-travel {
     opacity: 0;
   }
@@ -395,6 +408,17 @@
 }
 @keyframes ill-wipe {
   from { transform: scaleX(0); }
+}
+/* Spray, sparks: only visible while the animation runs, so the resting state hides them. */
+.ill-flash {
+  opacity: 0;
+}
+@keyframes ill-wipe-down {
+  from { transform: scaleY(0); }
+}
+@keyframes ill-flash {
+  0%, 100% { opacity: 0; }
+  12%, 88% { opacity: 1; }
 }
 @keyframes ill-swing {
   from { transform: rotate(var(--from-angle, -14deg)); }

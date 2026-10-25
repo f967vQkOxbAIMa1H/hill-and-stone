@@ -94,7 +94,7 @@ try {
   await page.type("#line1", "212 W Central Ave");
   await page.type("#city", "Bentonville");
   await page.type("#postalCode", "72712");
-  await page.click("label:has(input[name=category][value=CARPENTRY_DOORS_TRIM])");
+  await page.click("label:has(input[name=category][value=INTERIOR_REPAIRS])");
   await page.type("#description", "Back door sticks at the top and the trim at the bottom is soft. Probably needs new casing.");
   await page.select("#timeline", "WITHIN_A_MONTH");
   await page.click("label:has(input[name=budgetRange][value=FROM_500_TO_1500])");

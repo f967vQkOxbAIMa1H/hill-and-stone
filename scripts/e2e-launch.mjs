@@ -70,7 +70,7 @@ try {
   await page.type("#line1", "100 W Center St");
   await page.type("#city", "Fayetteville");
   await page.type("#postalCode", "72701");
-  await page.click("label:has(input[name=category][value=DRYWALL_PAINTING])");
+  await page.click("label:has(input[name=category][value=INTERIOR_REPAIRS])");
   await page.type("#description", "Water stain on the hallway ceiling and a soft patch of drywall below it.");
   await page.select("#timeline", "WITHIN_A_MONTH");
   await page.click("label:has(input[name=budgetRange][value=NOT_SURE])");

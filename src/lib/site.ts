@@ -147,59 +147,50 @@ export type Service = {
   slug: string;
   category: ServiceCategory;
   name: string;
+  /** The approved category description: homepage cards, /services and structured data. */
   summary: string;
   weDo: string[];
   weDont: string[];
 };
 
+/**
+ * The four service categories (Revision 1). Mapping from the old six, applied to existing leads and
+ * projects by the 20261025120000_four_service_categories migration:
+ *   General repairs, Carpentry/doors/trim, Drywall/painting, Flooring/fixtures/hardware -> Interior Repairs
+ *   Exterior repairs -> Exterior Repairs · Small renovations/custom -> Home Improvements
+ */
 export const services: Service[] = [
   {
-    slug: "general-repairs",
-    category: "GENERAL_REPAIRS",
-    name: "General home repairs",
-    summary: "The running list of small fixes, handled in one visit instead of five.",
-    weDo: ["Sticking doors and drawers", "Loose railings and handrails", "Caulking and weatherstripping", "Minor leak fixes at fixtures", "TV, shelf and art mounting", "Punch lists for home sales"],
-    weDont: ["Major plumbing (re-piping, water heaters)", "Electrical panel or new circuit work", "HVAC repair", "Roof replacement"],
-  },
-  {
-    slug: "carpentry-doors-trim",
-    category: "CARPENTRY_DOORS_TRIM",
-    name: "Carpentry, doors & trim",
-    summary: "Finish carpentry that closes cleanly and lines up.",
-    weDo: ["Interior and exterior door installs", "Baseboard, casing and crown", "Wainscoting and board-and-batten", "Built-in shelving", "Stair treads and balusters", "Rotten trim replacement"],
-    weDont: ["Structural framing or load-bearing walls", "Cabinet manufacturing", "Garage door springs and openers"],
-  },
-  {
-    slug: "drywall-painting",
-    category: "DRYWALL_PAINTING",
-    name: "Drywall & painting",
-    summary: "Patches you can't find afterward, and paint lines you don't have to touch up.",
-    weDo: ["Hole and crack patching", "Water-damage drywall replacement", "Texture matching", "Interior painting, room by room", "Trim, door and cabinet painting", "Popcorn ceiling removal"],
-    weDont: ["Whole-house new-construction drywall", "Lead paint abatement", "Mold remediation"],
-  },
-  {
-    slug: "flooring-fixtures-hardware",
-    category: "FLOORING_FIXTURES_HARDWARE",
-    name: "Flooring, fixtures & hardware",
-    summary: "The details you touch every day, replaced and set right.",
-    weDo: ["LVP and laminate installs", "Tile repair and small tile floors", "Faucet, sink and toilet swaps", "Light fixture and ceiling fan swaps", "Cabinet hardware and hinges", "Transitions and thresholds"],
-    weDont: ["Hardwood sanding and refinishing", "Carpet installation", "New electrical or plumbing runs"],
+    slug: "interior-repairs",
+    category: "INTERIOR_REPAIRS",
+    name: "Interior Repairs",
+    summary: "Drywall patches, trim and baseboards, doors, hardware, caulking, touch-up painting, shelving, cabinets and minor carpentry.",
+    weDo: ["Drywall patches and texture matching", "Trim, baseboards and casing", "Door adjustments, repairs and installs", "Hardware, hinges and handles", "Caulking and touch-up painting", "Shelving, cabinets and minor carpentry"],
+    weDont: ["Major plumbing (re-piping, water heaters)", "Electrical panel or new circuit work", "HVAC repair", "Structural framing or load-bearing walls", "Lead paint abatement or mold remediation"],
   },
   {
     slug: "exterior-repairs",
     category: "EXTERIOR_REPAIRS",
-    name: "Exterior repairs & maintenance",
-    summary: "Keeping Ozark weather on the outside of your house.",
-    weDo: ["Deck board and railing repair", "Siding and soffit repair", "Fence repair and gates", "Gutter cleaning and minor repair", "Exterior caulk and paint touch-up", "Seasonal maintenance visits"],
-    weDont: ["Full roof replacement", "Foundation repair", "Tree removal", "Concrete pouring"],
+    name: "Exterior Repairs",
+    summary: "Pressure washing, fence and gate repairs, siding and trim, decks, mailbox posts, minor gutter work and other exterior fixes.",
+    weDo: ["Pressure washing", "Fence and gate repairs", "Siding, soffit and trim repair", "Deck board and railing repair", "Mailbox posts", "Minor gutter cleaning and repair"],
+    weDont: ["Roof replacement", "Foundation repair", "Tree removal", "Concrete pouring"],
   },
   {
-    slug: "renovations-custom",
-    category: "RENOVATIONS_CUSTOM",
-    name: "Small renovations & custom projects",
-    summary: "Room-sized projects, planned and built by the same crew.",
-    weDo: ["Bathroom refreshes", "Laundry and mudroom build-outs", "Accent walls and feature trim", "Closet systems", "Kitchen backsplash", "Aging-in-place upgrades (grab bars, lever handles)"],
-    weDont: ["Additions and new construction", "Projects requiring an architect or engineer", "Full kitchen gut remodels"],
+    slug: "property-maintenance",
+    category: "PROPERTY_MAINTENANCE",
+    name: "Property Maintenance",
+    summary: "Repeatable repair and punch-list support for landlords, property managers and owners of multiple homes.",
+    weDo: ["Turnover and make-ready repairs", "Punch lists, including for home sales", "Recurring maintenance visits", "Photo-based issue intake", "One point of contact across properties"],
+    weDont: ["24-hour emergency response", "Major plumbing, electrical or HVAC work", "Lawn care and landscaping", "Cleaning services"],
+  },
+  {
+    slug: "home-improvements",
+    category: "HOME_IMPROVEMENTS",
+    name: "Home Improvements",
+    summary: "Practical upgrades and finish work that improve how a space looks, works and feels without unnecessary complexity.",
+    weDo: ["Bathroom refreshes", "Accent walls and feature trim", "Closet and storage systems", "LVP and laminate flooring", "Light fixture and ceiling fan swaps", "Aging-in-place upgrades (grab bars, lever handles)"],
+    weDont: ["Additions and new construction", "Projects requiring an architect or engineer", "Full kitchen gut remodels", "Hardwood refinishing and carpet installation"],
   },
 ];
 
@@ -240,14 +231,3 @@ export const propertyManagerServices = [
 export const propertyManagerPrefill = "I manage rental properties and I’m interested in ongoing maintenance support.";
 
 export const estimateLabel = "Request an Estimate";
-
-/**
- * The four service categories as the homepage presents them.
- * TODO(phase 3): becomes the single `services` list once the ServiceCategory enum is migrated.
- */
-export const serviceCategories = [
-  { slug: "interior-repairs", name: "Interior Repairs", description: "Drywall patches, trim and baseboards, doors, hardware, caulking, touch-up painting, shelving, cabinets and minor carpentry." },
-  { slug: "exterior-repairs", name: "Exterior Repairs", description: "Pressure washing, fence and gate repairs, siding and trim, decks, mailbox posts, minor gutter work and other exterior fixes." },
-  { slug: "property-maintenance", name: "Property Maintenance", description: "Repeatable repair and punch-list support for landlords, property managers and owners of multiple homes." },
-  { slug: "home-improvements", name: "Home Improvements", description: "Practical upgrades and finish work that improve how a space looks, works and feels without unnecessary complexity." },
-];

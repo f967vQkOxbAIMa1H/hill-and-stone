@@ -1,5 +1,5 @@
 import { getSite } from "@/lib/settings";
-import { brand, serviceAreas } from "@/lib/site";
+import { brand, serviceAreas, services } from "@/lib/site";
 
 const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -16,7 +16,7 @@ export async function LocalBusinessJsonLd() {
     name: brand.fullName,
     alternateName: brand.name,
     legalName: brand.legalName,
-    description: "Home repair, carpentry, drywall and painting, flooring, exterior repair and small renovations in Northwest Arkansas.",
+    description: "Interior repairs, exterior repairs, property maintenance and home improvements for homeowners, landlords and property managers in Northwest Arkansas.",
     url: base,
     logo: `${base}/apple-icon`,
     image: `${base}/opengraph-image`,
@@ -25,7 +25,15 @@ export async function LocalBusinessJsonLd() {
     areaServed: serviceAreas.map((a) => ({ "@type": "City", name: `${a.name}, AR` })),
     address: { "@type": "PostalAddress", addressRegion: "AR", addressCountry: "US" },
     ...(site.googleReviewsUrl ? { sameAs: [site.googleReviewsUrl] } : {}),
-    knowsAbout: ["Home repair", "Finish carpentry", "Drywall repair", "Interior painting", "Flooring installation", "Deck repair"],
+    knowsAbout: ["Home repair", "Drywall repair", "Finish carpentry", "Pressure washing", "Fence repair", "Property maintenance"],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Services",
+      itemListElement: services.map((s) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: s.name, description: s.summary, url: `${base}/services#${s.slug}` },
+      })),
+    },
   };
   return (
     <script

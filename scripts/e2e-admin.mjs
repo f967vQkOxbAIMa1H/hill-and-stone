@@ -45,7 +45,7 @@ function png(w, h, rgb) {
 await mkdir(SHOTS, { recursive: true });
 const form = new FormData();
 const email = `casey.morgan+${randomBytes(3).toString("hex")}@example.com`;
-for (const [k, v] of Object.entries({ firstName: "Casey", lastName: "Morgan", email, phone: "(479) 555-0188", line1: "410 SW A St", city: "Bentonville", postalCode: "72712", preferredContact: "EMAIL", category: "CARPENTRY_DOORS_TRIM", description: "Rotted trim around the back door, and the door sticks at the top corner.", timeline: "WITHIN_2_WEEKS", budgetRange: "FROM_500_TO_1500" })) form.append(k, v);
+for (const [k, v] of Object.entries({ firstName: "Casey", lastName: "Morgan", email, phone: "(479) 555-0188", line1: "410 SW A St", city: "Bentonville", postalCode: "72712", preferredContact: "EMAIL", category: "INTERIOR_REPAIRS", description: "Rotted trim around the back door, and the door sticks at the top corner.", timeline: "WITHIN_2_WEEKS", budgetRange: "FROM_500_TO_1500" })) form.append(k, v);
 form.append("photos", new Blob([png(640, 480, [150, 120, 90])], { type: "image/png" }), "back-door.png");
 const created = await (await fetch(`${BASE}/api/quote-requests`, { method: "POST", body: form })).json();
 const lead = (await db.query(`select id, number from "Lead" where number = $1`, [created.number])).rows[0];

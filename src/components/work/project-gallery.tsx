@@ -33,12 +33,10 @@ export type GalleryProject = {
 
 // Short filter labels, keyed by the service slug used in URLs.
 const filters: { slug: string; label: string }[] = [
-  { slug: "general-repairs", label: "General repairs" },
-  { slug: "carpentry-doors-trim", label: "Carpentry" },
-  { slug: "drywall-painting", label: "Painting & drywall" },
-  { slug: "flooring-fixtures-hardware", label: "Flooring & fixtures" },
+  { slug: "interior-repairs", label: "Interior" },
   { slug: "exterior-repairs", label: "Exterior" },
-  { slug: "renovations-custom", label: "Small renovations" },
+  { slug: "property-maintenance", label: "Property maintenance" },
+  { slug: "home-improvements", label: "Improvements" },
 ];
 const slugToCategory = Object.fromEntries(services.map((s) => [s.slug, s.category]));
 const categoryName = Object.fromEntries(services.map((s) => [s.category, s.name]));

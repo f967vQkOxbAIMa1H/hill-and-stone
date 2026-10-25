@@ -33,7 +33,7 @@ const projects: SampleProject[] = [
   {
     slug: "sample-hallway-water-damage",
     title: "Hallway water-damage repair",
-    category: "DRYWALL_PAINTING",
+    category: "INTERIOR_REPAIRS",
     city: "Rogers",
     summary: "A slow leak from an upstairs bath left a soft, stained section of hallway wall.",
     scopeOfWork: "Cut out damaged drywall, confirm the leak was fixed and the framing dry, hang new board, tape and mud, match the orange-peel texture, prime and paint the full wall, and install new baseboard.",
@@ -46,7 +46,7 @@ const projects: SampleProject[] = [
   {
     slug: "sample-front-door-trim",
     title: "Front door trim replacement",
-    category: "CARPENTRY_DOORS_TRIM",
+    category: "INTERIOR_REPAIRS",
     city: "Bentonville",
     summary: "Rot had worked up the bottom of the exterior casing and brickmould on a 1990s front door.",
     scopeOfWork: "Remove rotted brickmould and casing, treat and patch the sill, install PVC brickmould that won't rot, caulk, and paint to match.",
@@ -71,7 +71,7 @@ const projects: SampleProject[] = [
   {
     slug: "sample-laundry-floor",
     title: "Laundry room floor",
-    category: "FLOORING_FIXTURES_HARDWARE",
+    category: "INTERIOR_REPAIRS",
     city: "Springdale",
     summary: "Peeling sheet vinyl and a cracked transition in a small laundry room.",
     scopeOfWork: "Pull old vinyl, level the subfloor, install waterproof LVP with new quarter-round and transitions, and reset the washer and dryer.",
@@ -83,7 +83,7 @@ const projects: SampleProject[] = [
   {
     slug: "sample-hall-bath-refresh",
     title: "Hall bath refresh",
-    category: "RENOVATIONS_CUSTOM",
+    category: "HOME_IMPROVEMENTS",
     city: "Bella Vista",
     summary: "A dated guest bath with a failing vanity and builder-grade fixtures.",
     scopeOfWork: "Install a new vanity and top, faucet, mirror, light fixture and hardware, patch and paint the walls, and add a grab bar by the tub.",
@@ -95,7 +95,7 @@ const projects: SampleProject[] = [
   {
     slug: "sample-stair-handrail",
     title: "Stair handrail repair",
-    category: "GENERAL_REPAIRS",
+    category: "INTERIOR_REPAIRS",
     city: "Lowell",
     summary: "A handrail that had pulled loose from the wall on a basement stair.",
     scopeOfWork: "Find the studs, remove the old brackets, install heavy-duty brackets with structural screws, and patch the old holes.",

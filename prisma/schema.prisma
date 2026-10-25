@@ -14,12 +14,10 @@ datasource db {
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum ServiceCategory {
-  GENERAL_REPAIRS
-  CARPENTRY_DOORS_TRIM
-  DRYWALL_PAINTING
-  FLOORING_FIXTURES_HARDWARE
+  INTERIOR_REPAIRS
   EXTERIOR_REPAIRS
-  RENOVATIONS_CUSTOM
+  PROPERTY_MAINTENANCE
+  HOME_IMPROVEMENTS
   OTHER
 }
 

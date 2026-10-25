@@ -12,7 +12,7 @@ const valid = {
   city: "Bentonville",
   postalCode: "72712",
   preferredContact: "TEXT",
-  category: "CARPENTRY_DOORS_TRIM",
+  category: "INTERIOR_REPAIRS",
   description: "Back door sticks at the top and the trim is soft.",
   timeline: "FLEXIBLE",
   budgetRange: "NOT_SURE",
