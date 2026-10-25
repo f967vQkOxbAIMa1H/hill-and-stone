@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 // Navy browser chrome on phones to match the admin bars; cover lets the tab bar sit on the home indicator's safe area.
-export const viewport: Viewport = { themeColor: "#0f172a", viewportFit: "cover" };
+export const viewport: Viewport = { themeColor: "#10243a", viewportFit: "cover" };
 
 export default function AdminRoot({ children }: LayoutProps<"/admin">) {
   return children;

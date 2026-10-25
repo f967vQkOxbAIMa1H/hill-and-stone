@@ -42,7 +42,7 @@ export default async function FaqPage() {
               <li key={g.slug}>
                 <Link
                   href={`#${g.slug}`}
-                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-copper-500"
+                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-accent-500"
                 >
                   {g.title}
                 </Link>
@@ -54,14 +54,14 @@ export default async function FaqPage() {
         <div className="flex max-w-3xl flex-col gap-14">
           {faq.map((g) => (
             <section key={g.slug} id={g.slug} aria-labelledby={`${g.slug}-heading`} className="scroll-mt-28">
-              <h2 id={`${g.slug}-heading`} className="font-semiwide text-2xl font-bold">
+              <h2 id={`${g.slug}-heading`} className="font-serif text-3xl">
                 {g.title}
               </h2>
               <div className="mt-5 border-t border-navy-200">
                 {g.items.map((item) => (
                   // Native disclosure: keyboard, screen readers and find-in-page work without JS.
                   <details key={item.q} name={g.slug} className="faq-item group border-b border-navy-200">
-                    <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-lg font-semibold hover:text-copper-700 [&::-webkit-details-marker]:hidden">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-lg font-semibold hover:text-accent-700 [&::-webkit-details-marker]:hidden">
                       {item.q}
                       <span
                         aria-hidden

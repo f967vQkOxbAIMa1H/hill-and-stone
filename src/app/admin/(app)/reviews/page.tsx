@@ -48,7 +48,7 @@ export default async function ReviewsAdminPage() {
                 title={
                   <>
                     {r.authorName}{" "}
-                    <span className="font-normal text-copper-700" aria-label={`${r.rating} stars`}>
+                    <span className="font-normal text-accent-700" aria-label={`${r.rating} stars`}>
                       {"★".repeat(r.rating)}
                     </span>
                   </>
@@ -58,7 +58,7 @@ export default async function ReviewsAdminPage() {
                   <>
                     <Badge tone={r.published && isPublicRating(r.rating) ? "success" : "neutral"}>{r.published && isPublicRating(r.rating) ? "Published" : "Hidden"}</Badge>
                         {!isPublicRating(r.rating) && <Badge tone="danger">Low rating</Badge>}
-                    {r.featured && <Badge tone="copper">Featured</Badge>}
+                    {r.featured && <Badge tone="accent">Featured</Badge>}
                     {r.source === "seed" && <Badge tone="danger">Sample</Badge>}
                   </>
                 }
@@ -79,8 +79,8 @@ export default async function ReviewsAdminPage() {
                 {reviews.map((r) => (
                   <tr key={r.id} className="group relative hover:bg-stone-50">
                     <td className="max-w-md px-4 py-3">
-                      <Link prefetch={false} href={`/admin/reviews/${r.id}`} className="line-clamp-2 after:absolute after:inset-0 group-hover:text-copper-700">
-                        <span className="text-copper-700" aria-label={`${r.rating} stars`}>
+                      <Link prefetch={false} href={`/admin/reviews/${r.id}`} className="line-clamp-2 after:absolute after:inset-0 group-hover:text-accent-700">
+                        <span className="text-accent-700" aria-label={`${r.rating} stars`}>
                           {"★".repeat(r.rating)}
                         </span>{" "}
                         {r.body}
@@ -97,7 +97,7 @@ export default async function ReviewsAdminPage() {
                       <span className="flex flex-wrap gap-1">
                         <Badge tone={r.published && isPublicRating(r.rating) ? "success" : "neutral"}>{r.published && isPublicRating(r.rating) ? "Published" : "Hidden"}</Badge>
                         {!isPublicRating(r.rating) && <Badge tone="danger">Low rating</Badge>}
-                        {r.featured && <Badge tone="copper">Featured</Badge>}
+                        {r.featured && <Badge tone="accent">Featured</Badge>}
                         {r.source === "seed" && <Badge tone="danger">Sample</Badge>}
                       </span>
                     </td>

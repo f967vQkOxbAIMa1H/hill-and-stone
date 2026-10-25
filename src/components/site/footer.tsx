@@ -17,7 +17,7 @@ export async function Footer() {
           <p className="mt-5 max-w-[34ch]">
             Home repair, carpentry and small renovations across Benton and Washington counties.
           </p>
-          <Link href={quoteHref} className="mt-5 inline-block font-semibold text-copper-500 underline-offset-4 hover:underline">
+          <Link href={quoteHref} className="mt-5 inline-block font-semibold text-stone-100 underline underline-offset-4 hover:text-white">
             Request a quote
           </Link>
         </div>
@@ -62,7 +62,7 @@ export async function Footer() {
           <h2 className="font-semibold text-stone-50">Contact</h2>
           <ul className="mt-4 space-y-2.5">
             <li>
-              <a href={site.phoneHref} className="font-semibold text-stone-50 hover:text-copper-500">
+              <a href={site.phoneHref} className="font-semibold text-stone-50 hover:text-stone-100">
                 {site.phone}
               </a>
             </li>

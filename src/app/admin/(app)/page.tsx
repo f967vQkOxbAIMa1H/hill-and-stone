@@ -63,7 +63,7 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
       />
       <div className="px-5 py-6 sm:px-8">
         {denied && (
-          <p role="status" className="mb-6 rounded-control bg-copper-100 px-4 py-3 font-medium text-copper-700">
+          <p role="status" className="mb-6 rounded-control bg-accent-100 px-4 py-3 font-medium text-accent-700">
             Your role doesn&apos;t include that page. Ask an owner if you need access.
           </p>
         )}
@@ -189,7 +189,7 @@ function Panel({
         <Link
           prefetch={false}
           href={href}
-          className="text-sm font-semibold text-copper-700 underline-offset-4 hover:underline"
+          className="text-sm font-semibold text-accent-700 underline-offset-4 hover:underline"
         >
           See all
         </Link>

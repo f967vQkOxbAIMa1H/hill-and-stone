@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export function Stars({ rating, className }: { rating: number; className?: string }) {
   return (
-    <p className={cn("flex gap-0.5 text-copper-500", className)}>
+    <p className={cn("flex gap-0.5 text-accent-500", className)}>
       {Array.from({ length: 5 }, (_, i) => (
         <Star key={i} aria-hidden className={cn("size-5", i < rating ? "fill-current" : "text-navy-300")} />
       ))}

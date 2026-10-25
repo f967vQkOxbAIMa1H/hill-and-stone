@@ -25,7 +25,7 @@ export async function CtaBand({
           <p className="mt-5 max-w-[56ch] text-lg text-navy-300">{body}</p>
         </ScrollReveal>
         <ScrollReveal delay={0.15} className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink href={quoteHref} size="lg">
+          <ButtonLink href={quoteHref} variant="light" size="lg">
             Request a quote
           </ButtonLink>
           <a href={site.phoneHref} className={buttonVariants({ variant: "outline-light", size: "lg" })}>

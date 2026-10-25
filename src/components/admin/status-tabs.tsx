@@ -28,7 +28,7 @@ export function StatusTabs({
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium whitespace-nowrap",
-                  active ? "border-copper-500 text-navy-950" : "border-transparent text-navy-600 hover:text-navy-950",
+                  active ? "border-accent-500 text-navy-950" : "border-transparent text-navy-600 hover:text-navy-950",
                 )}
               >
                 {t.label}

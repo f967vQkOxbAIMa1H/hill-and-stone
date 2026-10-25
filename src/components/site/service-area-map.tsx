@@ -86,7 +86,7 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
             </text>
 
             {/* Primary area corridor */}
-            <path d={coreCorridor} className="stroke-copper-500/15" strokeWidth="64" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path d={coreCorridor} className="stroke-accent-500/15" strokeWidth="64" strokeLinecap="round" strokeLinejoin="round" fill="none" />
 
             {/* I-49 */}
             <path d={path(I49)} className="stroke-navy-400" strokeWidth="3" fill="none" />
@@ -108,14 +108,14 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
                   className="cursor-pointer"
                   aria-hidden
                 >
-                  {active && <circle cx={x} cy={y} r={a.core ? 16 : 12} className="fill-copper-500/25" />}
+                  {active && <circle cx={x} cy={y} r={a.core ? 16 : 12} className="fill-accent-500/25" />}
                   <circle
                     cx={x}
                     cy={y}
                     r={a.core ? 8 : 5}
                     className={cn(
                       "transition-colors",
-                      active ? "fill-copper-500 stroke-navy-950" : a.core ? "fill-navy-950 stroke-white" : "fill-white stroke-navy-700",
+                      active ? "fill-accent-500 stroke-navy-950" : a.core ? "fill-navy-950 stroke-white" : "fill-white stroke-navy-700",
                     )}
                     strokeWidth="2"
                   />
@@ -126,7 +126,7 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
                     className={cn(
                       "stroke-white stroke-[4px]",
                       a.core ? "text-[16px] font-bold" : "text-[13px]",
-                      active ? "fill-copper-700" : a.core ? "fill-navy-950" : "fill-navy-700",
+                      active ? "fill-accent-700" : a.core ? "fill-navy-950" : "fill-navy-700",
                     )}
                     style={{ paintOrder: "stroke" }}
                   >
@@ -151,7 +151,7 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
       <div>
         <div aria-live="polite" className="rounded-panel bg-navy-950 p-6 text-stone-50 sm:p-8">
           <p className="text-navy-300">{current.county} County</p>
-          <h2 className="mt-1 font-wide text-3xl font-extrabold">{current.name}</h2>
+          <h2 className="mt-1 font-serif text-4xl">{current.name}</h2>
           <p className="mt-3 text-navy-300">
             {current.core
               ? "Primary service area, usually the quickest to schedule."
@@ -164,7 +164,7 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
 
         {byCounty.map(({ county, areas: list }) => (
           <section key={county} aria-labelledby={`county-${county}`} className="mt-10">
-            <h2 id={`county-${county}`} className="font-semiwide text-xl font-bold">
+            <h2 id={`county-${county}`} className="font-serif text-2xl">
               {county} County
             </h2>
             <ul className="mt-3 border-t border-navy-200">
@@ -176,7 +176,7 @@ export function ServiceAreaMap({ areas }: { areas: ServiceArea[] }) {
                     aria-pressed={a.slug === selected}
                     className="flex w-full cursor-pointer items-baseline justify-between gap-4 px-1 py-3.5 text-left transition-colors hover:bg-white aria-pressed:bg-white"
                   >
-                    <span className={cn("text-lg", a.core ? "font-bold" : "font-medium", a.slug === selected && "text-copper-700")}>
+                    <span className={cn("text-lg", a.core ? "font-bold" : "font-medium", a.slug === selected && "text-accent-700")}>
                       {a.name}
                     </span>
                     <span className="text-sm text-navy-600">{a.core ? "Primary area" : a.zips.join(", ")}</span>

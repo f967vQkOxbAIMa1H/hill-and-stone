@@ -18,9 +18,9 @@ export async function lowRatingFeedback(r: ReviewSubmission & { email: string; j
   const html = layout(
     site,
     `<p style="margin:0 0 8px;font-size:20px;font-weight:800">Private feedback: ${esc(stars)}</p>
-<p style="margin:0 0 12px;color:#475569">Reviews under 4 stars are kept off the website. This one is saved privately in the admin. Reply to this email to reach the customer directly.</p>
+<p style="margin:0 0 12px;color:#4f5d6b">Reviews under 4 stars are kept off the website. This one is saved privately in the admin. Reply to this email to reach the customer directly.</p>
 ${rows(details)}
-<p style="margin:0"><a href="${esc(r.adminUrl)}" style="color:#b45309;font-weight:bold">Open it in the admin</a></p>`,
+<p style="margin:0"><a href="${esc(r.adminUrl)}" style="color:#113360;font-weight:bold">Open it in the admin</a></p>`,
   );
   const text = `Private feedback (${stars}). Kept off the website.\n\n${details.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nAdmin: ${r.adminUrl}`;
   return { subject, html, text };
@@ -34,8 +34,8 @@ export async function reviewInviteEmail(r: { firstName: string; jobTitle: string
     site,
     `<p style="margin:0 0 12px;font-size:22px;font-weight:800">Thanks for having us, ${esc(r.firstName)}.</p>
 <p style="margin:0 0 12px">How did the job go (${esc(r.jobTitle)})? A short review helps neighbors find someone they can trust with their house, and tells us what to keep doing.</p>
-<p style="margin:20px 0"><a href="${esc(r.url)}" style="display:inline-block;background:#d97706;color:#0f172a;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Leave a review</a></p>
-<p style="margin:0 0 12px;font-size:14px;color:#475569">This link is just for you and works once, for the next ${r.days} days. If something isn't right with the work, reply to this email or call ${esc(site.phone)} and we'll come back and fix it.</p>`,
+<p style="margin:20px 0"><a href="${esc(r.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Leave a review</a></p>
+<p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">This link is just for you and works once, for the next ${r.days} days. If something isn't right with the work, reply to this email or call ${esc(site.phone)} and we'll come back and fix it.</p>`,
   );
   const text = `Thanks for having us, ${r.firstName}.\n\nHow did the job go (${r.jobTitle})? Leave a review: ${r.url}\n\nThis link is just for you and works once, for the next ${r.days} days. If something isn't right, reply or call ${site.phone}.`;
   return { subject, html, text };

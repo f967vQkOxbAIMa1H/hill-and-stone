@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const control =
-  "block w-full rounded-control border border-navy-300 bg-white px-3.5 text-base text-navy-950 transition-colors placeholder:text-navy-400 hover:border-navy-400 focus-visible:border-navy-950 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-copper-500 aria-invalid:border-danger-700 disabled:bg-stone-100 disabled:opacity-70";
+  "block w-full rounded-control border border-navy-600/70 bg-white px-3.5 text-base text-navy-950 transition-colors placeholder:text-navy-400 hover:border-navy-600 focus-visible:border-navy-950 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent-500 aria-invalid:border-danger-700 disabled:bg-stone-100 disabled:opacity-70";
 
 /** Label, control, hint and error wired together for screen readers. */
 export function Field({

@@ -19,7 +19,7 @@ export function ScopeSheet({ service, className, headingAs = "h3", delay = 0 }: 
           <ul className="mt-3 space-y-2">
             {service.weDo.map((item) => (
               <li key={item} className="flex gap-2.5">
-                <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-copper-500" />
+                <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-accent-500" />
                 {item}
               </li>
             ))}

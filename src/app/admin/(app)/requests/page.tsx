@@ -91,7 +91,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/admin/r
                   return (
                     <tr key={l.id} className="group relative hover:bg-stone-50">
                       <td className="px-4 py-3">
-                        <Link prefetch={false} href={`/admin/requests/${l.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-copper-700">
+                        <Link prefetch={false} href={`/admin/requests/${l.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-accent-700">
                           #{l.number} {l.customer.firstName} {l.customer.lastName}
                         </Link>
                         <span className="block text-navy-600">{l.address.city}</span>

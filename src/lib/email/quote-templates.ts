@@ -48,10 +48,10 @@ export async function paymentReceipt(q: QuoteInfo, p: PaymentInfo) {
       : `Your job is paid in full. Thanks for trusting us with your home. If anything we did isn't right, call us and we'll come back and fix it.`
   }</p>
 ${rows(summary)}
-<p style="margin:0 0 12px"><a href="${esc(q.url)}" style="color:#b45309;font-weight:bold">View your quote</a>${
-    p.receiptUrl ? ` &nbsp; <a href="${esc(p.receiptUrl)}" style="color:#b45309">Card receipt</a>` : ""
+<p style="margin:0 0 12px"><a href="${esc(q.url)}" style="color:#113360;font-weight:bold">View your quote</a>${
+    p.receiptUrl ? ` &nbsp; <a href="${esc(p.receiptUrl)}" style="color:#113360">Card receipt</a>` : ""
   }</p>
-<p style="margin:0">Hill &amp; Stone<br><a href="${site.phoneHref}" style="color:#b45309">${esc(site.phone)}</a></p>`);
+<p style="margin:0">Hill &amp; Stone<br><a href="${site.phoneHref}" style="color:#113360">${esc(site.phone)}</a></p>`);
   const text = `Thanks, ${q.customerName}. Your payment went through.\n\n${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nView your quote: ${q.url}${p.receiptUrl ? `\nCard receipt: ${p.receiptUrl}` : ""}\n\nHill & Stone, ${site.phone}`;
   return { subject, html, text };
 }
@@ -78,7 +78,7 @@ export async function acceptedNotice(q: QuoteInfo, p: PaymentInfo | null) {
           ["Payment", "Due on completion. Mark the job complete in the admin to send the payment request."],
         ] as [string, string][])),
   ];
-  const html = layout(site, `<p style="margin:0 0 8px;font-size:20px;font-weight:800">${esc(heading)}</p>${rows(details)}<p style="margin:0"><a href="${esc(q.url)}" style="color:#b45309">Open the quote</a></p>`);
+  const html = layout(site, `<p style="margin:0 0 8px;font-size:20px;font-weight:800">${esc(heading)}</p>${rows(details)}<p style="margin:0"><a href="${esc(q.url)}" style="color:#113360">Open the quote</a></p>`);
   return { subject, html, text: details.map(([k, v]) => `${k}: ${v}`).join("\n") };
 }
 
@@ -93,7 +93,7 @@ export async function declinedNotice(q: QuoteInfo, reason: string, note: string 
     ["Reason", reasonLabel],
     ["Their note", note || "(none)"],
   ];
-  const html = layout(site, `<p style="margin:0 0 8px;font-size:20px;font-weight:800">Quote #${q.number} declined</p>${rows(details)}<p style="margin:0;color:#475569;font-size:14px">Reply to this email to follow up with the customer.</p>`);
+  const html = layout(site, `<p style="margin:0 0 8px;font-size:20px;font-weight:800">Quote #${q.number} declined</p>${rows(details)}<p style="margin:0;color:#4f5d6b;font-size:14px">Reply to this email to follow up with the customer.</p>`);
   return { subject, html, text: details.map(([k, v]) => `${k}: ${v}`).join("\n") };
 }
 
@@ -111,8 +111,8 @@ export async function quoteSent(q: QuoteInfo & { validUntil: Date | null; custom
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Hi ${esc(q.customerFirstName)}, your quote is ready.</p>
 <p style="margin:0 0 12px">It's itemized so you can see exactly what's included. You can accept it online, or let us know if it isn't right for you. Nothing is charged when you accept: you pay once the work is done and you're happy with it.</p>
 ${rows(summary)}
-<p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#d97706;color:#0f172a;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Review your quote</a></p>
-<p style="margin:0 0 12px;font-size:14px;color:#475569">This link is private to you. Questions? Reply to this email or call ${esc(site.phone)}.</p>`);
+<p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Review your quote</a></p>
+<p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">This link is private to you. Questions? Reply to this email or call ${esc(site.phone)}.</p>`);
   const text = `Hi ${q.customerFirstName}, your quote is ready.\n\n${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nReview your quote: ${q.url}\n\nQuestions? Reply to this email or call ${site.phone}.`;
   return { subject, html, text };
 }
@@ -129,10 +129,10 @@ export async function balanceRequest(q: QuoteInfo & { customerFirstName: string;
   const html = layout(site, `
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Hi ${esc(q.customerFirstName)}, your job is finished.</p>
 <p style="margin:0 0 12px">Thanks for having us. Payment is due now that the work is complete. You can pay online from your quote in a minute by card or Apple Pay.</p>
-${q.note ? `<p style="margin:0 0 12px;padding:12px 14px;background:#f1f5f9;border-radius:4px">${esc(q.note)}</p>` : ""}
+${q.note ? `<p style="margin:0 0 12px;padding:12px 14px;background:#f4f2ed;border-radius:4px">${esc(q.note)}</p>` : ""}
 ${rows(summary)}
-<p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#d97706;color:#0f172a;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Pay ${esc(formatCents(q.balanceCents))}</a></p>
-<p style="margin:0 0 12px;font-size:14px;color:#475569">Your ${esc(site.warranty)} starts today. If anything we did isn't right, reply to this email or call ${esc(site.phone)}.</p>`);
+<p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Pay ${esc(formatCents(q.balanceCents))}</a></p>
+<p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">Your ${esc(site.warranty)} starts today. If anything we did isn't right, reply to this email or call ${esc(site.phone)}.</p>`);
   const text = `Hi ${q.customerFirstName}, your job is finished.\n\n${q.note ? `${q.note}\n\n` : ""}${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPay online: ${q.url}\n\nQuestions? Reply to this email or call ${site.phone}.`;
   return { subject, html, text };
 }

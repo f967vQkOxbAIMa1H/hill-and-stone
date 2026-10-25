@@ -53,7 +53,7 @@ export function QuoteActions(props: ActionProps) {
               <p className="text-sm text-navy-300">{state === "open" ? "Quote total" : "Amount due"}</p>
               <p className="font-wide text-xl font-extrabold tabular-nums">{formatCents(state === "open" ? props.totalCents : props.balanceCents)}</p>
             </div>
-            <a href="#pay" className={buttonVariants({ size: "md" })}>
+            <a href="#pay" className={buttonVariants({ variant: "light", size: "md" })}>
               {state === "open" ? "Review and accept" : "Pay now"}
             </a>
           </div>
@@ -71,7 +71,7 @@ function OpenPanel({ token, totalCents }: ActionProps) {
 
   return (
     <>
-      <h2 className="font-semiwide text-lg font-bold">Accept this quote</h2>
+      <h2 className="font-serif text-xl font-medium">Accept this quote</h2>
       <div className="mt-5">
         <p className="text-sm text-navy-300">Quote total</p>
         <p className="font-wide text-4xl font-extrabold tabular-nums">{formatCents(totalCents)}</p>
@@ -102,14 +102,14 @@ function OpenPanel({ token, totalCents }: ActionProps) {
 function AcceptedPanel({ totalCents }: ActionProps) {
   return (
     <>
-      <p className="inline-flex items-center gap-2 text-sm font-semibold text-copper-500">
+      <p className="inline-flex items-center gap-2 text-sm font-semibold text-stone-100">
         <CheckCircle2 aria-hidden className="size-4" />
         Accepted
       </p>
-      <h2 className="mt-2 font-semiwide text-lg font-bold">You&apos;re on our schedule</h2>
+      <h2 className="mt-2 font-serif text-xl font-medium">You&apos;re on our schedule</h2>
       <p className="mt-3 text-navy-300">We&apos;ll be in touch to confirm your start date.</p>
       <div className="mt-5 flex gap-3 border-t border-navy-800 pt-5">
-        <CalendarCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-copper-500" />
+        <CalendarCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-stone-100" />
         <p className="text-sm text-navy-300">
           <span className="font-semibold text-stone-50">Nothing is due yet.</span> Once the work is done and we&apos;ve walked it with
           you, we&apos;ll email a link to pay the {formatCents(totalCents)} total here by card or Apple Pay.
@@ -122,11 +122,11 @@ function AcceptedPanel({ totalCents }: ActionProps) {
 function PaymentDuePanel({ token, balanceCents, totalCents, payments }: ActionProps) {
   return (
     <>
-      <p className="inline-flex items-center gap-2 text-sm font-semibold text-copper-500">
+      <p className="inline-flex items-center gap-2 text-sm font-semibold text-stone-100">
         <CheckCircle2 aria-hidden className="size-4" />
         Work complete
       </p>
-      <h2 className="mt-2 font-semiwide text-lg font-bold">Payment due</h2>
+      <h2 className="mt-2 font-serif text-xl font-medium">Payment due</h2>
       <PaymentList payments={payments} />
       <div className="mt-5 flex items-baseline justify-between gap-4 border-t border-navy-800 pt-4">
         <p className="text-navy-300">Amount due</p>
@@ -141,7 +141,7 @@ function PaymentDuePanel({ token, balanceCents, totalCents, payments }: ActionPr
 function PaidPanel({ totalCents, payments }: ActionProps) {
   return (
     <>
-      <p className="inline-flex items-center gap-2 text-sm font-semibold text-copper-500">
+      <p className="inline-flex items-center gap-2 text-sm font-semibold text-stone-100">
         <CheckCircle2 aria-hidden className="size-4" />
         Paid in full
       </p>
@@ -156,10 +156,10 @@ function StatusPanel({ title, body, number, ask = "Contact us" }: { title: strin
   const site = useSite();
   return (
     <>
-      <h2 className="font-semiwide text-lg font-bold">{title}</h2>
+      <h2 className="font-serif text-xl font-medium">{title}</h2>
       <p className="mt-3 text-navy-300">{body}</p>
       <div className="mt-6 flex flex-col gap-3">
-        <a href={`mailto:${site.email}?subject=${encodeURIComponent(`Quote #${number}`)}`} className={buttonVariants({ size: "md" })}>
+        <a href={`mailto:${site.email}?subject=${encodeURIComponent(`Quote #${number}`)}`} className={buttonVariants({ variant: "light", size: "md" })}>
           <Mail aria-hidden />
           {ask}
         </a>
@@ -196,7 +196,7 @@ function AcceptButton({ token }: { token: string }) {
 
   return (
     <div className="mt-6">
-      <Button type="button" size="lg" onClick={accept} disabled={pending} className="w-full whitespace-normal text-center">
+      <Button type="button" variant="light" size="lg" onClick={accept} disabled={pending} className="w-full whitespace-normal text-center">
         <CheckCircle2 aria-hidden />
         {pending ? "Accepting…" : "Accept quote"}
       </Button>
@@ -232,7 +232,7 @@ function PayButton({ token, label, amountCents }: { token: string; label: string
 
   return (
     <div className="mt-6">
-      <Button type="button" size="lg" onClick={pay} disabled={pending} className="w-full whitespace-normal text-center">
+      <Button type="button" variant="light" size="lg" onClick={pay} disabled={pending} className="w-full whitespace-normal text-center">
         <Lock aria-hidden />
         {pending ? "Opening secure checkout…" : label}
       </Button>
@@ -313,7 +313,7 @@ function DeclineDialog({ dialog, token, onClose }: { dialog: React.RefObject<HTM
       className="project-dialog m-auto w-[min(100%-1.5rem,560px)] max-w-none rounded-panel bg-stone-50 p-0 text-navy-950 shadow-overlay backdrop:bg-navy-950/70"
     >
       <form onSubmit={submit} className="p-6 sm:p-8">
-        <h2 id="decline-title" className="font-semiwide text-2xl font-bold">
+        <h2 id="decline-title" className="font-serif text-3xl">
           Decline this quote?
         </h2>
         <p className="mt-2 text-navy-700">We&apos;ll let the team know. A reason helps us quote better next time.</p>

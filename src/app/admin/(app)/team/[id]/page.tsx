@@ -51,7 +51,7 @@ export default async function StaffPage({ params }: PageProps<"/admin/team/[id]"
             {isSelf ? (
               <p className="mt-2 text-sm text-navy-600">
                 Change your own password from{" "}
-                <Link prefetch={false} href="/admin/password" className="font-semibold text-copper-700 underline underline-offset-4">
+                <Link prefetch={false} href="/admin/password" className="font-semibold text-accent-700 underline underline-offset-4">
                   My account
                 </Link>
                 .

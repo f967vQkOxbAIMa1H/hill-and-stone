@@ -55,7 +55,7 @@ export function MobileNav() {
           <nav aria-label="Main" className="mt-8">
             <NavLinks
               className="flex flex-col"
-              linkClassName="block border-b border-navy-200 py-4 font-semiwide text-xl font-bold text-navy-950 aria-[current=page]:text-copper-700"
+              linkClassName="block border-b border-navy-200 py-4 font-serif text-2xl text-navy-950 aria-[current=page]:text-accent-700"
             />
           </nav>
 

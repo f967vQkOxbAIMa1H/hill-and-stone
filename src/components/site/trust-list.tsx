@@ -42,7 +42,7 @@ export async function TrustList({ className, tone = "light" }: { className?: str
     <dl className={cn("grid gap-x-10 sm:grid-cols-2", className)}>
       {commitments(site).map(({ icon: Icon, title, body }, i) => (
         <ScrollReveal key={title} delay={(i % 2) * 0.15} className={cn("flex gap-4 border-t py-6", dark ? "border-navy-800" : "border-navy-200")}>
-          <Icon aria-hidden className={cn("mt-0.5 size-6 shrink-0", dark ? "text-copper-500" : "text-copper-700")} />
+          <Icon aria-hidden className={cn("mt-0.5 size-6 shrink-0", dark ? "text-stone-100" : "text-accent-700")} />
           <div>
             <dt className={cn("font-bold", dark ? "text-stone-50" : "text-navy-950")}>{title}</dt>
             <dd className={cn("mt-1.5", dark ? "text-navy-300" : "text-navy-600")}>{body}</dd>

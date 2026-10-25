@@ -80,7 +80,7 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
               <ul className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
                 {lead.attachments.map((p, i) => (
                   <li key={p.id}>
-                    <a href={`/api/admin/attachments/${p.id}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-panel border border-navy-200 bg-navy-900 ring-copper-500 hover:ring-2">
+                    <a href={`/api/admin/attachments/${p.id}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-panel border border-navy-200 bg-navy-900 ring-accent-500 hover:ring-2">
                       <SafeImage src={`/api/admin/attachments/${p.id}`} alt={`Photo ${i + 1} from request #${lead.number}`} fallbackLabel="File missing" className="aspect-[4/3] w-full object-cover" />
                     </a>
                     <p className="mt-1 truncate text-sm text-navy-600" title={p.fileName}>
@@ -148,19 +148,19 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
             </p>
             <ul className="mt-3 space-y-2">
               <li>
-                <a href={`tel:+1${c.phone}`} className="inline-flex items-center gap-2 font-semibold hover:text-copper-700">
+                <a href={`tel:+1${c.phone}`} className="inline-flex items-center gap-2 font-semibold hover:text-accent-700">
                   <Phone aria-hidden className="size-4" />
                   {phoneFmt(c.phone)}
                 </a>
               </li>
               <li>
-                <a href={`sms:+1${c.phone}`} className="inline-flex items-center gap-2 hover:text-copper-700">
+                <a href={`sms:+1${c.phone}`} className="inline-flex items-center gap-2 hover:text-accent-700">
                   <MessageSquare aria-hidden className="size-4" />
                   Text
                 </a>
               </li>
               <li>
-                <a href={`mailto:${c.email}?subject=${encodeURIComponent(`Your Hill & Stone request #${lead.number}`)}`} className="inline-flex items-center gap-2 break-all hover:text-copper-700">
+                <a href={`mailto:${c.email}?subject=${encodeURIComponent(`Your Hill & Stone request #${lead.number}`)}`} className="inline-flex items-center gap-2 break-all hover:text-accent-700">
                   <Mail aria-hidden className="size-4 shrink-0" />
                   {c.email}
                 </a>
@@ -177,7 +177,7 @@ export default async function RequestPage({ params }: PageProps<"/admin/requests
               {a.city}, {a.state} {a.postalCode}
             </address>
             <p className="mt-2 text-sm text-navy-600">{area ? `${area.name} (${area.core ? "primary area" : "also served"})` : "Outside listed service areas"}</p>
-            <a href={`https://maps.google.com/?q=${encodeURIComponent(`${a.line1}, ${a.city}, ${a.state} ${a.postalCode}`)}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-copper-700 underline-offset-4 hover:underline">
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(`${a.line1}, ${a.city}, ${a.state} ${a.postalCode}`)}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-accent-700 underline-offset-4 hover:underline">
               Open in Maps
             </a>
           </div>

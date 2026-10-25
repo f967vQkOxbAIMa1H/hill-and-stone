@@ -35,7 +35,7 @@ function RolePicker({ value, onChange, disabled, error }: { value: StaffRole; on
             key={r}
             className={cn(
               "flex cursor-pointer gap-3 rounded-control border bg-white p-3 transition-colors has-[:checked]:border-navy-950 has-[:checked]:ring-1 has-[:checked]:ring-navy-950",
-              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-500",
               disabled ? "cursor-not-allowed opacity-60" : "border-navy-300 hover:border-navy-600",
             )}
           >
@@ -60,9 +60,9 @@ function RolePicker({ value, onChange, disabled, error }: { value: StaffRole; on
 function TempPasswordReveal({ password, name, children }: { password: string; name: string; children?: React.ReactNode }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div role="status" className="rounded-panel border border-copper-500 bg-copper-100 p-5">
+    <div role="status" className="rounded-panel border border-accent-500 bg-accent-100 p-5">
       <p className="flex items-center gap-2 font-semibold">
-        <KeyRound aria-hidden className="size-4 text-copper-700" />
+        <KeyRound aria-hidden className="size-4 text-accent-700" />
         Temporary password for {name}
       </p>
       <p className="mt-1 text-sm text-navy-700">Give this to them in person or by text. It won&apos;t be shown again; they&apos;ll choose their own when they sign in.</p>

@@ -83,10 +83,10 @@ describe("licensing and branding", () => {
     expect(defaultSettings.license.showPublicly).toBe(false);
     expect(settingsSchema.parse({ ...defaultSettings, license: { number: "9" } }).license.showPublicly).toBe(false);
   });
-  it("uses the Hillstone domain and no LLC until it's registered", () => {
+  it("uses the Hillstone domain and the exact LLC legal name", () => {
     expect(brand.domain).toMatch(/^hillstone/);
     expect(defaultSettings.contact.email).toBe(`hello@${brand.domain}`);
-    expect(brand.legalName).not.toMatch(/LLC/);
+    expect(brand.legalName).toBe("Hill and Stone Home Solutions LLC");
   });
   it("has no deposit setting", () => expect("depositPercent" in defaultSettings.quoteDefaults).toBe(false));
 });

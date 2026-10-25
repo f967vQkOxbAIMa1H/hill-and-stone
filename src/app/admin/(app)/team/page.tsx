@@ -25,7 +25,7 @@ export default async function TeamPage() {
       : !u.passwordHash
         ? { label: "No password set", tone: "neutral" as const }
         : u.mustChangePassword
-          ? { label: "Waiting for first sign-in", tone: "copper" as const }
+          ? { label: "Waiting for first sign-in", tone: "accent" as const }
           : { label: "Active", tone: "success" as const };
 
   return (
@@ -77,7 +77,7 @@ export default async function TeamPage() {
                 return (
                   <tr key={u.id} className={u.deactivatedAt ? "group relative text-navy-600 hover:bg-stone-50" : "group relative hover:bg-stone-50"}>
                     <td className="px-4 py-3">
-                      <Link prefetch={false} href={`/admin/team/${u.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-copper-700">
+                      <Link prefetch={false} href={`/admin/team/${u.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-accent-700">
                         {u.name ?? u.email}
                         {u.id === me.id && <span className="font-normal text-navy-600"> (you)</span>}
                       </Link>

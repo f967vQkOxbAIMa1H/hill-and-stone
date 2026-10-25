@@ -34,7 +34,7 @@ export default async function ServicesPage() {
               <li key={s.slug}>
                 <Link
                   href={`#${s.slug}`}
-                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-copper-500"
+                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-accent-500"
                 >
                   {s.name}
                 </Link>
@@ -53,7 +53,7 @@ export default async function ServicesPage() {
             <h2 className="text-xl font-bold">Not sure where your job fits?</h2>
             <p className="mt-2 max-w-[60ch] text-navy-600">
               Send us photos through the quote form, or call{" "}
-              <a href={site.phoneHref} className="font-semibold text-copper-700 underline-offset-4 hover:underline">
+              <a href={site.phoneHref} className="font-semibold text-accent-700 underline-offset-4 hover:underline">
                 {site.phone}
               </a>
               . Plenty of jobs are a mix of two or three of these.

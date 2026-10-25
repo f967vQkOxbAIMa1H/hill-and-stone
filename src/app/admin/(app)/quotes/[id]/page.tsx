@@ -82,7 +82,7 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/ad
           {quote.validUntil ? `, valid until ${fmtDay(quote.validUntil)}` : ""}.
         </p>
         {sent && (
-          <p role="status" className={sent === "emailed" ? "mt-4 rounded-control bg-success-100 px-4 py-3 font-medium text-success-700" : "mt-4 rounded-control bg-copper-100 px-4 py-3 font-medium text-copper-700"}>
+          <p role="status" className={sent === "emailed" ? "mt-4 rounded-control bg-success-100 px-4 py-3 font-medium text-success-700" : "mt-4 rounded-control bg-accent-100 px-4 py-3 font-medium text-accent-700"}>
             {sent === "emailed"
               ? `Quote sent. ${quote.customer.firstName} will get an email with the link.`
               : "Quote is live, but the email didn't send (email isn't configured). Copy the link below and send it yourself."}

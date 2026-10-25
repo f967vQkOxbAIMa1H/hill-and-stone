@@ -100,11 +100,11 @@ export function PhotoDropzone({
         }}
         className={cn(
           "relative flex flex-col items-center justify-center rounded-panel border-2 border-dashed px-6 py-10 text-center transition-colors",
-          "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500",
-          dragging ? "border-copper-500 bg-copper-100" : error ? "border-danger-700 bg-white" : "border-navy-300 bg-white hover:border-navy-600",
+          "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-500",
+          dragging ? "border-accent-500 bg-accent-100" : error ? "border-danger-700 bg-white" : "border-navy-300 bg-white hover:border-navy-600",
         )}
       >
-        <ImagePlus aria-hidden className={cn("size-9", dragging ? "text-copper-700" : "text-navy-600")} />
+        <ImagePlus aria-hidden className={cn("size-9", dragging ? "text-accent-700" : "text-navy-600")} />
         <p className="mt-3 font-semibold">{dragging ? "Drop to attach" : "Drag photos here, or choose files"}</p>
         <p id="photos-hint" className="mt-1 text-sm text-navy-600">
           {preparing

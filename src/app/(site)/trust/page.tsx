@@ -52,7 +52,7 @@ export default async function TrustPage() {
               <li key={s.id}>
                 <Link
                   href={`#${s.id}`}
-                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-copper-500"
+                  className="block rounded-control border border-navy-200 px-3 py-1.5 text-sm hover:border-navy-950 lg:rounded-none lg:border-0 lg:border-l-2 lg:border-navy-200 lg:py-2 lg:pl-4 lg:text-base lg:hover:border-accent-500"
                 >
                   {s.title}
                 </Link>
@@ -102,7 +102,7 @@ export default async function TrustPage() {
                 ["You receive it", `By email, usually within ${site.coiWindow}, with you listed as certificate holder.`],
               ].map(([title, body], i) => (
                 <li key={title} className="border-t-2 border-navy-950 pt-4">
-                  <span className="font-wide text-2xl font-extrabold text-copper-700">{i + 1}</span>
+                  <span className="numeral text-3xl text-accent-700">{String(i + 1).padStart(2, "0")}</span>
                   <p className="mt-1 font-bold">{title}</p>
                   <p className="mt-1 text-navy-600">{body}</p>
                 </li>
@@ -127,7 +127,7 @@ export default async function TrustPage() {
                 "Technicians arrive in Hill & Stone shirts, in a marked vehicle.",
               ].map((item) => (
                 <li key={item} className="flex gap-3">
-                  <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-copper-500" />
+                  <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-accent-500" />
                   <span className="text-navy-700">{item}</span>
                 </li>
               ))}
@@ -145,7 +145,7 @@ export default async function TrustPage() {
                 <ul className="mt-3 space-y-2">
                   {covered.map((i) => (
                     <li key={i} className="flex gap-2.5">
-                      <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-copper-500" />
+                      <span aria-hidden className="mt-3 h-0.5 w-3 shrink-0 bg-accent-500" />
                       {i}
                     </li>
                   ))}
@@ -162,7 +162,7 @@ export default async function TrustPage() {
             </div>
             <p className="mt-6 text-navy-700">
               To make a claim, call{" "}
-              <a href={site.phoneHref} className="font-semibold text-copper-700 underline-offset-4 hover:underline">
+              <a href={site.phoneHref} className="font-semibold text-accent-700 underline-offset-4 hover:underline">
                 {site.phone}
               </a>{" "}
               or reply to any email from us with photos. We&apos;ll schedule a visit to look at it.
@@ -184,7 +184,7 @@ export default async function TrustPage() {
               ].map(([t, d]) => (
                 <div key={t} className="border-t border-navy-200 pt-4">
                   <dt className="flex items-center gap-2 font-bold">
-                    <Lock aria-hidden className="size-4 text-copper-700" />
+                    <Lock aria-hidden className="size-4 text-accent-700" />
                     {t}
                   </dt>
                   <dd className="mt-1.5 text-navy-600">{d}</dd>

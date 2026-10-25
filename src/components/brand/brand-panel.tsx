@@ -1,9 +1,9 @@
 import { useId } from "react";
-import { LogoMark } from "@/components/brand/logo";
+import { LogoMark } from "@/components/brand/LogoMark";
 import { cn } from "@/lib/utils";
 
 /**
- * Stand-in for a missing photo: Ozark ridge contours on navy, from the logo's hill motif.
+ * Stand-in for a missing photo: Ozark ridge contours on navy.
  * Looks intentional rather than empty, and never pretends to be a real photo.
  */
 export function BrandPanel({
@@ -38,13 +38,13 @@ export function BrandPanel({
         </svg>
         {(mark || label) && (
           <div className="relative flex w-full items-center gap-3 p-4 sm:p-5">
-            {mark && <LogoMark className={cn("size-7 shrink-0", dark ? "text-stone-50" : "text-navy-950")} />}
+            {mark && <LogoMark className={cn("h-6 shrink-0", dark ? "text-stone-50" : "text-navy-950")} />}
             {label && <span className={cn("text-sm font-semibold", dark ? "text-stone-50" : "text-navy-950")}>{label}</span>}
           </div>
         )}
       </div>
-      {/* The stone course under the hills, as in the logo mark. */}
-      <div aria-hidden className="h-2.5 shrink-0 bg-copper-500" />
+      {/* A sand course under the hills. */}
+      <div aria-hidden className={cn("h-2.5 shrink-0", dark ? "bg-stone-100" : "bg-navy-950")} />
     </div>
   );
 }

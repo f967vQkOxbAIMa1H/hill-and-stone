@@ -1,14 +1,15 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-// Wide widths carry the brand voice; body-level headings stay at normal width.
-const headingVariants = cva("tracking-[-0.01em] text-balance", {
+// Headlines are Newsreader (editorial serif with a true italic); body and UI stay Archivo.
+// A second line in <em> sets in serif italic: "Thoughtful repairs. <em>Properly finished.</em>"
+const headingVariants = cva("font-serif tracking-[-0.015em] text-balance [&_em]:italic", {
   variants: {
     level: {
-      display: "font-wide text-4xl leading-none font-extrabold sm:text-5xl lg:text-6xl",
-      page: "font-wide text-3xl font-extrabold sm:text-4xl lg:text-5xl",
-      section: "font-semiwide text-2xl font-bold sm:text-3xl",
-      sub: "text-xl font-bold sm:text-2xl",
+      display: "text-[2.625rem] leading-[1.02] font-normal sm:text-5xl lg:text-6xl",
+      page: "text-4xl leading-[1.05] font-normal sm:text-5xl",
+      section: "text-3xl leading-[1.1] font-normal sm:text-4xl",
+      sub: "text-xl leading-snug font-medium sm:text-2xl",
     },
   },
   defaultVariants: { level: "section" },

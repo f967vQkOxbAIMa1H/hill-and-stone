@@ -27,7 +27,7 @@ export default async function EditReviewPage({ params, searchParams }: PageProps
         </Link>
         <h1 className="mt-2 font-semiwide text-2xl font-bold sm:text-3xl">Review from {review.authorName}</h1>
         {!isPublicRating(review.rating) && (
-          <p className="mt-4 rounded-control bg-copper-100 px-4 py-3 text-copper-700">
+          <p className="mt-4 rounded-control bg-accent-100 px-4 py-3 text-accent-700">
             <span className="font-semibold">Private feedback ({review.rating} of 5 stars).</span> Reviews under 4 stars never show on the
             site{review.source === "website" ? " and were emailed to the business inbox under Feedback/Low-Rating" : ""}.
           </p>

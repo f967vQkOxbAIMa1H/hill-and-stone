@@ -68,7 +68,7 @@ export default async function AboutPage() {
           <dl className="mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2">
             {values.map((v) => (
               <div key={v.title} className="border-t border-navy-800 pt-6">
-                <dt className="font-semiwide text-xl font-bold">{v.title}</dt>
+                <dt className="font-serif text-2xl">{v.title}</dt>
                 <dd className="mt-2 max-w-[52ch] text-navy-300">{v.body}</dd>
               </div>
             ))}

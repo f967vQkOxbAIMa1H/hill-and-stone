@@ -30,7 +30,7 @@ function useItems(capabilities: Capability[]) {
 
 function PendingCount({ pending }: { pending: number }) {
   return (
-    <span className="rounded-full bg-copper-500 px-1.5 text-sm leading-5 font-bold text-navy-950 tabular-nums">
+    <span className="rounded-full bg-stone-100 px-1.5 text-sm leading-5 font-bold text-navy-950 tabular-nums">
       {pending}
       <span className="sr-only"> pending review</span>
     </span>
@@ -90,7 +90,7 @@ export function AdminTabBar({
   const tabClass = (current: boolean) =>
     cn(
       "relative flex h-16 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-sm font-medium transition-colors",
-      "before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-b-full before:bg-copper-500 before:opacity-0 before:transition-opacity",
+      "before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-b-full before:bg-accent-500 before:opacity-0 before:transition-opacity",
       current ? "text-stone-50 before:opacity-100" : "text-navy-300 active:text-stone-50",
     );
 
@@ -166,7 +166,7 @@ export function AdminTabBar({
                       prefetch={false}
                       href={href}
                       aria-current={current ? "page" : undefined}
-                      className="flex h-14 items-center gap-3 px-4 font-semibold hover:bg-stone-50 aria-[current=page]:text-copper-700"
+                      className="flex h-14 items-center gap-3 px-4 font-semibold hover:bg-stone-50 aria-[current=page]:text-accent-700"
                     >
                       <Icon aria-hidden className="size-5 text-navy-600" />
                       {label}

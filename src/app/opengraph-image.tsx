@@ -1,36 +1,39 @@
 import { ImageResponse } from "next/og";
+import { MARK_PATH, MARK_RATIO, MARK_VIEWBOX } from "@/components/brand/LogoMark";
 import { brand as site, serviceAreas } from "@/lib/site";
 
-export const alt = `${site.name}: home repair in Northwest Arkansas`;
+export const alt = `${site.fullName}: home repair in Northwest Arkansas`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Social share card, used for every page unless a page provides its own.
+const NAVY = "#10243a";
+const CREAM = "#f4f2ed";
+const SAND = "#e3dacd";
+const MUTED = "#4f5d6b";
+
+// Social share card, used for every page unless a page provides its own: the navy mark on cream.
 export default function OpengraphImage() {
   const core = serviceAreas.filter((a) => a.core).map((a) => a.name);
+  const markW = 150;
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#0f172a", color: "#f8fafc", position: "relative" }}>
-        <svg width="1200" height="630" viewBox="0 0 1200 630" style={{ position: "absolute", top: 0, left: 0 }}>
-          {Array.from({ length: 14 }, (_, i) => (
-            <path key={i} d={`M0 ${40 + i * 36} L180 ${22 + i * 36} L300 ${32 + i * 36} L450 ${14 + i * 36} L630 ${30 + i * 36} L780 ${20 + i * 36} L960 ${36 + i * 36} L1080 ${24 + i * 36} L1200 ${40 + i * 36}`} fill="none" stroke="#f8fafc" strokeOpacity="0.08" strokeWidth="2" />
-          ))}
-          <path d="M600 630 L600 470 L760 380 L860 430 L990 330 L1100 410 L1200 370 L1200 630 Z" fill="#1e293b" />
-        </svg>
-        <div style={{ display: "flex", flexDirection: "column", padding: "72px 80px", flex: 1, position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <svg width="64" height="64" viewBox="0 0 32 32">
-              <path d="M2 17 L11 7 L16 12 L21 6 L30 17 Z" fill="#f8fafc" />
-              <rect x="2" y="20" width="28" height="10" rx="2" fill="#d97706" />
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: CREAM, color: NAVY }}>
+        <div style={{ display: "flex", flexDirection: "column", padding: "72px 80px", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+            <svg width={markW} height={Math.round(markW / MARK_RATIO)} viewBox={MARK_VIEWBOX}>
+              <path fill={NAVY} fillRule="evenodd" d={MARK_PATH} />
             </svg>
-            <span style={{ fontSize: 44, fontWeight: 800, letterSpacing: -1 }}>{site.name}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: 7 }}>HILL &amp; STONE</span>
+              <span style={{ fontSize: 20, fontWeight: 600, letterSpacing: 7, color: MUTED }}>HOME SOLUTIONS</span>
+            </div>
           </div>
-          <div style={{ display: "flex", marginTop: 64, fontSize: 76, fontWeight: 800, lineHeight: 1.02, letterSpacing: -2, maxWidth: 820 }}>
-            Reliable NWA home repairs, done right.
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 72, fontSize: 72, fontWeight: 700, lineHeight: 1.05, letterSpacing: -1.5 }}>
+            <span>Thoughtful repairs.</span>
+            <span style={{ fontStyle: "italic", fontWeight: 400 }}>Properly finished.</span>
           </div>
-          <div style={{ display: "flex", marginTop: "auto", fontSize: 30, color: "#cbd5e1" }}>{core.join(", ")}</div>
         </div>
-        <div style={{ display: "flex", height: 18, background: "#d97706" }} />
+        <div style={{ display: "flex", background: SAND, padding: "26px 80px", fontSize: 26, color: NAVY }}>{core.join(" · ")} &amp; surrounding Northwest Arkansas</div>
       </div>
     ),
     size,

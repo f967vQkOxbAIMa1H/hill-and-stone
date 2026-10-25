@@ -20,9 +20,9 @@ export default async function QuoteLayout({ children }: LayoutProps<"/quote/[tok
         <Container className="flex h-16 items-center justify-between gap-4">
           <Link href="/" className="rounded-control">
             <Logo />
-            <span className="sr-only">Hill &amp; Stone home page</span>
+            <span className="sr-only">Hill &amp; Stone Home Solutions home page</span>
           </Link>
-          <a href={site.phoneHref} className="inline-flex items-center gap-2 text-sm font-semibold hover:text-copper-700">
+          <a href={site.phoneHref} className="inline-flex items-center gap-2 text-sm font-semibold hover:text-accent-700">
             <Phone aria-hidden className="size-4" />
             <span className="hidden sm:inline">Questions? </span>
             {site.phone}

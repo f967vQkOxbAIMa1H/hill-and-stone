@@ -14,11 +14,11 @@ const groupLabel: Record<LineItemType, string> = {
   DISCOUNT: "Discounts",
 };
 
-export const stateBadge: Record<PortalState, { label: string; tone: "copper" | "success" | "danger" | "neutral" }> = {
-  open: { label: "Awaiting your approval", tone: "copper" },
+export const stateBadge: Record<PortalState, { label: string; tone: "accent" | "success" | "danger" | "neutral" }> = {
+  open: { label: "Awaiting your approval", tone: "accent" },
   expired: { label: "Expired", tone: "danger" },
   accepted: { label: "Accepted, payment due on completion", tone: "success" },
-  payment_due: { label: "Work complete, payment due", tone: "copper" },
+  payment_due: { label: "Work complete, payment due", tone: "accent" },
   paid: { label: "Paid in full", tone: "success" },
   declined: { label: "Declined", tone: "neutral" },
   void: { label: "Withdrawn", tone: "neutral" },
@@ -50,7 +50,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
           <p className="text-sm text-navy-600">Quote #{quote.number}</p>
           <Badge tone={badge.tone}>{badge.label}</Badge>
         </div>
-        <h1 id="quote-title" className="mt-3 max-w-[22ch] font-wide text-3xl font-extrabold tracking-[-0.01em] text-balance sm:text-4xl">
+        <h1 id="quote-title" className="mt-3 max-w-[22ch] font-serif text-4xl tracking-[-0.015em] text-balance sm:text-4xl">
           {quote.title}
         </h1>
 
@@ -89,7 +89,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
 
       {/* Scope */}
       <section aria-labelledby="scope-heading" className="border-b border-navy-200 p-6 sm:p-10">
-        <h2 id="scope-heading" className="font-semiwide text-xl font-bold">
+        <h2 id="scope-heading" className="font-serif text-2xl">
           Scope of work
         </h2>
         <p className="mt-3 max-w-[68ch] whitespace-pre-line text-navy-700">{quote.scopeOfWork}</p>
@@ -103,7 +103,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
 
       {/* Line items */}
       <section aria-labelledby="items-heading" className="p-6 sm:p-10">
-        <h2 id="items-heading" className="font-semiwide text-xl font-bold">
+        <h2 id="items-heading" className="font-serif text-2xl">
           Price breakdown
         </h2>
         <table className="mt-5 w-full text-left">
@@ -127,7 +127,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
           {groups.map((g) => (
             <tbody key={g.type}>
               <tr>
-                <th scope="rowgroup" colSpan={4} className="pt-5 pb-1 text-sm font-semibold text-copper-700">
+                <th scope="rowgroup" colSpan={4} className="pt-5 pb-1 text-sm font-semibold text-accent-700">
                   {groupLabel[g.type]}
                 </th>
               </tr>
@@ -173,7 +173,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
       {/* Photos from the request */}
       {photos.length > 0 && (
         <section aria-labelledby="photos-heading" className="border-t border-navy-200 p-6 sm:p-10">
-          <h2 id="photos-heading" className="font-semiwide text-xl font-bold">
+          <h2 id="photos-heading" className="font-serif text-2xl">
             Photos you sent
           </h2>
           <p className="mt-1 text-sm text-navy-600">From your request #{quote.lead?.number}. We priced the work from these.</p>
@@ -184,7 +184,7 @@ export function QuoteDocument({ quote, state }: { quote: PortalQuote; state: Por
                   href={`/api/quotes/${quote.publicToken}/photos/${p.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block overflow-hidden rounded-control ring-copper-500 hover:ring-2"
+                  className="block overflow-hidden rounded-control ring-accent-500 hover:ring-2"
                 >
                   <SafeImage
                     src={`/api/quotes/${quote.publicToken}/photos/${p.id}`}

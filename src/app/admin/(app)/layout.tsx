@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { logout } from "@/app/admin/actions";
-import { LogoMark } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { AdminNav, AdminTabBar } from "@/components/admin/admin-nav";
 import { capabilitiesOf, roleInfo, type StaffRole } from "@/lib/auth/permissions";
 import { requireAdmin } from "@/lib/auth/session";
@@ -23,16 +23,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       {/* Phones and tablets: a slim brand bar on top, navigation in the tab bar at the bottom. */}
       <header className="flex h-14 shrink-0 items-center bg-navy-950 px-4 text-stone-50 lg:hidden">
         <Link prefetch={false} href="/admin" className="flex items-center gap-2.5 rounded-control px-1">
-          <LogoMark className="text-stone-50" />
-          <span className="font-wide text-lg leading-none font-extrabold">Hill &amp; Stone</span>
+          <Logo tone="light" />
         </Link>
       </header>
       <AdminTabBar pending={pending} capabilities={capabilitiesOf(admin.role)} account={account} />
 
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-4 bg-navy-950 px-4 py-6 text-stone-50 lg:flex">
         <Link prefetch={false} href="/admin" className="flex items-center gap-2.5 rounded-control px-1">
-          <LogoMark className="text-stone-50" />
-          <span className="font-wide text-lg leading-none font-extrabold">Hill &amp; Stone</span>
+          <Logo tone="light" />
         </Link>
         <nav aria-label="Admin" className="mt-6">
           <AdminNav pending={pending} capabilities={capabilitiesOf(admin.role)} />

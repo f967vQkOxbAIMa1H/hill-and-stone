@@ -14,7 +14,7 @@ export function TrustBadges({ site, className }: { site: SiteConfig; className?:
       <ul aria-label="Our guarantees" className="grid divide-y divide-navy-200 border-y border-navy-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {badges.map(({ icon: Icon, title, body }, i) => (
           <li key={title} className={cn("flex gap-3 py-4 sm:flex-col sm:gap-2 sm:px-4", i === 0 && "sm:pl-0")}>
-            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-copper-700 sm:mt-0" />
+            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-accent-700 sm:mt-0" />
             <div>
               <p className="leading-tight font-bold">{title}</p>
               <p className="mt-1 text-sm leading-snug text-navy-600">{body}</p>

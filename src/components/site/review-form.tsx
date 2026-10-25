@@ -104,7 +104,7 @@ export function ReviewForm({
         <legend className="text-sm font-semibold text-navy-950">Your rating</legend>
         <div className="mt-1.5 flex items-center gap-3">
           <div
-            className="flex rounded-control has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500"
+            className="flex rounded-control has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-500"
             onMouseLeave={() => setHover(0)}
           >
             {[1, 2, 3, 4, 5].map((n) => (
@@ -118,7 +118,7 @@ export function ReviewForm({
                   onChange={() => set("rating", n)}
                   className="sr-only"
                 />
-                <Star aria-hidden className={cn("size-8 transition-colors", n <= shown ? "fill-copper-500 text-copper-500" : "text-navy-300")} />
+                <Star aria-hidden className={cn("size-8 transition-colors", n <= shown ? "fill-accent-500 text-accent-500" : "text-navy-300")} />
                 <span className="sr-only">
                   {n} star{n === 1 ? "" : "s"}, {ratingWords[n]}
                 </span>

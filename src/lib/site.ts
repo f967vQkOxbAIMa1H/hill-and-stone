@@ -13,9 +13,12 @@ import type { Settings } from "@/lib/settings/schema";
 
 /** Brand facts that change with a rebrand, not day to day. Edited here, in code. */
 export const brand = {
+  /** Short name for running copy ("Call Hill & Stone"). */
   name: "Hill & Stone",
-  /** Trade name until the LLC is registered; add "LLC" here once it is. */
-  legalName: "Hill & Stone Home Company",
+  /** Display name: the header lockup, page titles, emails. */
+  fullName: "Hill & Stone Home Solutions",
+  /** Exact legal name: footer copyright, terms/privacy, structured data, email footers. */
+  legalName: "Hill and Stone Home Solutions LLC",
   /**
    * Primary domain ("Hillstone"). Not purchased yet: set the real one here and NEXT_PUBLIC_APP_URL
    * once it is. Used for the default contact email; `npm run check:launch` flags it until confirmed.
@@ -77,6 +80,7 @@ export function buildSite(settings: Settings) {
   const months = settings.warrantyMonths;
   return {
     name: brand.name,
+    fullName: brand.fullName,
     legalName: brand.legalName,
     tagline: brand.tagline,
     phone: settings.contact.phone,

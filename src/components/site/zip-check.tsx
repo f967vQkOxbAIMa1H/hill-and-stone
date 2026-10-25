@@ -66,14 +66,14 @@ export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
           <span className={result.tone === "yes" ? "font-semibold text-success-700" : result.tone === "maybe" ? "text-navy-950" : "text-danger-700"}>
             {result.message}{" "}
             {result.tone !== "no" && (
-              <Link href={quoteHref} className="font-semibold whitespace-nowrap text-copper-700 underline underline-offset-4">
+              <Link href={quoteHref} className="font-semibold whitespace-nowrap text-accent-700 underline underline-offset-4">
                 Request a quote
               </Link>
             )}
             {result.tone === "maybe" && (
               <>
                 {" or call "}
-                <a href={site.phoneHref} className="font-semibold whitespace-nowrap text-copper-700 underline underline-offset-4">
+                <a href={site.phoneHref} className="font-semibold whitespace-nowrap text-accent-700 underline underline-offset-4">
                   {site.phone}
                 </a>
               </>

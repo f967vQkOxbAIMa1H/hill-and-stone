@@ -36,8 +36,8 @@ export function RadioTiles<T extends string>({
             className={cn(
               "relative flex min-h-11 cursor-pointer items-center rounded-control border bg-white px-3.5 py-2.5 transition-colors",
               "has-[:checked]:border-navy-950 has-[:checked]:bg-navy-950 has-[:checked]:text-stone-50",
-              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500",
-              error ? "border-danger-700" : "border-navy-300 hover:border-navy-600",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-500",
+              error ? "border-danger-700" : "border-navy-600/70 hover:border-navy-600",
             )}
           >
             <input

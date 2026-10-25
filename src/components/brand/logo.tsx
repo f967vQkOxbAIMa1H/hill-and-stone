@@ -1,26 +1,27 @@
+import { LogoMark } from "@/components/brand/LogoMark";
 import { cn } from "@/lib/utils";
 
-/** Mark: an Ozark ridge line resting on a laid stone. */
-export function LogoMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden className={cn("size-8", className)}>
-      <path d="M2 17 L11 7 L16 12 L21 6 L30 17 Z" fill="currentColor" />
-      <rect x="2" y="20" width="28" height="10" rx="2" className="fill-copper-500" />
-    </svg>
-  );
-}
+export { LogoMark };
 
-export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
+/**
+ * Header lockup: the mark beside two stacked, letter-spaced lines, "HILL & STONE" over "HOME SOLUTIONS".
+ * tone="current" inherits color from the parent (the adaptive header sets it); "dark" is navy, "light" cream.
+ */
+export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" | "current" }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2.5",
-        tone === "dark" ? "text-navy-950" : "text-stone-50",
+        "inline-flex items-center gap-3",
+        tone === "dark" && "text-navy-950",
+        tone === "light" && "text-stone-50",
         className,
       )}
     >
-      <LogoMark />
-      <span className="font-wide text-xl leading-none font-extrabold tracking-[-0.02em]">Hill &amp; Stone</span>
+      <LogoMark className="h-8 sm:h-9" />
+      <span className="flex flex-col gap-[0.3em] leading-none uppercase">
+        <span className="text-[0.9375rem] font-bold tracking-[0.2em] sm:text-base">Hill &amp; Stone</span>
+        <span className="text-[0.625rem] font-semibold tracking-[0.34em] opacity-80 sm:text-[0.6875rem]">Home Solutions</span>
+      </span>
     </span>
   );
 }

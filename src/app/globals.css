@@ -7,29 +7,33 @@
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  --color-navy-950: #0f172a;
-  --color-navy-900: #1e293b;
-  --color-navy-800: #283548;
-  --color-navy-700: #334155;
-  --color-navy-600: #475569;
-  --color-navy-400: #94a3b8;
-  --color-navy-300: #cbd5e1;
-  --color-navy-200: #e2e8f0;
+  /* Coastal navy: primary buttons, dark sections, headings. Lighter steps are derived for text and lines. */
+  --color-navy-950: #10243a;
+  --color-navy-900: #183252;
+  --color-navy-800: #24405f;
+  --color-navy-700: #34495f;
+  --color-navy-600: #4f5d6b;
+  --color-navy-400: #a9b3be;
+  --color-navy-300: #c5ccd3;
+  --color-navy-200: #ddd8cf;
 
-  --color-copper-400: #f59e0b;
-  --color-copper-500: #d97706;
-  --color-copper-700: #b45309;
-  --color-copper-100: #fef3c7;
+  /* Logo blue: sparing. Focus rings, small markers, links. Never a large fill. */
+  --color-accent-400: #3f72a8;
+  --color-accent-500: #2e5b8a;
+  --color-accent-700: #113360;
+  --color-accent-100: #dfe6ee;
 
-  --color-stone-50: #f8fafc;
-  --color-stone-100: #f1f5f9;
+  /* Cream page, sand band. White (#fff) is the raised card surface. */
+  --color-stone-50: #f4f2ed;
+  --color-stone-100: #e3dacd;
 
-  --color-success-700: #15803d;
-  --color-success-100: #dcfce7;
-  --color-danger-700: #b91c1c;
-  --color-danger-100: #fee2e2;
+  --color-success-700: #146c36;
+  --color-success-100: #dcefe1;
+  --color-danger-700: #a61b1b;
+  --color-danger-100: #f8e1de;
 
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
 
   /* Classic typographic scale */
   --text-sm: 0.875rem;
@@ -56,7 +60,7 @@
   --radius-panel: 8px;
   --radius-photo: 14px;
 
-  --shadow-overlay: 0 24px 48px -12px rgb(15 23 42 / 0.28), 0 0 0 1px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 24px 48px -12px rgb(16 36 58 / 0.28), 0 0 0 1px rgb(16 36 58 / 0.06);
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -70,6 +74,28 @@
 }
 @utility font-normal-width {
   font-stretch: 100%;
+}
+
+/* Section label above a heading: small, uppercase, widely tracked, muted (client mockup). */
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-navy-600);
+  [data-header-theme="dark"] & {
+    color: var(--color-navy-400);
+  }
+}
+
+/* Serif numerals for sequences ("01", "02"). Old-style figures sit like page numbers. */
+@utility numeral {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 @layer base {
@@ -99,13 +125,18 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-copper-500);
+    outline: 2px solid var(--color-accent-500);
     outline-offset: 3px;
     border-radius: 2px;
   }
+  /* On navy the blue ring disappears; sand stays visible. */
+  [data-header-theme="dark"] :focus-visible,
+  .bg-navy-950 :focus-visible {
+    outline-color: var(--color-stone-100);
+  }
 
   ::selection {
-    background: var(--color-copper-400);
+    background: var(--color-stone-100);
     color: var(--color-navy-950);
   }
 }
@@ -153,24 +184,23 @@
   }
 }
 
-/* Craftsman slate: a raised panel whose border warms to copper when the pointer comes onto it. */
+/* Craftsman slate: a raised white card whose border darkens to navy when the pointer comes onto it. */
 @utility slate {
   border: 1px solid var(--color-navy-200);
-  background-color: rgb(255 255 255 / 0.85);
-  backdrop-filter: blur(12px);
+  background-color: var(--color-white);
   box-shadow:
-    0 1px 2px rgb(15 23 42 / 0.04),
-    0 12px 32px -18px rgb(15 23 42 / 0.2);
+    0 1px 2px rgb(16 36 58 / 0.04),
+    0 12px 32px -18px rgb(16 36 58 / 0.2);
   transition:
     border-color 300ms var(--ease-out-quart),
     box-shadow 300ms var(--ease-out-quart);
   @media (hover: hover) {
     &:hover {
-      border-color: rgb(217 119 6 / 0.4);
+      border-color: rgb(16 36 58 / 0.35);
       box-shadow:
-        0 0 0 4px rgb(217 119 6 / 0.07),
-        0 1px 2px rgb(15 23 42 / 0.04),
-        0 16px 40px -18px rgb(15 23 42 / 0.26);
+        0 0 0 4px rgb(16 36 58 / 0.05),
+        0 1px 2px rgb(16 36 58 / 0.04),
+        0 16px 40px -18px rgb(16 36 58 / 0.26);
     }
   }
 }

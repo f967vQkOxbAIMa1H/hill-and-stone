@@ -37,7 +37,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
 
       <aside className="lg:sticky lg:top-28 lg:self-start">
         <ScrollReveal delay={0.1} className="rounded-panel bg-navy-950 p-6 text-stone-50">
-          <h2 className="font-semiwide text-lg font-bold">How quoting works</h2>
+          <h2 className="font-serif text-2xl">How quoting works</h2>
           <ol className="mt-5 space-y-5">
             {[
               ["You send details", "This form, with photos if you have them."],
@@ -46,7 +46,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
               ["You pay when it's done", "Accept the quote online for free. Payment is due on completion, with no deposit."],
             ].map(([title, body], i) => (
               <ScrollReveal as="li" key={title} delay={0.25 + i * 0.15} className="grid grid-cols-[2rem_1fr] gap-2">
-                <span className="font-wide text-xl leading-tight font-extrabold text-copper-500">{i + 1}</span>
+                <span className="numeral text-2xl leading-tight text-stone-100">{String(i + 1).padStart(2, "0")}</span>
                 <span>
                   <span className="block font-semibold">{title}</span>
                   <span className="block text-sm text-navy-300">{body}</span>
@@ -56,7 +56,7 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
           </ol>
           <div className="mt-6 border-t border-navy-800 pt-5">
             <p className="text-sm text-navy-300">Urgent, like an active leak?</p>
-            <a href={site.phoneHref} className="mt-1 inline-flex items-center gap-2 text-lg font-bold hover:text-copper-500">
+            <a href={site.phoneHref} className="mt-1 inline-flex items-center gap-2 text-lg font-bold hover:text-stone-100">
               <Phone aria-hidden className="size-4" />
               {site.phone}
             </a>

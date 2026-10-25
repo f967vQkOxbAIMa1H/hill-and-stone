@@ -62,14 +62,14 @@ export async function createStaffUser(input: NewStaffInput): Promise<Result> {
       type: "STAFF_ACCOUNT_NOTICE",
       to: user.email,
       replyTo: owner.email,
-      subject: `Your ${site.name} admin login is ready`,
+      subject: `Your ${site.fullName} admin login is ready`,
       // Never includes the password: the owner shares that separately.
       html: layout(
         site,
         `<p style="margin:0 0 12px;font-size:20px;font-weight:800">Hi ${esc(v.name.split(" ")[0])}, your login is ready.</p>
 <p style="margin:0 0 12px">${esc(owner.name ?? owner.email)} added you to the ${esc(site.name)} admin as <strong>${esc(roleInfo[v.role].label)}</strong>.</p>
 <p style="margin:0 0 12px">Sign in with this email address and the temporary password they give you. You'll choose your own password the first time you sign in.</p>
-<p style="margin:20px 0"><a href="${esc(loginUrl)}" style="display:inline-block;background:#0f172a;color:#f8fafc;font-weight:bold;text-decoration:none;padding:12px 20px;border-radius:4px">Go to sign in</a></p>`,
+<p style="margin:20px 0"><a href="${esc(loginUrl)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:12px 20px;border-radius:4px">Go to sign in</a></p>`,
       ),
       text: `Hi ${v.name.split(" ")[0]}, ${owner.name ?? owner.email} added you to the ${site.name} admin as ${roleInfo[v.role].label}.\n\nSign in at ${loginUrl} with this email and the temporary password they give you. You'll choose your own password the first time you sign in.`,
     });

@@ -130,7 +130,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
     return (
       <div className="quote-done rounded-panel border border-navy-200 bg-white p-6 sm:p-10">
         <p className="text-sm font-semibold text-success-700">Request received</p>
-        <h2 ref={doneHeading} tabIndex={-1} className="mt-2 font-wide text-3xl font-extrabold tracking-[-0.01em] outline-none sm:text-4xl">
+        <h2 ref={doneHeading} tabIndex={-1} className="mt-2 font-serif text-4xl tracking-[-0.015em] outline-none sm:text-4xl">
           {status.number ? `Request #${status.number} is in.` : "Your request is in."}
         </h2>
         <p className="mt-4 max-w-[56ch] text-lg text-navy-700">
@@ -141,7 +141,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
 
         <p className="mt-10 border-t border-navy-200 pt-6 text-navy-600">
           Something urgent, like an active leak? Call{" "}
-          <a href={site.phoneHref} className="font-semibold text-copper-700 underline underline-offset-4">
+          <a href={site.phoneHref} className="font-semibold text-accent-700 underline underline-offset-4">
             {site.phone}
           </a>
           .
@@ -260,14 +260,14 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
           <Button type="submit" size="lg" disabled={sending || preparingPhotos} className="sm:min-w-56">
             {preparingPhotos ? "Preparing photos…" : sending ? (photos.length && status.progress < 100 ? `Uploading photos… ${status.progress}%` : "Sending…") : "Send request"}
           </Button>
-          <a href={site.phoneHref} className="inline-flex items-center gap-2 font-semibold text-navy-700 hover:text-copper-700">
+          <a href={site.phoneHref} className="inline-flex items-center gap-2 font-semibold text-navy-700 hover:text-accent-700">
             <Phone aria-hidden className="size-4" />
             Rather talk? {site.phone}
           </a>
         </div>
         {sending && photos.length > 0 && (
           <div className="mt-4 h-1.5 max-w-sm overflow-hidden rounded-full bg-navy-200" role="progressbar" aria-label="Upload progress" aria-valuenow={status.progress} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full bg-copper-500 transition-[width] duration-200" style={{ width: `${status.progress}%` }} />
+            <div className="h-full bg-accent-500 transition-[width] duration-200" style={{ width: `${status.progress}%` }} />
           </div>
         )}
         <p className="mt-5 max-w-[60ch] text-sm text-navy-600">
@@ -281,7 +281,7 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <ScrollReveal as="section" className="flex flex-col gap-6 border-t border-navy-200 pt-8 first-of-type:border-t-0 first-of-type:pt-0">
-      <h2 className="font-semiwide text-xl font-bold">{title}</h2>
+      <h2 className="font-serif text-2xl">{title}</h2>
       {children}
     </ScrollReveal>
   );

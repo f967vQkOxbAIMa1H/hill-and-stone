@@ -149,7 +149,7 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
                   <span className="block text-sm text-navy-600">
                     {categoryName[p.category]}, {p.city}
                   </span>
-                  <span className="mt-1 block text-xl font-bold group-hover:text-copper-700">{p.title}</span>
+                  <span className="mt-1 block text-xl font-bold group-hover:text-accent-700">{p.title}</span>
                   <span className="mt-1.5 block text-navy-600">{p.summary}</span>
                 </span>
               </button>
@@ -193,7 +193,7 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
               <p className="pr-12 text-sm text-navy-600">
                 {categoryName[current.category]}, {current.city}
               </p>
-              <h2 id="project-title" className="mt-1 pr-12 font-semiwide text-2xl font-bold">
+              <h2 id="project-title" className="mt-1 pr-12 font-serif text-3xl">
                 {current.title}
               </h2>
 
@@ -223,7 +223,7 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
               </dl>
 
               {current.quote && (
-                <figure className="mt-6 border-l-2 border-copper-500 pl-4">
+                <figure className="mt-6 border-l-2 border-accent-500 pl-4">
                   <blockquote className="text-navy-700">&ldquo;{current.quote.body}&rdquo;</blockquote>
                   <figcaption className="mt-2 text-sm text-navy-600">
                     {current.quote.authorName}, {current.quote.city}
@@ -277,7 +277,7 @@ function SplitPreview({ project }: { project: GalleryProject }) {
       <Image src={m.after.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" unoptimized={isSvg(m.after.src)} className="object-cover [clip-path:inset(0_0_0_50%)]" />
       <span aria-hidden className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-stone-50" />
       <span className="absolute bottom-3 left-3 rounded-control bg-navy-950/80 px-2 py-0.5 text-sm font-semibold text-stone-50">Before</span>
-      <span className="absolute right-3 bottom-3 rounded-control bg-copper-500 px-2 py-0.5 text-sm font-semibold text-navy-950">After</span>
+      <span className="absolute right-3 bottom-3 rounded-control bg-stone-50 px-2 py-0.5 text-sm font-semibold text-navy-950">After</span>
     </span>
   );
 }

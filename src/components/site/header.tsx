@@ -27,19 +27,19 @@ export async function Header() {
         <nav aria-label="Main" className="ml-auto hidden lg:block">
           <NavLinks
             className="flex items-center gap-7"
-            linkClassName="py-2 font-medium after:absolute after:inset-x-0 after:-bottom-[21px] after:h-0.5 after:bg-copper-500 after:opacity-0 aria-[current=page]:after:opacity-100"
+            linkClassName="py-2 font-medium after:absolute after:inset-x-0 after:-bottom-[21px] after:h-0.5 after:bg-accent-500 after:opacity-0 aria-[current=page]:after:opacity-100"
           />
         </nav>
 
         <div className="ml-auto flex items-center gap-2 lg:ml-4">
           <a
             href={site.phoneHref}
-            className="hidden items-center gap-2 rounded-control px-2 py-2 font-semibold text-navy-950 hover:text-copper-700 xl:inline-flex"
+            className="hidden items-center gap-2 rounded-control px-2 py-2 font-semibold text-navy-950 hover:text-accent-700 xl:inline-flex"
           >
             <Phone aria-hidden className="size-4" />
             {site.phone}
           </a>
-          <ButtonLink href={quoteHref} size="sm" className="sm:h-11 sm:px-5 sm:text-base">
+          <ButtonLink href={quoteHref} size="sm" className="hidden min-[440px]:inline-flex sm:h-11 sm:px-5 sm:text-base">
             <span className="sm:hidden">Get a quote</span>
             <span className="hidden sm:inline">Request a quote</span>
           </ButtonLink>

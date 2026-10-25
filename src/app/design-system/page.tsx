@@ -14,22 +14,24 @@ export const metadata: Metadata = {
 };
 
 const swatches = [
-  { name: "Navy 950", token: "navy-950", hex: "#0F172A", use: "Ink, dark sections, text on copper", className: "bg-navy-950" },
-  { name: "Navy 900", token: "navy-900", hex: "#1E293B", use: "Secondary dark surface", className: "bg-navy-900" },
-  { name: "Copper 500", token: "copper-500", hex: "#D97706", use: "Button fill (navy text only)", className: "bg-copper-500" },
-  { name: "Copper 700", token: "copper-700", hex: "#B45309", use: "Copper text on light", className: "bg-copper-700" },
-  { name: "Stone 50", token: "stone-50", hex: "#F8FAFC", use: "Page background", className: "bg-stone-50" },
-  { name: "Stone 100", token: "stone-100", hex: "#F1F5F9", use: "Alternate surface", className: "bg-stone-100" },
+  { name: "Navy 950", token: "navy-950", hex: "#10243A", use: "Primary: buttons, dark sections, headings", className: "bg-navy-950" },
+  { name: "Navy 600", token: "navy-600", hex: "#4F5D6B", use: "Muted text on cream and sand", className: "bg-navy-600" },
+  { name: "Accent 700", token: "accent-700", hex: "#113360", use: "Logo blue: links, small markers (sparing)", className: "bg-accent-700" },
+  { name: "Accent 500", token: "accent-500", hex: "#2E5B8A", use: "Focus ring, progress, stars", className: "bg-accent-500" },
+  { name: "Stone 50", token: "stone-50", hex: "#F4F2ED", use: "Page background (cream)", className: "bg-stone-50" },
+  { name: "Stone 100", token: "stone-100", hex: "#E3DACD", use: "Sand band; accents on navy", className: "bg-stone-100" },
+  { name: "White", token: "white", hex: "#FFFFFF", use: "Cards and raised surfaces", className: "bg-white" },
 ];
 
 const typeScale = [
-  { label: "Display, 72 / 800 / wide", className: "font-wide text-6xl font-extrabold", sample: "Done right." },
-  { label: "Page title, 60 / 800 / wide", className: "font-wide text-5xl font-extrabold", sample: "Our work" },
-  { label: "Section, 36 / 700 / semi-wide", className: "font-semiwide text-3xl font-bold", sample: "What we take on" },
-  { label: "Subhead, 24 / 700", className: "text-2xl font-bold", sample: "Carpentry, doors & trim" },
-  { label: "Lede, 18 / 400", className: "text-lg text-navy-600", sample: "Finish carpentry that closes cleanly and lines up." },
-  { label: "Body, 16 / 400", className: "text-base", sample: "We replace rotted trim, rehang sticking doors and fit new casing so the reveal is even all the way around." },
-  { label: "Small, 14 / 600", className: "text-sm font-semibold", sample: "Service address" },
+  { label: "Display, Newsreader 72 / 400", className: "font-serif text-6xl", sample: <>Thoughtful repairs. <em>Properly finished.</em></> },
+  { label: "Page title, Newsreader 48 / 400", className: "font-serif text-5xl", sample: "Our work" },
+  { label: "Section, Newsreader 36 / 400", className: "font-serif text-4xl", sample: "One company for the work your home keeps asking for." },
+  { label: "Eyebrow, Archivo 12 / 600 / 0.2em", className: "eyebrow", sample: "What we do" },
+  { label: "Numeral, Newsreader", className: "numeral text-4xl", sample: "01" },
+  { label: "Lede, Archivo 18 / 400", className: "text-lg text-navy-600", sample: "Reliable home improvement and repair services for homeowners, landlords, and property managers." },
+  { label: "Body, Archivo 16 / 400", className: "text-base", sample: "We clarify the job, materials and expectations before work begins." },
+  { label: "Small, Archivo 14 / 600", className: "text-sm font-semibold", sample: "Service address" },
 ];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -105,7 +107,7 @@ export default function DesignSystemPage() {
         <Section title="Status badges">
           <div className="flex flex-wrap gap-2">
             <Badge>Draft</Badge>
-            <Badge tone="copper">Awaiting approval</Badge>
+            <Badge tone="accent">Awaiting approval</Badge>
             <Badge tone="success">Paid</Badge>
             <Badge tone="danger">Declined</Badge>
             <Badge tone="dark">New lead</Badge>
@@ -160,7 +162,7 @@ export default function DesignSystemPage() {
                 <ul className="mt-3 space-y-2">
                   {sample.weDo.map((item) => (
                     <li key={item} className="flex gap-2.5">
-                      <span aria-hidden className="mt-2.5 h-0.5 w-3 shrink-0 bg-copper-500" />
+                      <span aria-hidden className="mt-2.5 h-0.5 w-3 shrink-0 bg-accent-500" />
                       {item}
                     </li>
                   ))}

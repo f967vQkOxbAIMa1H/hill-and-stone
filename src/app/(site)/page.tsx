@@ -87,7 +87,7 @@ export default async function HomePage() {
               <ScrollReveal as="li" key={a.slug} delay={i * 0.1}>
                 <Link
                   href={`/service-areas#${a.slug}`}
-                  className="font-wide text-3xl font-extrabold tracking-[-0.01em] transition-colors hover:text-copper-500 sm:text-4xl"
+                  className="font-wide text-3xl font-extrabold tracking-[-0.01em] transition-colors hover:text-accent-500 sm:text-4xl"
                 >
                   {a.name}
                 </Link>
@@ -96,7 +96,7 @@ export default async function HomePage() {
           </ul>
           <p className="mt-6 max-w-[80ch] text-navy-300">
             Also {nearby.map((a) => a.name).join(", ")}.{" "}
-            <Link href="/service-areas" className="font-semibold text-copper-500 underline-offset-4 hover:underline">
+            <Link href="/service-areas" className="font-semibold text-accent-500 underline-offset-4 hover:underline">
               Check your ZIP code
             </Link>
           </p>
@@ -113,7 +113,7 @@ export default async function HomePage() {
                 Repairs and small projects that are too much for a weekend and too small for a general contractor.
               </Lede>
             </div>
-            <Link href="/services" className="shrink-0 font-semibold text-copper-700 underline-offset-4 hover:underline">
+            <Link href="/services" className="shrink-0 font-semibold text-accent-700 underline-offset-4 hover:underline">
               See the full scope of each service
             </Link>
           </div>
@@ -128,7 +128,7 @@ export default async function HomePage() {
                     href={`/services#${s.slug}`}
                     className="group flex h-full flex-col p-7 transition-colors hover:bg-white focus-visible:-outline-offset-2"
                   >
-                    <h3 className="text-xl font-bold group-hover:text-copper-700">{s.name}</h3>
+                    <h3 className="text-xl font-bold group-hover:text-accent-700">{s.name}</h3>
                     <p className="mt-2 mb-5 text-navy-600">{s.summary}</p>
                     <ul className="mt-auto space-y-1 border-t border-navy-200 pt-4 text-sm text-navy-700">
                       {s.weDo.slice(0, 3).map((item) => (
@@ -155,7 +155,7 @@ export default async function HomePage() {
                   <p key={p}>{p}</p>
                 ))}
             </div>
-            <Link href="/about" className="mt-6 inline-block font-semibold text-copper-700 underline-offset-4 hover:underline">
+            <Link href="/about" className="mt-6 inline-block font-semibold text-accent-700 underline-offset-4 hover:underline">
               More about how we work
             </Link>
           </div>
@@ -185,10 +185,10 @@ export default async function HomePage() {
             <Heading id="reviews-heading">From our customers</Heading>
             <div className="flex flex-wrap gap-3">
               <GoogleReviewsLink />
-              <Link href="/reviews" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-copper-700 underline-offset-4 hover:underline">
+              <Link href="/reviews" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-accent-700 underline-offset-4 hover:underline">
                 See all reviews
               </Link>
-              <Link href="/reviews#leave-a-review" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-copper-700 underline-offset-4 hover:underline">
+              <Link href="/reviews#leave-a-review" className="inline-flex items-center rounded-control px-2 py-2.5 font-semibold text-accent-700 underline-offset-4 hover:underline">
                 Leave a review
               </Link>
             </div>

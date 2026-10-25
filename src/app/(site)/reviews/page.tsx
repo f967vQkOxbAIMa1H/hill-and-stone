@@ -36,7 +36,7 @@ export default async function ReviewsPage() {
             <ScrollReveal delay={0.15} className="slate rounded-panel p-6">
               <div className="flex items-center gap-3">
                 <GoogleG className="size-8" />
-                <p className="font-semiwide text-lg leading-tight font-bold">Our Google reviews</p>
+                <p className="font-serif text-xl leading-tight font-medium">Our Google reviews</p>
               </div>
               <p className="mt-3 text-navy-600">Read every review, or leave one after your job. It helps neighbors find a contractor they can trust.</p>
               <GoogleReviewsLink className="mt-5 w-full justify-center" />
@@ -68,7 +68,7 @@ export default async function ReviewsPage() {
                     {r.project?.published && (
                       <Link
                         href={`/our-work?project=${r.project.slug}`}
-                        className="mt-2 block font-semibold text-copper-700 underline-offset-4 hover:underline"
+                        className="mt-2 block font-semibold text-accent-700 underline-offset-4 hover:underline"
                       >
                         See the project: {r.project.title}
                       </Link>
@@ -98,7 +98,7 @@ export default async function ReviewsPage() {
             </p>
             <p>
               Can&apos;t find the email? Write to{" "}
-              <a href={`mailto:${site.email}?subject=${encodeURIComponent("Review link")}`} className="font-semibold text-copper-700 underline underline-offset-4">
+              <a href={`mailto:${site.email}?subject=${encodeURIComponent("Review link")}`} className="font-semibold text-accent-700 underline underline-offset-4">
                 {site.email}
               </a>{" "}
               and we&apos;ll send it again.

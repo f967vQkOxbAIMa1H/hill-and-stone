@@ -143,7 +143,7 @@ export function QuoteActionsBar({
             <legend className="text-sm font-semibold">How they paid</legend>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {offlineMethods.map((m) => (
-                <label key={m.value} className="flex h-11 cursor-pointer items-center rounded-control border border-navy-300 bg-white px-3 has-[:checked]:border-navy-950 has-[:checked]:bg-navy-950 has-[:checked]:text-stone-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-copper-500">
+                <label key={m.value} className="flex h-11 cursor-pointer items-center rounded-control border border-navy-300 bg-white px-3 has-[:checked]:border-navy-950 has-[:checked]:bg-navy-950 has-[:checked]:text-stone-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-500">
                   <input type="radio" name="payMethod" value={m.value} checked={payMethod === m.value} onChange={() => setPayMethod(m.value)} className="sr-only" />
                   {m.label}
                 </label>

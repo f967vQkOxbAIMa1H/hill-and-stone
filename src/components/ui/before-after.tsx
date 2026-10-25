@@ -75,7 +75,7 @@ export function BeforeAfter({
       <span className="absolute top-4 left-4 rounded-control bg-navy-950/80 px-2.5 py-1 text-sm font-semibold text-stone-50">
         Before
       </span>
-      <span className="absolute top-4 right-4 rounded-control bg-copper-500 px-2.5 py-1 text-sm font-semibold text-navy-950">
+      <span className="absolute top-4 right-4 rounded-control bg-stone-50 px-2.5 py-1 text-sm font-semibold text-navy-950">
         After
       </span>
 
@@ -85,7 +85,7 @@ export function BeforeAfter({
         className={cn("pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-stone-50", glide)}
         style={{ left: `${position}%` }}
       >
-        <div className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-1 rounded-full bg-stone-50 text-navy-950 shadow-overlay ring-copper-500 transition-transform duration-150 group-has-[input:focus-visible]:ring-2 group-has-[input:active]:scale-95">
+        <div className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-1 rounded-full bg-stone-50 text-navy-950 shadow-overlay ring-accent-500 transition-transform duration-150 group-has-[input:focus-visible]:ring-2 group-has-[input:active]:scale-95">
           <svg viewBox="0 0 20 20" className="size-5">
             <path d="M7 5 2 10l5 5M13 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

@@ -54,7 +54,7 @@ export default async function PortfolioPage() {
                   aside={
                     <>
                       <Badge tone={p.published ? "success" : "neutral"}>{p.published ? "Published" : "Draft"}</Badge>
-                      {p.featured && <Badge tone="copper">Featured</Badge>}
+                      {p.featured && <Badge tone="accent">Featured</Badge>}
                       {p.slug.startsWith("sample-") && <Badge tone="danger">Sample</Badge>}
                     </>
                   }
@@ -78,7 +78,7 @@ export default async function PortfolioPage() {
                   return (
                     <tr key={p.id} className="group relative hover:bg-stone-50">
                       <td className="px-4 py-3">
-                        <Link prefetch={false} href={`/admin/portfolio/${p.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-copper-700">
+                        <Link prefetch={false} href={`/admin/portfolio/${p.id}`} className="font-semibold after:absolute after:inset-0 group-hover:text-accent-700">
                           {p.title}
                         </Link>
                         <span className="block text-navy-600">
@@ -92,7 +92,7 @@ export default async function PortfolioPage() {
                       <td className="px-4 py-3">
                         <span className="flex flex-wrap gap-1">
                           <Badge tone={p.published ? "success" : "neutral"}>{p.published ? "Published" : "Draft"}</Badge>
-                          {p.featured && <Badge tone="copper">Featured</Badge>}
+                          {p.featured && <Badge tone="accent">Featured</Badge>}
                           {p.slug.startsWith("sample-") && <Badge tone="danger">Sample</Badge>}
                         </span>
                       </td>
