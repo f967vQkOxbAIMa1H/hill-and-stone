@@ -10,7 +10,7 @@ export async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-navy-950 text-navy-300">
+    <footer data-header-theme="dark" className="bg-navy-950 text-navy-300">
       <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <Logo tone="light" />
@@ -18,7 +18,7 @@ export async function Footer() {
             Home repair, carpentry and small renovations across Benton and Washington counties.
           </p>
           <Link href={quoteHref} className="mt-5 inline-block font-semibold text-stone-100 underline underline-offset-4 hover:text-white">
-            Request a quote
+            Request an Estimate
           </Link>
         </div>
 

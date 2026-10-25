@@ -30,7 +30,7 @@ export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
     } else if (r.status === "nearby") {
       setResult({
         tone: "maybe",
-        message: `${value} is in Northwest Arkansas but not on our list yet. Send a quote request or call and we'll confirm.`,
+        message: `${value} is in Northwest Arkansas but not on our list yet. Send an estimate request or call and we'll confirm.`,
       });
     } else {
       setResult({ tone: "no", message: `${value} is outside the area we cover. We work in Benton and Washington counties only.` });
@@ -67,7 +67,7 @@ export function ZipCheck({ areas }: { areas: ServiceArea[] }) {
             {result.message}{" "}
             {result.tone !== "no" && (
               <Link href={quoteHref} className="font-semibold whitespace-nowrap text-accent-700 underline underline-offset-4">
-                Request a quote
+                Request an Estimate
               </Link>
             )}
             {result.tone === "maybe" && (

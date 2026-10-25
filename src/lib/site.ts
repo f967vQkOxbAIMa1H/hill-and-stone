@@ -213,3 +213,41 @@ export const nav = [
 ] as const;
 
 export const quoteHref = "/request-a-quote";
+
+/* ─── Homepage copy that the owner may want to reword. ─── */
+
+/** The four promises under "The Hill & Stone Standard". */
+export const promises = ["Clear estimates", "Respect for your home", "Professional communication", "Work built to hold up"];
+
+/** "How it works" on the homepage. Titles for steps 1 and 2 are drafts: reword them here. */
+export const howItWorks = [
+  { title: "Tell us what’s going on.", body: "Send a description and a few photos through the estimate request." },
+  { title: "We scope it clearly.", body: "We clarify the job, materials and expectations before work begins." },
+  { title: "We do the work.", body: "Our goal is clean execution, respectful service and a finished result." },
+  { title: "You move on.", body: "Clear communication, straightforward payment and no loose ends." },
+];
+
+/** The property-manager section's list. */
+export const propertyManagerServices = [
+  "Turnover and punch-list repairs",
+  "Recurring maintenance support",
+  "Photo-based issue intake",
+  "Consolidated communication",
+  "Scalable service as your portfolio grows",
+];
+
+/** `?type=property-manager` on the estimate form pre-fills its description with this. */
+export const propertyManagerPrefill = "I manage rental properties and I’m interested in ongoing maintenance support.";
+
+export const estimateLabel = "Request an Estimate";
+
+/**
+ * The four service categories as the homepage presents them.
+ * TODO(phase 3): becomes the single `services` list once the ServiceCategory enum is migrated.
+ */
+export const serviceCategories = [
+  { slug: "interior-repairs", name: "Interior Repairs", description: "Drywall patches, trim and baseboards, doors, hardware, caulking, touch-up painting, shelving, cabinets and minor carpentry." },
+  { slug: "exterior-repairs", name: "Exterior Repairs", description: "Pressure washing, fence and gate repairs, siding and trim, decks, mailbox posts, minor gutter work and other exterior fixes." },
+  { slug: "property-maintenance", name: "Property Maintenance", description: "Repeatable repair and punch-list support for landlords, property managers and owners of multiple homes." },
+  { slug: "home-improvements", name: "Home Improvements", description: "Practical upgrades and finish work that improve how a space looks, works and feels without unnecessary complexity." },
+];

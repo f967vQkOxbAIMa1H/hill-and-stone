@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Logo } from "@/components/brand/logo";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
-import { quoteHref } from "@/lib/site";
+import { estimateLabel, quoteHref } from "@/lib/site";
 import { useSite } from "@/components/site-provider";
 import { cn } from "@/lib/utils";
 import { NavLinks } from "./nav-links";
@@ -26,7 +26,7 @@ export function MobileNav() {
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}
-        className={cn(buttonVariants({ variant: "ghost", size: "md" }), "px-3 lg:hidden")}
+        className="inline-flex size-11 items-center justify-center rounded-control hover:bg-(--hdr-hover-wash) lg:hidden"
         aria-haspopup="dialog"
       >
         <Menu aria-hidden />
@@ -55,13 +55,13 @@ export function MobileNav() {
           <nav aria-label="Main" className="mt-8">
             <NavLinks
               className="flex flex-col"
-              linkClassName="block border-b border-navy-200 py-4 font-serif text-2xl text-navy-950 aria-[current=page]:text-accent-700"
+              linkClassName="block border-b border-navy-200 py-4 font-serif text-2xl text-navy-950 hover:text-accent-700 aria-[current=page]:text-accent-700"
             />
           </nav>
 
           <div className="mt-auto flex flex-col gap-3 pb-4">
             <ButtonLink href={quoteHref} size="lg">
-              Request a quote
+              {estimateLabel}
             </ButtonLink>
             <a href={site.phoneHref} className={buttonVariants({ variant: "outline", size: "lg" })}>
               <Phone aria-hidden />

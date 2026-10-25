@@ -31,7 +31,7 @@ export default async function FaqPage() {
       />
       <PageIntro
         title="Questions and answers"
-        lede="Straight answers about pricing, scheduling, payment and our warranty. Don't see yours? Ask when you request a quote."
+        lede="Straight answers about pricing, scheduling, payment and our warranty. Don't see yours? Ask it in your estimate request."
       />
 
       <Container className="grid gap-10 py-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14 lg:py-20">
@@ -77,7 +77,7 @@ export default async function FaqPage() {
         </div>
       </Container>
 
-      <CtaBand title="Still have a question?" body="Ask it in your quote request, or call us. You'll get an answer from the person who'd do the work." />
+      <CtaBand title="Still have a question?" body="Ask it in your estimate request, or call us." />
     </>
   );
 }

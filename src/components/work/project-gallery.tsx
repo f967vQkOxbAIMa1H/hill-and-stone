@@ -131,7 +131,7 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
           <p className="text-lg font-bold">No projects posted in this category yet.</p>
           <p className="mt-2 text-navy-600">We still do this work. Send us photos of yours and we&apos;ll tell you what it takes.</p>
           <ButtonLink href={quoteHref} className="mt-5">
-            Request a quote
+            Request an Estimate
           </ButtonLink>
         </div>
       ) : (
@@ -232,7 +232,7 @@ export function ProjectGallery({ projects }: { projects: GalleryProject[] }) {
               )}
 
               <ButtonLink href={`${quoteHref}?service=${services.find((s) => s.category === current.category)?.slug}`} className="mt-8 w-full sm:w-auto">
-                Get a quote for similar work
+                Request an estimate for similar work
               </ButtonLink>
             </div>
           </div>

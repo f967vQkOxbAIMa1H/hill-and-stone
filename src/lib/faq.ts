@@ -8,16 +8,35 @@ export type FaqGroup = { slug: string; title: string; items: { q: string; a: str
 
 export const buildFaq = (site: SiteConfig): FaqGroup[] => [
   {
+    // Also shown on the homepage.
+    slug: "general",
+    title: "Getting started",
+    items: [
+      {
+        q: "What kinds of repairs do you take on?",
+        a: "Interior and exterior repairs, recurring property maintenance and practical home improvements: drywall, trim, doors, fences, decks, pressure washing and the running list of small fixes most homes collect. If you’re unsure whether your project fits, send it to us and we’ll tell you.",
+      },
+      {
+        q: "Can I send photos before scheduling?",
+        a: "Yes. Photos are often the fastest way for us to understand the issue and determine the best next step. If we can’t be sure from photos, we’ll say so and book a short visit rather than guess.",
+      },
+      {
+        q: "Do you work with landlords and property managers?",
+        a: "Absolutely. We are intentionally building systems for repeat maintenance, turnover work and portfolio-wide repair support.",
+      },
+      {
+        q: "Do you provide estimates?",
+        a: "Yes. Start with the estimate request and give us as much detail as you can.",
+      },
+    ],
+  },
+  {
     slug: "pricing",
     title: "Pricing and estimates",
     items: [
       {
         q: "Do you charge for estimates?",
-        a: "No. Quotes from photos are free, and so is the short site visit when a job needs one. You only pay if you approve the work.",
-      },
-      {
-        q: "Can you price a job from photos?",
-        a: "Often, yes. Most small repairs can be priced from a few clear photos and a description. If we can't be sure from photos, we'll say so and book a short visit rather than guess.",
+        a: "No. Estimates from photos are free, and so is the short site visit when a job needs one. You only pay if you approve the work.",
       },
       {
         q: "How do you price the work?",

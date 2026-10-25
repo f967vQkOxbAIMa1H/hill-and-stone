@@ -44,7 +44,7 @@ export default async function AboutPage() {
       />
 
       {/* Story */}
-      <section aria-labelledby="story-heading">
+      <section data-header-theme="light" aria-labelledby="story-heading">
         <Container className="grid gap-12 py-20 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16 lg:py-24">
           <div className="max-w-[64ch]">
             <Heading id="story-heading">Our story</Heading>
@@ -60,7 +60,7 @@ export default async function AboutPage() {
       </section>
 
       {/* Values */}
-      <section aria-labelledby="values-heading" className="bg-navy-950 text-stone-50">
+      <section data-header-theme="dark" aria-labelledby="values-heading" className="bg-navy-950 text-stone-50">
         <Container className="py-20 lg:py-24">
           <Heading id="values-heading" className="max-w-[18ch]">
             How we work
@@ -77,7 +77,7 @@ export default async function AboutPage() {
       </section>
 
       {/* Trust */}
-      <section aria-labelledby="standards-heading" className="bg-stone-100">
+      <section data-header-theme="light" aria-labelledby="standards-heading" className="bg-stone-100">
         <Container className="grid gap-10 py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:py-24">
           <div>
             <Heading id="standards-heading" className="max-w-[12ch]">

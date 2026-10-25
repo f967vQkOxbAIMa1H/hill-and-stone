@@ -17,10 +17,7 @@ export function NavLinks({ className, linkClassName }: { className?: string; lin
             <Link
               href={item.href}
               aria-current={current ? "page" : undefined}
-              className={cn(
-                "relative text-navy-700 transition-colors hover:text-navy-950 aria-[current=page]:text-navy-950",
-                linkClassName,
-              )}
+              className={cn("relative transition-colors", linkClassName)}
             >
               {item.label}
             </Link>

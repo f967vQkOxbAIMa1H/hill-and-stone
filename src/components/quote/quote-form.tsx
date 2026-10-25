@@ -36,9 +36,9 @@ type Status =
   | { state: "sending"; progress: number }
   | { state: "done"; number: number; replyBy: string; email: string; contact: string };
 
-export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
+export function QuoteForm({ defaultCategory, defaultDescription }: { defaultCategory?: string; defaultDescription?: string }) {
   const site = useSite();
-  const [values, setValues] = useState<Values>({ ...empty, category: defaultCategory ?? "" });
+  const [values, setValues] = useState<Values>({ ...empty, category: defaultCategory ?? "", description: defaultDescription ?? "" });
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -265,6 +265,9 @@ export function QuoteForm({ defaultCategory }: { defaultCategory?: string }) {
             Rather talk? {site.phone}
           </a>
         </div>
+        <p className="mt-4 max-w-[60ch] text-sm text-navy-600">
+          By submitting, you are requesting contact from Hill &amp; Stone Home Solutions. This is not a binding quote.
+        </p>
         {sending && photos.length > 0 && (
           <div className="mt-4 h-1.5 max-w-sm overflow-hidden rounded-full bg-navy-200" role="progressbar" aria-label="Upload progress" aria-valuenow={status.progress} aria-valuemin={0} aria-valuemax={100}>
             <div className="h-full bg-accent-500 transition-[width] duration-200" style={{ width: `${status.progress}%` }} />

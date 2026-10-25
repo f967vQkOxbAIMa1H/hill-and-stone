@@ -85,9 +85,9 @@ export default function DesignSystemPage() {
 
         <Section title="Buttons">
           <div className="flex flex-wrap items-center gap-3">
-            <Button size="lg">Request a quote</Button>
-            <Button>Request a quote</Button>
-            <Button size="sm">Request a quote</Button>
+            <Button size="lg">Request an Estimate</Button>
+            <Button>Request an Estimate</Button>
+            <Button size="sm">Request an Estimate</Button>
             <Button variant="dark">Accept quote</Button>
             <Button variant="outline">See our work</Button>
             <Button variant="ghost">Cancel</Button>
@@ -96,7 +96,7 @@ export default function DesignSystemPage() {
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3 rounded-panel bg-navy-950 p-6">
             <ButtonLink href="/design-system" size="lg">
-              Request a quote
+              Request an Estimate
             </ButtonLink>
             <ButtonLink href="/design-system" variant="outline-light" size="lg">
               Call (479) 555-0142

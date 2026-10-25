@@ -5,39 +5,41 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
 import { getSite } from "@/lib/settings";
-import { services } from "@/lib/site";
+import { estimateLabel, propertyManagerPrefill, services } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   return {
-    title: "Request a quote",
+    title: "Request an estimate",
     description: `Tell us about your repair or project and attach photos. Hill & Stone replies within ${site.replyWindow}.`,
   };
 }
 
 export default async function RequestQuotePage({ searchParams }: PageProps<"/request-a-quote">) {
   const site = await getSite();
-  const { service } = await searchParams;
+  const { service, type } = await searchParams;
   const preset = services.find((s) => s.slug === service)?.category;
+  // From the homepage's property-manager section. Only pre-fills the description; nothing else changes.
+  const description = type === "property-manager" ? propertyManagerPrefill : undefined;
 
   return (
-    <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
+    <Container data-header-theme="light" className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
       <div className="min-w-0">
         <Heading as="h1" level="page">
-          Request a quote
+          {estimateLabel}
         </Heading>
         <Lede className="mt-5 mb-12">
           Tell us what needs doing and where. Photos help most. We reply within {site.replyWindow} with a price or a time
           to come look.
         </Lede>
         <ScrollReveal className="slate rounded-panel p-5 sm:p-8">
-          <QuoteForm defaultCategory={preset} />
+          <QuoteForm defaultCategory={preset} defaultDescription={description} />
         </ScrollReveal>
       </div>
 
       <aside className="lg:sticky lg:top-28 lg:self-start">
         <ScrollReveal delay={0.1} className="rounded-panel bg-navy-950 p-6 text-stone-50">
-          <h2 className="font-serif text-2xl">How quoting works</h2>
+          <h2 className="font-serif text-2xl">How estimates work</h2>
           <ol className="mt-5 space-y-5">
             {[
               ["You send details", "This form, with photos if you have them."],

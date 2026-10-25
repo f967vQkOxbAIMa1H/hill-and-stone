@@ -5,8 +5,9 @@ import { MotionConfig, motion } from "motion/react";
 const tags = { div: motion.div, li: motion.li, section: motion.section, article: motion.article, aside: motion.aside, figure: motion.figure };
 
 /**
- * Rises into place the first time it scrolls into view. Only opacity and transform animate, so nothing
- * around it reflows (no layout shift). With reduced motion on, it only fades: the rise and scale are skipped.
+ * Rises a little into place the first time it scrolls into view. Only opacity and transform animate, so nothing
+ * around it reflows (no layout shift). With reduced motion on, it only fades: the rise is skipped.
+ * Kept to 300ms, per the design rules (restrained motion).
  *
  * `delay` staggers siblings that enter together, e.g. `(i % columns) * 0.15` across a grid row.
  */
@@ -30,10 +31,10 @@ export function ScrollReveal({
       <Tag
         id={id}
         className={className}
-        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ type: "spring", stiffness: 70, damping: 18, delay }}
+        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1], delay }}
       >
         {children}
       </Tag>

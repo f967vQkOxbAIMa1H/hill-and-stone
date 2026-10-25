@@ -94,7 +94,7 @@ try {
   check("social preview tags are set", /property="og:image"/.test(home) && /name="twitter:card" content="summary_large_image"/.test(home));
   const missing = await fetch(`${BASE}/this-page-does-not-exist`);
   const missingBody = await missing.text();
-  check("unknown pages return a branded 404", missing.status === 404 && missingBody.includes("We can&#x27;t find that page") && missingBody.includes("Request a quote"));
+  check("unknown pages return a branded 404", missing.status === 404 && missingBody.includes("We can&#x27;t find that page") && missingBody.includes("Request an Estimate"));
   await go("/this-page-does-not-exist");
   await shot("404");
 

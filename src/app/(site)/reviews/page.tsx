@@ -21,7 +21,7 @@ export default async function ReviewsPage() {
 
   return (
     <>
-      <section className="border-b border-navy-200">
+      <section data-header-theme="light" className="border-b border-navy-200">
         <Container className="grid gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
             <Heading as="h1" level="page">
@@ -86,7 +86,7 @@ export default async function ReviewsPage() {
         </p>
       </Container>
 
-      <section id="leave-a-review" aria-labelledby="leave-heading" className="scroll-mt-20 border-t border-navy-200 bg-stone-100">
+      <section data-header-theme="light" id="leave-a-review" aria-labelledby="leave-heading" className="scroll-mt-20 border-t border-navy-200 bg-stone-100">
         <Container className="grid gap-10 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16 lg:py-20">
           <div>
             <Heading id="leave-heading">Had us out recently?</Heading>

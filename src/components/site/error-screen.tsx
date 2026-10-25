@@ -40,7 +40,7 @@ export function ErrorScreen({ title, lede, action }: { title: string; lede: stri
         <nav aria-label="Popular pages" className="mt-12 max-w-xl">
           <h2 className="text-sm font-semibold text-navy-600">Or try one of these</h2>
           <ul className="mt-3 divide-y divide-navy-200 border-y border-navy-200">
-            {[...destinations, { href: quoteHref, label: "Request a quote", note: "Send photos and get a price" }].map((d) => (
+            {[...destinations, { href: quoteHref, label: "Request an Estimate", note: "Send photos and a short description" }].map((d) => (
               <li key={d.href}>
                 <Link href={d.href} className="flex items-baseline justify-between gap-4 py-3 hover:text-accent-700">
                   <span className="font-semibold">{d.label}</span>

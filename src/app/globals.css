@@ -285,3 +285,122 @@
     block-size: auto;
   }
 }
+
+/* ─── Adaptive header ───────────────────────────────────────────────────────────
+ * HeaderShell sets data-theme from the section under the header's bottom edge. Colors come from
+ * these variables so every piece of the header flips together, over the same 200ms. */
+.site-header {
+  --hdr-bg: rgb(244 242 237 / 0.9);
+  --hdr-line: rgb(16 36 58 / 0.12);
+  --hdr-fg: var(--color-navy-950);
+  --hdr-muted: var(--color-navy-700);
+  --hdr-mark: var(--color-accent-700);
+  --hdr-btn-bg: var(--color-navy-950);
+  --hdr-btn-fg: var(--color-stone-50);
+  --hdr-btn-hover: var(--color-navy-800);
+  --hdr-hover-wash: rgb(16 36 58 / 0.06);
+  background-color: var(--hdr-bg);
+  border-color: var(--hdr-line);
+  color: var(--hdr-fg);
+}
+.site-header[data-theme="dark"] {
+  --hdr-bg: rgb(16 36 58 / 0.9);
+  --hdr-line: rgb(244 242 237 / 0.14);
+  --hdr-fg: var(--color-stone-50);
+  --hdr-muted: var(--color-navy-300);
+  --hdr-mark: var(--color-stone-100);
+  --hdr-btn-bg: var(--color-stone-50);
+  --hdr-btn-fg: var(--color-navy-950);
+  --hdr-btn-hover: var(--color-white);
+  --hdr-hover-wash: rgb(244 242 237 / 0.1);
+}
+/* The menu drawer opens from inside the header but is always cream, so it keeps the default ring. */
+.site-header[data-theme="dark"] :focus-visible:not(dialog, dialog *) {
+  outline-color: var(--color-stone-100);
+}
+.site-header,
+.site-header :where(a, button, span, svg) {
+  transition-property: color, background-color, border-color, fill;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+/* ─── Illustrations ─────────────────────────────────────────────────────────────
+ * Line drawings that draw themselves. The resting state of every part is its finished state, so
+ * with reduced motion, no JS, or before an animation starts, the drawing is simply complete.
+ * Strokes use pathLength="1" so one dash covers any path.
+ *
+ * Hero: plays once on load (.ill-autoplay), no JS needed.
+ * Below the fold: PlayOnView adds data-anim="ready" (hide), then data-play when ~40% is in view. */
+@media (prefers-reduced-motion: no-preference) {
+  .ill-autoplay .ill-draw,
+  [data-play] .ill-draw {
+    stroke-dasharray: 1;
+    animation: ill-draw var(--dur, 900ms) var(--ease-out-quart) var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-fade,
+  [data-play] .ill-fade {
+    animation: ill-fade var(--dur, 300ms) ease-out var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-pop,
+  [data-play] .ill-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ill-pop var(--dur, 360ms) var(--ease-out-quart) var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-wipe,
+  [data-play] .ill-wipe {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: ill-wipe var(--dur, 800ms) cubic-bezier(0.65, 0, 0.35, 1) var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-swing,
+  [data-play] .ill-swing {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+    animation: ill-swing var(--dur, 600ms) var(--ease-out-quart) var(--at, 0ms) both;
+  }
+  .ill-autoplay .ill-travel,
+  [data-play] .ill-travel {
+    animation: ill-travel var(--dur, 800ms) cubic-bezier(0.65, 0, 0.35, 1) var(--at, 0ms) both;
+  }
+
+  /* Waiting to scroll into view: hold the first frame. */
+  [data-anim="ready"]:not([data-play]) .ill-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  [data-anim="ready"]:not([data-play]) :is(.ill-fade, .ill-pop) {
+    opacity: 0;
+  }
+  [data-anim="ready"]:not([data-play]) .ill-wipe {
+    transform: scaleX(0);
+  }
+  [data-anim="ready"]:not([data-play]) .ill-travel {
+    opacity: 0;
+  }
+}
+
+@keyframes ill-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ill-fade {
+  from { opacity: 0; }
+}
+@keyframes ill-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ill-wipe {
+  from { transform: scaleX(0); }
+}
+@keyframes ill-swing {
+  from { transform: rotate(var(--from-angle, -14deg)); }
+}
+/* Tools slide in from an offset and come to rest where they are drawn. */
+@keyframes ill-travel {
+  0% { opacity: 0; translate: var(--from-x, 0) var(--from-y, 0); }
+  15% { opacity: 1; }
+}
