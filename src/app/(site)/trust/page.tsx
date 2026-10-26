@@ -23,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   const topics = sectionsFor(site).map((s) => s.title.toLowerCase());
   return {
+    alternates: { canonical: "/trust" },
     title: trustPageLabel(site),
     description: `How Hill & Stone handles ${topics.join(", ").replace(/, ([^,]*)$/, " and $1")}.`,
   };
@@ -91,7 +92,7 @@ export default async function TrustPage() {
               {[
                 ["Your card never touches our servers", "Card details go straight to Stripe, a PCI Level 1 certified processor. We never see or store your full card number."],
                 ["Private quote links", "Each quote has its own unguessable link. Only people you share it with can open it."],
-                ["Card or Apple Pay", "Visa, Mastercard, American Express, Discover and Apple Pay."],
+                ["Cards and mobile wallets", "Visa, Mastercard, American Express, Discover, Apple Pay, Google Pay and Cash App Pay."],
                 ["Nothing charged until the work is done", "You accept an itemized quote for free. No deposits: you pay once the job is complete."],
               ].map(([t, d]) => (
                 <div key={t} className="border-t border-navy-200 pt-4">

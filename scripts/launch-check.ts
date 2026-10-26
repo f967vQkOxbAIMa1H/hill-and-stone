@@ -28,10 +28,8 @@ function checkSettings(settings: Settings) {
     warn("settings", "No trust claims are on (licensed, insured, bonded, background checks, warranty, guarantee). Turn on only the ones you can back up at /admin/settings/site.");
   if (settings.claims.insured && !settings.insurance.some((i) => i.detail))
     warn("settings", "“Insured” is on but no insurance details are set (/admin/settings/site). The Trust page offers a certificate on request instead.");
-  if (!brand.domainConfirmed)
-    warn("brand", `Domain is a placeholder (${brand.domain}). Buy the Hillstone domain, then set brand.domain in src/lib/site.ts and NEXT_PUBLIC_APP_URL.`);
-  if (settings.contact.email === defaultSettings.contact.email)
-    block("settings", `Contact email is still the default ${settings.contact.email}. Set the business inbox at /admin/settings/site.`);
+  if (!settings.contact.email.endsWith(`@${brand.domain}`))
+    warn("settings", `Public email is ${settings.contact.email}. Switch it to info@${brand.domain} at /admin/settings/site once forwarding works.`);
   if (!settings.googleReviewsUrl) warn("settings", "Google review link isn't set (/admin/settings/site). Review buttons are hidden.");
   const missingPhotos = (["founder", "coFounder"] as const).filter((k) => brand.photos[k] == null);
   if (missingPhotos.length) warn("settings", `Our Story founder photos not set: ${missingPhotos.join(", ")} (brand.photos in src/lib/site.ts). Their frames show a brand graphic until then.`);
@@ -48,13 +46,14 @@ const required = [
   "NEXT_PUBLIC_APP_URL",
   "RESEND_API_KEY",
   "EMAIL_FROM",
-  "CONTRACTOR_NOTIFY_EMAIL",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "CRON_SECRET",
 ];
 for (const key of required)
   if (!env[key]?.trim()) block("env", `${key} is not set (${envFile}).`);
+if (!env.ADMIN_NOTIFICATION_EMAIL?.trim() && !env.CONTRACTOR_NOTIFY_EMAIL?.trim())
+  block("env", `ADMIN_NOTIFICATION_EMAIL is not set (${envFile}): new requests and accepted quotes would go nowhere.`);
 const appUrl = env.NEXT_PUBLIC_APP_URL ?? "";
 if (
   appUrl &&
@@ -84,7 +83,7 @@ if (env.EMAIL_FROM?.includes("resend.dev"))
 if ((env.STORAGE_DRIVER ?? "local") === "local")
   warn(
     "env",
-    "Uploads are stored on local disk (STORAGE_DRIVER=local). Fine on a server with a persistent disk; use STORAGE_DRIVER=s3 on Vercel or other serverless hosts.",
+    "Uploads are stored on local disk (STORAGE_DRIVER=local). Fine on a server with a persistent disk; on Netlify use STORAGE_DRIVER=netlify.",
   );
 if (/localhost|127\.0\.0\.1/.test(env.DATABASE_URL ?? ""))
   warn("env", "DATABASE_URL points at a local database.");

@@ -92,12 +92,16 @@ describe("licensing and branding", () => {
     delete legacy.claims;
     expect(settingsSchema.parse(legacy).claims).toEqual(defaultSettings.claims);
   });
-  it("uses the Hillstone domain and the exact LLC legal name", () => {
-    expect(brand.domain).toMatch(/^hillstone/);
-    expect(defaultSettings.contact.email).toBe(`hello@${brand.domain}`);
+  it("uses the registered domain, the www canonical URL and the exact LLC legal name", () => {
+    expect(brand.domain).toBe("hillandstonehome.com");
+    expect(brand.url).toBe("https://www.hillandstonehome.com");
     expect(brand.legalName).toBe("Hill and Stone Home Solutions LLC");
   });
   it("has no deposit setting", () => expect("depositPercent" in defaultSettings.quoteDefaults).toBe(false));
+  it("defaults to the contact details and pricing the owner entered locally", () => {
+    expect(defaultSettings.contact).toEqual({ phone: "870-421-1331", email: "tdavidsonmanagement@outlook.com", hours: "Mon–Fri 8am–12pm, 1pm-5pm" });
+    expect(defaultSettings.quoteDefaults).toMatchObject({ tripFee: "0", taxRatePercent: "9.75", validDays: 30 });
+  });
 });
 
 describe("origin story", () => {

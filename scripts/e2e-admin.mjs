@@ -136,7 +136,9 @@ try {
   await fill("[aria-label='Line 2 description']", "PVC brickmould and casing");
   await fill("[aria-label='Line 2 quantity']", "3");
   await fill("[aria-label='Line 2 unit price in dollars']", "42");
-  // The trip fee line starts from the saved quote defaults; set it so totals don't depend on settings.
+  // New quotes start with a trip fee line only when the saved default is above $0; add one if not, and set
+  // its price so totals don't depend on settings.
+  if (!(await page.$("[aria-label='Line 3 unit price in dollars']"))) await page.click("button::-p-text(Trip fee)");
   await fill("[aria-label='Line 3 unit price in dollars']", "75");
   await page.click("button::-p-text(Discount)");
   await fill("[aria-label='Line 4 description']", "Returning customer");

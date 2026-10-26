@@ -1,5 +1,6 @@
-// Netlify scheduled function: the daily quote-expiry job (vercel.json does the same on Vercel).
-// It calls the app's protected route, which holds the real logic, with CRON_SECRET as a bearer token.
+// Netlify scheduled function: the daily quote-expiry job.
+// It calls the app's protected route, which holds the real logic, with CRON_SECRET as a bearer token
+// (the route's code imports server-only modules, so it isn't bundled into this function directly).
 // Runs only on the published production deploy; use "Run now" in the Netlify UI to test it.
 import type { Config, Context } from "@netlify/functions";
 
@@ -18,6 +19,7 @@ export default async function expireQuotes(_req: Request, context: Context) {
 }
 
 export const config: Config = {
-  // 11:00 UTC daily = 6 AM Central in summer (CDT), 5 AM in winter (CST). Same as vercel.json.
+  // 11:00 UTC daily = 6 AM Central in summer (CDT), 5 AM in winter (CST). Quotes expire by the day, so
+  // daily is enough.
   schedule: "0 11 * * *",
 };

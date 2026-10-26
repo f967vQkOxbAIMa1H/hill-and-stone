@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type ServiceCategory } from "../src/generated/prisma/client";
+import { defaultSettings } from "../src/lib/site";
 
 // Demo content (sample projects, placeholder reviews, a demo admin) loads only with SEED_DEMO=true,
 // and never into a non-local database by accident. Fabricated reviews must never ship.
@@ -110,7 +111,15 @@ const projects: SampleProject[] = [
 
 async function main() {
   if (!seedDemo) {
-    console.log("No demo content seeded. Run with SEED_DEMO=true for local sample projects and reviews.");
+    // Production seed: no sample projects, reviews or logins. Business settings need no rows: until the
+    // owner saves /admin/settings/site, the site uses defaultSettings (src/lib/site.ts), which carry the
+    // values entered locally. The owner login comes from `npm run admin:create`.
+    const { contact, quoteDefaults } = defaultSettings;
+    console.log("No demo content seeded (set SEED_DEMO=true for local sample projects and reviews).");
+    console.log(
+      `Site settings default to: phone ${contact.phone}, email ${contact.email}, hours ${contact.hours}, ` +
+        `trip fee $${quoteDefaults.tripFee}, tax ${quoteDefaults.taxRatePercent}%, quotes valid ${quoteDefaults.validDays} days.`,
+    );
     return;
   }
   await db.user.upsert({

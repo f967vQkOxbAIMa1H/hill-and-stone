@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Hill & Stone Home Solutions was founded by Aidan Sanders and Tucker Davidson, two entrepreneurs from Mountain Home, Arkansas, building a Northwest Arkansas home repair company the right way.",
+  alternates: { canonical: "/about" },
 };
 
 // Story copy lives in src/lib/story.ts; founder names and photos in `brand` (src/lib/site.ts).

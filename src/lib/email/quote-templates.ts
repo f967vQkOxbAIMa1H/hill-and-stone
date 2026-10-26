@@ -128,7 +128,7 @@ export async function balanceRequest(q: QuoteInfo & { customerFirstName: string;
   ];
   const html = layout(site, `
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Hi ${esc(q.customerFirstName)}, your job is finished.</p>
-<p style="margin:0 0 12px">Thanks for having us. Payment is due now that the work is complete. You can pay online from your quote in a minute by card or Apple Pay.</p>
+<p style="margin:0 0 12px">Thanks for having us. Payment is due now that the work is complete. You can pay online from your quote in a minute by card, Apple Pay or Google Pay.</p>
 ${q.note ? `<p style="margin:0 0 12px;padding:12px 14px;background:#f4f2ed;border-radius:4px">${esc(q.note)}</p>` : ""}
 ${rows(summary)}
 <p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Pay ${esc(formatCents(q.balanceCents))}</a></p>

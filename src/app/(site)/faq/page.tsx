@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Questions and answers",
   description:
     "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, payment on completion, payment options and materials.",
+  alternates: { canonical: "/faq" },
 };
 
 

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   ];
   const result = await sendEmail({
     type: "COI_REQUEST_NOTICE",
-    to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
+    to: env.ADMIN_NOTIFICATION_EMAIL ?? site.email,
     replyTo: r.email,
     subject: `Certificate of insurance request: ${r.address}`,
     text: lines.map(([k, v]) => `${k}: ${v}`).join("\n"),

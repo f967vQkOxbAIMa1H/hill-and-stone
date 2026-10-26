@@ -112,7 +112,7 @@ function AcceptedPanel({ totalCents }: ActionProps) {
         <CalendarCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-stone-100" />
         <p className="text-sm text-navy-300">
           <span className="font-semibold text-stone-50">Nothing is due yet.</span> Once the work is done and we&apos;ve walked it with
-          you, we&apos;ll email a link to pay the {formatCents(totalCents)} total here by card or Apple Pay.
+          you, we&apos;ll email a link to pay the {formatCents(totalCents)} total here by card, Apple Pay or Google Pay.
         </p>
       </div>
     </>
@@ -236,7 +236,7 @@ function PayButton({ token, label, amountCents }: { token: string; label: string
         <Lock aria-hidden />
         {pending ? "Opening secure checkout…" : label}
       </Button>
-      <p className="mt-3 text-sm text-navy-300">Secure checkout by Stripe. Pay by card or Apple Pay.</p>
+      <p className="mt-3 text-sm text-navy-300">Secure checkout by Stripe. Pay by card, Apple Pay or Google Pay.</p>
       {error && (
         <p role="alert" className="mt-3 rounded-control bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
           {error}

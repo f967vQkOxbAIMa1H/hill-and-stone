@@ -1,4 +1,4 @@
-// Runs the quote-expiry job against a running site. For hosts without Vercel Cron, add to crontab:
+// Runs the quote-expiry job against a running site. On Netlify the scheduled function does this; elsewhere add to crontab:
 //   0 6 * * *  cd /path/to/app && npm run quotes:expire
 import { config } from "dotenv";
 config({ quiet: true });

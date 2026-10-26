@@ -13,6 +13,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 // Out of the nav and search results until the first real review is public.
 export async function generateMetadata(): Promise<Metadata> {
   return {
+    alternates: { canonical: "/reviews" },
     title: "Reviews",
     description: "What Northwest Arkansas homeowners say about Hill & Stone repairs and home improvements.",
     ...(!(await hasPublicReviews()) && { robots: { index: false } }),

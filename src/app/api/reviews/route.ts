@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       await sendEmail({
         type: "LOW_RATING_FEEDBACK",
         // The central business inbox. Filtered into Feedback/Low-Rating by its subject tag.
-        to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
+        to: env.ADMIN_NOTIFICATION_EMAIL ?? site.email,
         replyTo: customer.email,
         headers: { "X-Hill-Stone-Category": LOW_RATING_CATEGORY },
         tags: [{ name: "category", value: "feedback-low-rating" }],

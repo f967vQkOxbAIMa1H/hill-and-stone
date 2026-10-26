@@ -13,6 +13,7 @@ import { estimateLabel, quoteHref } from "@/lib/site";
 export async function generateMetadata(): Promise<Metadata> {
   const projects = await getProjects();
   return {
+    alternates: { canonical: "/our-work" },
     title: "Our work",
     description: "Recent Hill & Stone repairs and home improvements around Northwest Arkansas.",
     ...(projects.length === 0 && { robots: { index: false } }),

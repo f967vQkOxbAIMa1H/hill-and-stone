@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { HeroHouse } from "@/components/illustrations/hero-house";
@@ -23,6 +24,8 @@ import {
 } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/ScrollReveal";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const two = (i: number) => String(i + 1).padStart(2, "0");
 

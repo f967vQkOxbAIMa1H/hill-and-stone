@@ -11,9 +11,8 @@ Everything customer-facing that's specific to Hill & Stone lives in one block at
 | Setting | What it controls |
 |---|---|
 | `business.contact` | Phone, email and hours shown site-wide |
-| `business.license`, `business.insurance` | Footer, Trust page and trust badges. Unset values are hidden. |
+| Trust claims, license, insurance | Insured, bonded, background-checked, warranty and guarantee switches (all off by default), the license number and insurer details. Nothing shows until it's turned on or entered. |
 | `business.googleReviewsUrl` | "Read our reviews on Google" buttons (hidden until set) |
-| `business.story` | Founder name, year, hometown, crew size and background for the About page. Sentences with missing facts are left out. |
 | `business.photos` | About page photos in `public/images/`. A brand graphic shows until they're added. |
 | `business.policies` | Reply time, certificate turnaround, background-check interval, used across the FAQ, Trust page and emails |
 | `quoteDefaults` | Starting trip fee and sales tax in the admin quote builder (no deposits: payment is due on completion) |
@@ -35,8 +34,8 @@ license, story, photos). It exits non-zero while any blocker remains, so it can 
 ## 3. Production database
 
 ```bash
-npm run db:deploy          # prisma migrate deploy: applies migrations, never drops data
-npm run admin:user -- you@yourdomain.com "Your Name"
+npm run db:deploy          # prisma migrate deploy: applies migrations, never drops data (not on Netlify Database)
+ADMIN_EMAIL=you@yourdomain.com npm run admin:create   # prints a one-time password once
 ```
 
 Don't run `db:reset` or the seed in production. The seed skips non-local databases unless
@@ -58,10 +57,10 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
   `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and
   `checkout.session.expired`, and set `STRIPE_WEBHOOK_SECRET`.
 - **Uploads**: `STORAGE_DRIVER=local` (default) keeps photos in `./storage` and needs a persistent disk.
-  On Vercel or other serverless hosts, set `STORAGE_DRIVER=s3` with an S3 or Cloudflare R2 bucket
+  On Netlify use `STORAGE_DRIVER=netlify`; on other serverless hosts, set `STORAGE_DRIVER=s3` with an S3 or Cloudflare R2 bucket
   (`STORAGE_BUCKET`, `STORAGE_ENDPOINT`, `STORAGE_REGION`, keys). The bucket stays private; the app serves photos
   through routes that check access. Tested against MinIO (`docker compose --profile test up -d`).
-- **Quote expiry**: set `CRON_SECRET`. On Vercel, `vercel.json` runs `/api/cron/expire-quotes` daily. Elsewhere,
+- **Quote expiry**: set `CRON_SECRET`. On Netlify, `netlify/functions/expire-quotes.mts` runs it daily. Elsewhere,
   add `npm run quotes:expire` to the server's crontab.
 - **Analytics**: set `NEXT_PUBLIC_GA_MEASUREMENT_ID` at build time. Page views never include customers' quote links,
   and the admin isn't tracked. Mark `generate_lead`, `begin_checkout` and `purchase` as key events in GA4.
@@ -71,7 +70,8 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
 
 ## Netlify
 
-`netlify.toml` builds the Next.js app with Netlify's adapter. On Netlify:
+The full Netlify walkthrough (env vars, deploy order, domain, webhook, scheduled function) is in
+[DEPLOY-NETLIFY.md](DEPLOY-NETLIFY.md). In short: `netlify.toml` builds the Next.js app with Netlify's adapter. On Netlify:
 
 - **Database**: Netlify Database, connected automatically (`src/lib/db.ts` uses it whenever `NETLIFY_DB_URL` is
   present, ignoring `DATABASE_URL`). Migrations are mirrored from `prisma/migrations` into
@@ -85,8 +85,8 @@ npm run db:clean-samples -- --yes # removes sample projects, placeholder reviews
   `CRON_SECRET`.
 - **Request size**: functions accept about 4.5 MB per request, so quote requests with several full-size phone
   photos are rejected. Shrink photos in the browser before upload before relying on photo uploads in production.
-- **First owner login**: a new database has no users. Run `npm run admin:user` with `DATABASE_URL` set to the
-  database's connection string (`netlify database status --show-credentials`).
+- **First owner login**: a new database has no users. Run `npm run admin:create` with `ADMIN_EMAIL` set and
+  `DATABASE_URL` set to the database's connection string (`netlify database status --show-credentials`).
 
 ## Local development
 

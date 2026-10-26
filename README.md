@@ -30,7 +30,8 @@ follow [docs/DEPLOY.md](docs/DEPLOY.md) to deploy.
 | `npm run db:reset` | Local only: wipe the database and `./storage`, migrate, load sample content |
 | `npm run db:clean-samples` | Remove sample/test data from any database (dry run unless `-- --yes`) |
 | `npm run db:deploy` | Apply migrations in production |
-| `npm run admin:user -- email "Name"` | Create or reset an admin login |
+| `ADMIN_EMAIL=… npm run admin:create` | Create the owner login with a one-time password (printed once; must be changed at first sign-in) |
+| `npm run admin:user -- email "Name"` | Create or reset an admin login with a password you type |
 | `npm run quotes:sample` | Create sample quotes in every state (dev) |
 | `npm run quotes:expire` | Mark overdue quotes expired (calls the cron route; needs `CRON_SECRET`) |
 
@@ -65,7 +66,7 @@ Create the first owner login from the command line (prompts for a password, 12+ 
 recovery path if an owner is ever locked out:
 
 ```bash
-npm run admin:user -- owner@hillstone.com "Owner Name"
+npm run admin:user -- owner@example.com "Owner Name"
 ```
 
 Everyone else is added from **Team** in the admin.

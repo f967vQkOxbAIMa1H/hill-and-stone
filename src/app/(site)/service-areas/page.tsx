@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Service areas",
   description:
     "Hill & Stone serves Fayetteville, Springdale, Rogers, Bentonville, Bella Vista, Lowell, Centerton, Farmington and nearby towns in Benton and Washington counties.",
+  alternates: { canonical: "/service-areas" },
 };
 
 export default function ServiceAreasPage() {

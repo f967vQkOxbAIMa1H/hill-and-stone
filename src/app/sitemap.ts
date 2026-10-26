@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { hasPublicReviews } from "@/lib/content";
-
-const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+import { appUrl as base } from "@/lib/site";
 
 // Public marketing pages only. Admin, API and private quote links are excluded (see robots.ts).
 const pages: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [

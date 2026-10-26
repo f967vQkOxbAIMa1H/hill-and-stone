@@ -7,7 +7,7 @@ import { acceptedNotice, declinedNotice, paymentReceipt } from "@/lib/email/quot
 import { env } from "@/lib/env";
 import { getSite } from "@/lib/settings";
 import { sendReviewInvite } from "@/lib/review-invites";
-import { getStripe, PAYMENT_METHOD_TYPES } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import type { PortalQuote } from "./queries";
 import { formatCents } from "@/lib/money";
 import { amountDue, balanceCents, canAccept, canRequestPayment, portalState, statusAfterPayment, type DeclineReason, type OfflineMethod } from "./state";
@@ -69,7 +69,7 @@ export async function createCheckout(quote: PortalQuote) {
     const session = await stripe.checkout.sessions.create(
       {
         mode: "payment",
-        payment_method_types: [...PAYMENT_METHOD_TYPES],
+        // No payment_method_types: Checkout offers the methods enabled in the Stripe dashboard.
         customer_email: quote.customer.email,
         client_reference_id: quote.id,
         line_items: [
@@ -195,8 +195,8 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
     const info = quoteInfo(quote);
     const pay = { amountCents: payment.amountCents, balanceCents: result.balance, paidAt: now, isDeposit: payment.isDeposit, ...details };
     await sendEmail({ type: "PAYMENT_RECEIPT", to: quote.customer.email, quoteId: quote.id, replyTo: site.email, ...(await paymentReceipt({ ...info, customerName: quote.customer.firstName }, pay)) });
-    if (env.CONTRACTOR_NOTIFY_EMAIL) {
-      await sendEmail({ type: "QUOTE_ACCEPTED_NOTICE", to: env.CONTRACTOR_NOTIFY_EMAIL, quoteId: quote.id, replyTo: quote.customer.email, ...(await acceptedNotice(info, pay)) });
+    if (env.ADMIN_NOTIFICATION_EMAIL) {
+      await sendEmail({ type: "QUOTE_ACCEPTED_NOTICE", to: env.ADMIN_NOTIFICATION_EMAIL, quoteId: quote.id, replyTo: quote.customer.email, ...(await acceptedNotice(info, pay)) });
     }
     // Paid in full: the job is done, so ask for a review.
     if (result.balance === 0) await sendReviewInvite(quote.id);
@@ -264,7 +264,7 @@ export async function acceptQuote(quote: PortalQuote, meta: { ipAddress?: string
     const site = await getSite();
     await sendEmail({
       type: "QUOTE_ACCEPTED_NOTICE",
-      to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
+      to: env.ADMIN_NOTIFICATION_EMAIL ?? site.email,
       quoteId: quote.id,
       replyTo: quote.customer.email,
       ...(await acceptedNotice(quoteInfo(quote), null)),
@@ -309,7 +309,7 @@ export async function declineQuote(
     const site = await getSite();
     await sendEmail({
       type: "QUOTE_DECLINED_NOTICE",
-      to: env.CONTRACTOR_NOTIFY_EMAIL ?? site.email,
+      to: env.ADMIN_NOTIFICATION_EMAIL ?? site.email,
       quoteId: quote.id,
       replyTo: quote.customer.email,
       ...(await declinedNotice(quoteInfo(quote), reason, note)),

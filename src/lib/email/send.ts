@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
-const FROM = env.EMAIL_FROM ?? "Hill & Stone <onboarding@resend.dev>";
+// Production: "Hill & Stone Home Solutions <quotes@hillandstonehome.com>" once the domain is verified in Resend.
+const FROM = env.EMAIL_FROM ?? "Hill & Stone Home Solutions <onboarding@resend.dev>";
 
 type SendArgs = {
   type: EmailType;
@@ -41,7 +42,7 @@ export async function sendEmail({ type, to, subject, html, text, replyTo, leadId
   }
 
   try {
-    const { data, error } = await resend.emails.send({ from: FROM, to, subject, html, text, replyTo, headers, tags });
+    const { data, error } = await resend.emails.send({ from: FROM, to, subject, html, text, replyTo: replyTo ?? env.EMAIL_REPLY_TO, headers, tags });
     if (error) throw new Error(`${error.name}: ${error.message}`);
     await update({ status: "SENT", providerMessageId: data?.id });
     return { ok: true as const, id: data?.id };

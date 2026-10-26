@@ -1,4 +1,4 @@
-# Netlify: Next.js runs on the OpenNext adapter (@netlify/plugin-nextjs, declared below).
+# Netlify: Next.js runs on the OpenNext adapter (@netlify/plugin-nextjs, declared below). NODE_VERSION matches .nvmrc.
 # Secrets and per-context values (CRON_SECRET, STORAGE_DRIVER, NETLIFY_BLOBS_STORE, Stripe, Resend)
 # are set in the Netlify UI/CLI, never here: this file is committed and isn't read at runtime.
 [build]
@@ -12,3 +12,15 @@
 # deploy as static files with no server (every route 404s). Unpinned so Netlify keeps it current.
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Security headers for files Netlify serves straight from its CDN (/_next/static, /brand, fonts). Pages and API
+# routes get the same headers from next.config.ts, plus their Content-Security-Policy; keep the two lists in sync.
+# The apex → www redirect is a Netlify domain setting (www.hillandstonehome.com primary), not a rule here.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+    Strict-Transport-Security = "max-age=63072000"

@@ -10,6 +10,7 @@ import { estimateLabel, propertyManagerPrefill, services } from "@/lib/site";
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   return {
+    alternates: { canonical: "/request-a-quote" },
     title: "Request an estimate",
     description: `Tell us about your repair or project and attach photos. Hill & Stone replies within ${site.replyWindow}.`,
   };

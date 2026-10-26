@@ -77,7 +77,8 @@ describe("site settings", () => {
     });
     expect(site.phoneHref).toBe("tel:+14792001234");
     expect(site.phoneIsPlaceholder).toBe(false);
-    expect(buildSite(defaultSettings).phoneIsPlaceholder).toBe(true);
+    expect(buildSite(defaultSettings).phoneIsPlaceholder).toBe(false);
+    expect(buildSite({ ...defaultSettings, contact: { ...defaultSettings.contact, phone: "(479) 555-0142" } }).phoneIsPlaceholder).toBe(true);
     expect(site.insuranceSummary).toBe("Insured: $2,000,000 general liability");
     expect(site.warranty).toBe("2-year workmanship warranty");
     expect(site.replyWindow).toBe("two business days");

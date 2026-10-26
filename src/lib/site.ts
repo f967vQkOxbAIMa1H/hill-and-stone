@@ -19,12 +19,10 @@ export const brand = {
   fullName: "Hill & Stone Home Solutions",
   /** Exact legal name: footer copyright, terms/privacy, structured data, email footers. */
   legalName: "Hill and Stone Home Solutions LLC",
-  /**
-   * Primary domain ("Hillstone"). Not purchased yet: set the real one here and NEXT_PUBLIC_APP_URL
-   * once it is. Used for the default contact email; `npm run check:launch` flags it until confirmed.
-   */
-  domain: "hillstone.com",
-  domainConfirmed: false,
+  /** Registered domain. The canonical site is https://www.hillandstonehome.com (NEXT_PUBLIC_APP_URL). */
+  domain: "hillandstonehome.com",
+  /** Canonical origin, used when NEXT_PUBLIC_APP_URL isn't set (local builds use localhost instead). */
+  url: "https://www.hillandstonehome.com",
   tagline: "Reliable Northwest Arkansas home repairs, done right.",
   /** Prefix for the license number, shown only once a number is entered in settings. */
   licenseLabel: "Arkansas license",
@@ -45,12 +43,20 @@ export const brand = {
   },
 };
 
+/**
+ * Public origin for canonical tags, the sitemap, structured data and links in emails, without a trailing slash.
+ * Set NEXT_PUBLIC_APP_URL; production builds without it fall back to the canonical www domain.
+ */
+export const appUrl = (process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? brand.url : "http://localhost:3000")).replace(/\/$/, "");
+
 /** Starting values until the owner saves settings in the admin. */
 export const defaultSettings: Settings = {
+  // Carried over from the owner's local admin settings. The public email is the owner's inbox until
+  // info@hillandstonehome.com forwarding is set up; change it at /admin/settings/site.
   contact: {
-    phone: "(479) 555-0142", // fictional 555-01xx number: replace it
-    email: `hello@${brand.domain}`,
-    hours: "Mon–Fri 7am–6pm, Sat by appointment",
+    phone: "870-421-1331",
+    email: "tdavidsonmanagement@outlook.com",
+    hours: "Mon–Fri 8am–12pm, 1pm-5pm",
   },
   license: { number: null },
   // Every trust claim stays off the site until the owner turns it on in settings.
@@ -63,7 +69,7 @@ export const defaultSettings: Settings = {
   warrantyMonths: 12,
   googleReviewsUrl: null,
   policies: { replyBusinessDays: 1, coiBusinessDays: 2, backgroundRecheckYears: 2, confirmed: false },
-  quoteDefaults: { tripFee: "75", taxRatePercent: "9.75", validDays: 30, confirmed: false },
+  quoteDefaults: { tripFee: "0", taxRatePercent: "9.75", validDays: 30, confirmed: false },
 };
 
 /* ─── Derived values used by the site. ─── */

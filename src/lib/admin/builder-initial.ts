@@ -32,7 +32,8 @@ export function newQuoteInput(lead: Lead, quoteDefaults: SiteConfig["quoteDefaul
     lines: [
       { type: "LABOR", description: "", quantity: "1", unitPrice: "" },
       { type: "MATERIALS", description: "", quantity: "1", unitPrice: "" },
-      { type: "TRIP_FEE", description: "Trip fee", quantity: "1", unitPrice: quoteDefaults.tripFee },
+      // No trip fee line while the default fee is $0; the builder can still add one.
+      ...(Number(quoteDefaults.tripFee) > 0 ? [{ type: "TRIP_FEE" as const, description: "Trip fee", quantity: "1", unitPrice: quoteDefaults.tripFee }] : []),
     ],
   };
 }

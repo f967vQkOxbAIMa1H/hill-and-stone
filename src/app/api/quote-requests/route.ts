@@ -133,9 +133,9 @@ export async function POST(request: Request) {
     after(async () => {
       const toCustomer = await customerConfirmation(req, info);
       await sendEmail({ type: "LEAD_CONFIRMATION", to: req.email, leadId: lead.id, replyTo: site.email, ...toCustomer });
-      if (env.CONTRACTOR_NOTIFY_EMAIL) {
+      if (env.ADMIN_NOTIFICATION_EMAIL) {
         const toOwner = await contractorNotification(req, { ...info, serviceArea });
-        await sendEmail({ type: "LEAD_NOTIFICATION", to: env.CONTRACTOR_NOTIFY_EMAIL, leadId: lead.id, replyTo: req.email, ...toOwner });
+        await sendEmail({ type: "LEAD_NOTIFICATION", to: env.ADMIN_NOTIFICATION_EMAIL, leadId: lead.id, replyTo: req.email, ...toOwner });
       }
     });
 

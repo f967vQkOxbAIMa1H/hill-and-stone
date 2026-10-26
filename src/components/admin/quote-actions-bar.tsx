@@ -106,7 +106,7 @@ export function QuoteActionsBar({
             {paymentRequested ? `Remind ${clientEmail} that ${balanceDue} is due?` : `Mark the job complete and ask ${clientEmail} to pay ${balanceDue}?`}
           </p>
           <p className="mt-1 text-sm text-navy-600">
-            Payment is due on completion. They get an email with a link to pay online by card or Apple Pay; their quote can&apos;t be paid until you send this.
+            Payment is due on completion. They get an email with a link to pay online by card, Apple Pay or Google Pay; their quote can&apos;t be paid until you send this.
           </p>
           <label htmlFor="bill-note" className="mt-3 block text-sm font-semibold">
             Note to include <span className="font-normal text-navy-600">(optional)</span>

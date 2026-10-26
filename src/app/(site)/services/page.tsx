@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Services",
   description:
     "Interior repairs, exterior repairs, property maintenance and home improvements in Northwest Arkansas. See what we do and what we don't take on.",
+  alternates: { canonical: "/services" },
 };
 
 export default async function ServicesPage() {

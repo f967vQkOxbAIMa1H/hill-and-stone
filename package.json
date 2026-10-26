@@ -2,6 +2,9 @@
   "name": "hill-and-stone",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,6 +21,7 @@
     "test:e2e:quote": "node scripts/e2e-quote.mjs",
     "quotes:sample": "tsx scripts/sample-quotes.ts",
     "admin:user": "tsx scripts/admin-user.ts",
+    "admin:create": "tsx scripts/admin-create.ts",
     "test:e2e:admin": "node scripts/e2e-admin.mjs",
     "check:launch": "tsx scripts/launch-check.ts",
     "db:reset": "tsx scripts/db-reset.ts",

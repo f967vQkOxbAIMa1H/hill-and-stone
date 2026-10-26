@@ -3,7 +3,7 @@ import { Archivo, Newsreader } from "next/font/google";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { SiteProvider } from "@/components/site-provider";
 import { getSite } from "@/lib/settings";
-import { brand } from "@/lib/site";
+import { appUrl, brand } from "@/lib/site";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -24,7 +24,7 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(appUrl),
   title: {
     default: `${brand.fullName} | Home repair in Northwest Arkansas`,
     template: `%s | ${brand.fullName}`,

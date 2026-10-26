@@ -1,7 +1,5 @@
 import { getSite } from "@/lib/settings";
-import { brand, serviceAreas, services } from "@/lib/site";
-
-const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+import { appUrl as base, brand, serviceAreas, services } from "@/lib/site";
 
 /**
  * schema.org data for search engines. Hill & Stone is a service-area business, so it lists

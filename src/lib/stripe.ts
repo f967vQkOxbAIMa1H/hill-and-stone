@@ -22,9 +22,8 @@ export function getStripe(): Stripe | null {
 }
 
 /**
- * Standard cards and Apple Pay. "card" covers Visa, Mastercard, American Express and Discover, and hosted
- * Checkout shows Apple Pay (and Google Pay) automatically on supported devices; no domain verification is
- * needed for hosted Checkout. Apple Pay must be enabled under Settings > Payment methods in the Stripe dashboard.
+ * Checkout uses the payment methods turned on in the Stripe dashboard (Settings > Payment methods): cards
+ * (Visa, Mastercard, American Express, Discover), Apple Pay, Google Pay and Cash App Pay, shown on the devices
+ * that support them. Nothing is listed here, so the owner can change methods without a code change.
  * Payouts, receipts and dispute notices go to the Stripe account's email: set it to the business inbox.
  */
-export const PAYMENT_METHOD_TYPES = ["card"] as const;
