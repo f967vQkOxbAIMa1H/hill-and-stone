@@ -179,14 +179,19 @@ try {
   await shot(page, "faq");
   await page.close();
 
-  // ── Trust: certificate request ─────────────────────────────
+  // ── Trust: certificate request (offered only while "insured" is on in settings) ──
   page = await open("/trust");
-  await page.type("#coi-name", "Pat Manager");
-  await page.type("#coi-email", "pat@hoa.example.com");
-  await page.type("#coi-address", "212 W Central Ave, Bentonville");
-  await page.click("button::-p-text(Request certificate)");
-  await page.waitForSelector("[role=status]", { timeout: 10000 });
-  check("certificate request confirms", true);
+  if (await page.$("#coi-name")) {
+    await page.type("#coi-name", "Pat Manager");
+    await page.type("#coi-email", "pat@hoa.example.com");
+    await page.type("#coi-address", "212 W Central Ave, Bentonville");
+    await page.click("button::-p-text(Request certificate)");
+    await page.waitForSelector("[role=status]", { timeout: 10000 });
+    check("certificate request confirms", true);
+  } else {
+    const trust = await page.evaluate(() => document.body.innerText);
+    check("with no claims on, /trust covers payments only", trust.includes("Paying for your job") && !/insured|bonded|warranty/i.test(trust));
+  }
   await shot(page, "trust");
   await page.close();
 

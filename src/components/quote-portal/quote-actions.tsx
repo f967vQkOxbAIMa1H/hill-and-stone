@@ -77,8 +77,8 @@ function OpenPanel({ token, totalCents }: ActionProps) {
         <p className="font-wide text-4xl font-extrabold tabular-nums">{formatCents(totalCents)}</p>
       </div>
       <p className="mt-4 rounded-control border border-navy-800 px-4 py-3 text-sm text-navy-300">
-        <span className="font-semibold text-stone-50">Nothing to pay today.</span> Payment is due when the work is complete and
-        you&apos;re happy with it. No deposit, no payment plan.
+        <span className="font-semibold text-stone-50">Nothing to pay today.</span> Payment is due once the work is complete and
+        we&apos;ve walked it with you. No deposit, no payment plan.
       </p>
 
       <AcceptButton token={token} />

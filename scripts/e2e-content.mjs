@@ -82,7 +82,7 @@ try {
   const robots = await (await fetch(`${BASE}/robots.txt`)).text();
   check("robots.txt blocks admin, API and quote links", ["Disallow: /admin", "Disallow: /api/", "Disallow: /quote/"].every((l) => robots.includes(l)) && robots.includes("Sitemap:"));
   const sitemap = await (await fetch(`${BASE}/sitemap.xml`)).text();
-  check("sitemap lists public pages only", ["/services", "/our-work", "/request-a-quote", "/trust"].every((p) => sitemap.includes(p)) && !sitemap.includes("/admin") && !sitemap.includes("/quote/"));
+  check("sitemap lists public pages only", ["/services", "/request-a-quote", "/trust"].every((p) => sitemap.includes(p)) && !["/admin", "/quote/", "/our-work"].some((p) => sitemap.includes(p)));
   const icon = await fetch(`${BASE}/icon.svg`);
   const apple = await fetch(`${BASE}/apple-icon`);
   const og = await fetch(`${BASE}/opengraph-image`);
@@ -90,7 +90,7 @@ try {
   const home = await publicText("/");
   const ld = JSON.parse(home.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1] ?? "{}");
   check("home has LocalBusiness data with service areas", ld["@type"] === "HomeAndConstructionBusiness" && ld.areaServed?.length >= 4);
-  check("placeholder phone is kept out of structured data", !("telephone" in ld));
+  check("the business phone is in structured data", ld.telephone === "+18704211331", ld.telephone);
   check("social preview tags are set", /property="og:image"/.test(home) && /name="twitter:card" content="summary_large_image"/.test(home));
   const missing = await fetch(`${BASE}/this-page-does-not-exist`);
   const missingBody = await missing.text();

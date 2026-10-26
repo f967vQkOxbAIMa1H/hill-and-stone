@@ -109,7 +109,7 @@ export async function quoteSent(q: QuoteInfo & { validUntil: Date | null; custom
   ];
   const html = layout(site, `
 <p style="margin:0 0 12px;font-size:22px;font-weight:800">Hi ${esc(q.customerFirstName)}, your quote is ready.</p>
-<p style="margin:0 0 12px">It's itemized so you can see exactly what's included. You can accept it online, or let us know if it isn't right for you. Nothing is charged when you accept: you pay once the work is done and you're happy with it.</p>
+<p style="margin:0 0 12px">It's itemized so you can see exactly what's included. You can accept it online, or let us know if it isn't right for you. Nothing is charged when you accept: you pay once the work is done and we've walked it with you.</p>
 ${rows(summary)}
 <p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Review your quote</a></p>
 <p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">This link is private to you. Questions? Reply to this email or call ${esc(site.phone)}.</p>`);

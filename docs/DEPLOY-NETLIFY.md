@@ -20,7 +20,7 @@ secret ones). Never paste secrets into the repo or a chat.
 
 | Variable | Value | Secret |
 |---|---|---|
-| `NEXT_PUBLIC_APP_URL` | `https://www.hillandstonehome.com` (deploy previews can use their own URL) | |
+| `NEXT_PUBLIC_APP_URL` | `https://www.hillandstonehome.com`. Read at build time for canonical tags and the sitemap, so set it before the first build and redeploy after changing it. | |
 | `RESEND_API_KEY` | From Resend, after verifying `hillandstonehome.com` | yes |
 | `EMAIL_FROM` | `Hill & Stone Home Solutions <quotes@hillandstonehome.com>` | |
 | `EMAIL_REPLY_TO` | The public contact email (currently `tdavidsonmanagement@outlook.com`) | |

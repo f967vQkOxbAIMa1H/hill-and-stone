@@ -115,7 +115,7 @@ try {
   await page.waitForFunction(() => document.body.innerText.includes("on our schedule"), { timeout: 10000 });
   check("accepting charges nothing", (await payments(openQuote.id)).length === 0 && (await quoteRow(openToken)).status === "ACCEPTED");
   body = await text(page);
-  check("accepted state says payment is due on completion", body.includes("Nothing is due yet") && !body.includes("Pay "));
+  check("accepted state says payment is due on completion", body.includes("Nothing is due yet") && !/Pay \$|Pay now/.test(body));
   await shot(page, "accepted");
   await page.close();
   const stillEarly = await fetch(`${BASE}/api/quotes/${openToken}/checkout`, { method: "POST" });

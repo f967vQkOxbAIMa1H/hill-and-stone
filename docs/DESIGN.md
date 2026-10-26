@@ -4,11 +4,19 @@ Built with the `frontend-design` skill (`.claude/skills/frontend-design`). Read 
 
 ## Subject
 
-A premium home repair company in Northwest Arkansas. Audience: homeowners in Bentonville, Rogers, Springdale and Fayetteville, many of them busy professionals who want one reliable, tidy pro. The site's job is to get a quote request (and later, to get a quote approved and paid).
+A new home repair company in Northwest Arkansas, founded by Aidan Sanders and Tucker Davidson. It has few job photos and no long track record yet, so the site leans on clear process and drawn illustrations instead of portfolio claims. Audience: homeowners in Bentonville, Rogers, Springdale and Fayetteville, many of them busy professionals who want one reliable, tidy pro. The site's job is to get a quote request (and later, to get a quote approved and paid).
 
 ## Revision 1 (client mockup, October 2026)
 
 The client supplied a coastal navy + cream mockup. Where it conflicts with older notes below, this section wins.
+
+### Patterns in use (Revision 1)
+
+- **Adaptive header** (`components/site/header-shell.tsx`): the sticky header reads the `data-header-theme` of the section under it and flips the logo and links between navy (on light) and cream (on dark), so it never sits low-contrast over a band.
+- **Drawn illustrations instead of photos** (`components/illustrations/`): line drawings of a house and of each service category, built from the `.ill-*` classes in `globals.css` (draw, fade, pop, wipe). The hero plays once on load (`.ill-autoplay`); the rest play once when 40% in view (`components/ui/play-on-view.tsx`) and replay on card hover or focus. Timing lives in `illustrations/timing.ts`. Server HTML and reduced motion show the finished drawing. This is the site's one motion system: no before/after sliders, no photo carousels.
+- **Founder frames** (`components/site/founders.tsx`): two portrait frames, the second set lower like stacked stone, holding a brand panel until photos arrive. Names and "Co-founder" captions always show.
+- **Claims are switches, not copy.** Licensed, insured, bonded, background-checked, warranty and guarantee are admin settings, all off by default. Each sentence that states one is built from `SiteConfig` and disappears when it's off; there is no empty badge or "pending" state. `/trust` falls back to "Paying for your job" (secure payments only).
+- **Dormant pages**: Our work and Reviews stay out of the nav, footer and sitemap until real content exists, and say what's coming ("Project gallery coming soon") with an estimate button rather than showing an empty grid. They're `noindex` while empty.
 
 ## Color
 
@@ -92,15 +100,15 @@ Devices from the client mockup:
 
 - **Spec-sheet grid**: shared 1px hairlines (`gap-px` over a `navy-200` background) instead of floating cards. Used for the home services grid.
 - **Scope sheet**: `components/site/scope-sheet.tsx`. White "what we do" column, sand "what we don't" column.
-- **Commitment list**: `components/site/trust-list.tsx`. Each promise carries a checkable detail (license number, insurance amount).
+- **Commitment list**: `components/site/trust-list.tsx`. Each promise carries a checkable detail (license number, insurance amount), and only promises switched on in settings render.
 - **Big-type city row**: core cities in wide 800 on navy. Reserved for the service-area banner; don't reuse it elsewhere.
 - **Closing CTA band**: `components/site/cta-band.tsx` at the bottom of each marketing page.
-- **Placeholders**: unknown facts appear as visible `[brackets]` (About page) or "Placeholder" text (testimonials, photos), never as invented specifics.
+- **Placeholders**: unknown facts are left out entirely; missing photos keep a brand panel. Placeholder reviews and sample projects exist only in local demo data (`SEED_DEMO=true`), never in production.
 
 ## Patterns in use (Phase 3)
 
 - **Radio tiles** (`components/ui/radio-tiles.tsx`): native radios styled as tiles; the checked tile fills navy. Used for contact method, work type and budget.
-- **Split preview**: portfolio tiles show before and after side by side as a static image; the interactive slider lives in the project dialog.
+- **Split preview** (dormant): portfolio tiles can show before and after side by side, with the slider in the project dialog. Unused while Our work is unlinked; don't bring before/after back to the marketing pages.
 - **Native disclosure**: FAQ uses `<details name>` so one answer is open per topic, with an animated height where the browser supports `::details-content`.
 - **Dialogs** use native `<dialog>` with a short scale or slide in answer to the click, and Esc and backdrop clicks close them.
 - **Numbered steps** appear only for real sequences: how quoting works, and the certificate-of-insurance request.
