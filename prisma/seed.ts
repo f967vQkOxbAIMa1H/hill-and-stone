@@ -2,16 +2,18 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type ServiceCategory } from "../src/generated/prisma/client";
 
-// Sample content must never reach a real database by accident.
+// Demo content (sample projects, placeholder reviews, a demo admin) loads only with SEED_DEMO=true,
+// and never into a non-local database by accident. Fabricated reviews must never ship.
+const seedDemo = process.env.SEED_DEMO === "true";
 const seedHost = new URL(process.env.DATABASE_URL!).hostname;
-if (!["localhost", "127.0.0.1", "::1"].includes(seedHost) && process.env.ALLOW_SAMPLE_SEED !== "1") {
-  console.log(`Skipping sample seed: ${seedHost} isn't a local database. Set ALLOW_SAMPLE_SEED=1 to override.`);
+if (seedDemo && !["localhost", "127.0.0.1", "::1"].includes(seedHost) && process.env.ALLOW_SAMPLE_SEED !== "1") {
+  console.log(`Skipping demo seed: ${seedHost} isn't a local database. Set ALLOW_SAMPLE_SEED=1 to override.`);
   process.exit(0);
 }
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 
-// Development-only sample data. Safe to re-run: sample projects use the "sample-" slug
+// Development-only demo data (SEED_DEMO=true). Safe to re-run: sample projects use the "sample-" slug
 // prefix and sample reviews use source "seed", and both are replaced on each run.
 // Everything here is placeholder content; none of it describes a real job or customer.
 
@@ -107,6 +109,10 @@ const projects: SampleProject[] = [
 ];
 
 async function main() {
+  if (!seedDemo) {
+    console.log("No demo content seeded. Run with SEED_DEMO=true for local sample projects and reviews.");
+    return;
+  }
   await db.user.upsert({
     where: { email: "owner@hillstone.com" },
     update: {},

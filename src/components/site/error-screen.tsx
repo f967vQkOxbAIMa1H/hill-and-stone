@@ -11,9 +11,8 @@ import { quoteHref } from "@/lib/site";
 
 const destinations = [
   { href: "/services", label: "Services", note: "What we do and don't take on" },
-  { href: "/our-work", label: "Our work", note: "Before-and-after projects" },
   { href: "/service-areas", label: "Service areas", note: "Check your ZIP code" },
-  { href: "/faq", label: "Questions and answers", note: "Pricing, scheduling, warranty" },
+  { href: "/faq", label: "Questions and answers", note: "Pricing, scheduling, payment" },
 ];
 
 /** Shared layout for the 404 and error pages: say what happened, then offer the useful next steps. */

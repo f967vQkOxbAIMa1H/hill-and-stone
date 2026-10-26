@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { nav } from "@/lib/site";
+import type { nav } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-export function NavLinks({ className, linkClassName }: { className?: string; linkClassName?: string }) {
+/** `items` comes from getNav() on the server, so links to empty sections are already left out. */
+export function NavLinks({ items, className, linkClassName }: { items: readonly (typeof nav)[number][]; className?: string; linkClassName?: string }) {
   const pathname = usePathname();
 
   return (
     <ul className={className}>
-      {nav.map((item) => {
+      {items.map((item) => {
         const current = !item.href.includes("#") && pathname.startsWith(item.href);
         return (
           <li key={item.href}>

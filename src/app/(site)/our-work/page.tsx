@@ -6,13 +6,18 @@ import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { getProjects } from "@/lib/content";
 import { isPlaceholder, projectMedia } from "@/lib/media";
-import { quoteHref } from "@/lib/site";
+import { estimateLabel, quoteHref } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Our work",
-  description:
-    "Before-and-after photos of Hill & Stone repairs and small renovations in Bentonville, Rogers, Springdale, Fayetteville and around Northwest Arkansas.",
-};
+// Not linked from the nav (cut while the business is new). The page stays so old links and the
+// admin portfolio keep working; it is kept out of search results until real projects are published.
+export async function generateMetadata(): Promise<Metadata> {
+  const projects = await getProjects();
+  return {
+    title: "Our work",
+    description: "Recent Hill & Stone repairs and home improvements around Northwest Arkansas.",
+    ...(projects.length === 0 && { robots: { index: false } }),
+  };
+}
 
 export default async function OurWorkPage() {
   const projects = await getProjects();
@@ -37,7 +42,11 @@ export default async function OurWorkPage() {
     <>
       <PageIntro
         title="Our work"
-        lede="Recent repairs and projects from around Northwest Arkansas. Open any project to drag between before and after and see what we did."
+        lede={
+          gallery.length > 0
+            ? "Recent repairs and projects from around Northwest Arkansas. Open any project to see what we did."
+            : "Recent repairs and projects from around Northwest Arkansas."
+        }
       />
       <Container className="py-14 lg:py-16">
         {gallery.length > 0 ? (
@@ -45,17 +54,17 @@ export default async function OurWorkPage() {
         ) : (
           // Launch state: no photos uploaded yet in /admin/portfolio. No placeholder images are shown.
           <div className="max-w-xl">
-            <p className="text-lg font-bold">Project photos are on their way.</p>
+            <p className="text-lg font-bold">Project gallery coming soon.</p>
             <p className="mt-2 text-navy-600">
-              We&apos;re photographing recent jobs now. Meanwhile, send us a photo of yours and we&apos;ll tell you what it takes.
+              In the meantime, send us a photo of what needs attention and we&apos;ll tell you what it takes.
             </p>
             <ButtonLink href={quoteHref} className="mt-5">
-              Request an Estimate
+              {estimateLabel}
             </ButtonLink>
           </div>
         )}
       </Container>
-      <CtaBand title="Have something like this at your place?" />
+      <CtaBand title={gallery.length > 0 ? "Have something like this at your place?" : undefined} />
     </>
   );
 }

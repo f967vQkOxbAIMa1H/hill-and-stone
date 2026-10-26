@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/ui/container";
+import { getNav } from "@/lib/content";
 import { getSite } from "@/lib/settings";
 import { estimateLabel, quoteHref } from "@/lib/site";
 import { HeaderShell } from "./header-shell";
@@ -10,7 +11,7 @@ import { NavLinks } from "./nav-links";
 
 /** Sticky header. Its colors are --hdr-* variables (globals.css) that HeaderShell flips per section. */
 export async function Header() {
-  const site = await getSite();
+  const [site, items] = await Promise.all([getSite(), getNav()]);
   return (
     <HeaderShell className="site-header sticky top-0 z-40 border-b backdrop-blur-md">
       <a
@@ -27,6 +28,7 @@ export async function Header() {
 
         <nav aria-label="Main" className="ml-auto hidden lg:block">
           <NavLinks
+            items={items}
             className="flex items-center gap-6 whitespace-nowrap xl:gap-7"
             linkClassName="py-2 font-medium text-(--hdr-muted) hover:text-(--hdr-fg) aria-[current=page]:text-(--hdr-fg) after:absolute after:inset-x-0 after:-bottom-[21px] after:h-0.5 after:bg-(--hdr-mark) after:opacity-0 aria-[current=page]:after:opacity-100"
           />
@@ -47,7 +49,7 @@ export async function Header() {
             <span className="sm:hidden">Estimate</span>
             <span className="hidden sm:inline">{estimateLabel}</span>
           </Link>
-          <MobileNav />
+          <MobileNav items={items} />
         </div>
       </Container>
     </HeaderShell>

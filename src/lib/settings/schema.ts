@@ -22,28 +22,26 @@ export const settingsSchema = z.object({
     email: z.string().trim().toLowerCase().pipe(z.email("Enter an email like hello@yourdomain.com.")),
     hours: text(120).min(3, "Enter your hours, like Mon–Fri 7am–6pm."),
   }),
+  /** The license line ("Arkansas license 0123") shows on the site only once a number is entered. */
+  license: z.object({ number: nullableText(40) }),
   /**
-   * License and insurance details stay off the site until `showPublicly` is ticked (after the LLC is set up
-   * with the City of Fayetteville and the state). The site always says "licensed and insured for minor home repair".
+   * Trust claims. Each one stays off the site (no badge, no "pending") until the owner turns it on,
+   * so the site never claims something the business can't back up.
    */
-  license: z.object({ number: nullableText(40), showPublicly: z.boolean().default(false) }),
+  claims: z
+    .object({
+      insured: z.boolean().default(false),
+      bonded: z.boolean().default(false),
+      backgroundChecked: z.boolean().default(false),
+      warranty: z.boolean().default(false),
+      satisfactionGuarantee: z.boolean().default(false),
+    })
+    .default({ insured: false, bonded: false, backgroundChecked: false, warranty: false, satisfactionGuarantee: false }),
   insurance: z
     .array(z.object({ type: z.enum(insuranceTypes), detail: nullableText(120) }))
     .length(insuranceTypes.length),
   warrantyMonths: intIn(1, 120, "Warranty months"),
   googleReviewsUrl: nullableText(300).refine((v) => !v || /^https:\/\/\S+$/.test(v), "Use a full https:// link, or leave it blank."),
-  story: z.object({
-    founderName: nullableText(80),
-    coFounderName: nullableText(80),
-    foundedYear: z
-      .union([z.literal(""), z.null(), z.coerce.number().int().min(1950, "Use a year like 2019.").max(2100, "Use a year like 2019.")])
-      .transform((v) => (v === "" || v === null ? null : v)),
-    hometown: nullableText(60),
-    crewSize: z
-      .union([z.literal(""), z.null(), z.coerce.number().int().min(1, "Crew size must be at least 1.").max(500)])
-      .transform((v) => (v === "" || v === null ? null : v)),
-    founderBackground: nullableText(200),
-  }),
   policies: z.object({
     replyBusinessDays: intIn(1, 10, "Reply time"),
     coiBusinessDays: intIn(1, 30, "Certificate turnaround"),

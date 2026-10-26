@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/ui/container";
 import { getSite } from "@/lib/settings";
-import { nav, quoteHref, serviceAreas } from "@/lib/site";
+import { getNav } from "@/lib/content";
+import { quoteHref, serviceAreas, trustPageLabel } from "@/lib/site";
 
 export async function Footer() {
-  const site = await getSite();
+  const [site, nav] = await Promise.all([getSite(), getNav()]);
   const core = serviceAreas.filter((a) => a.core);
   const year = new Date().getFullYear();
 
@@ -15,7 +16,7 @@ export async function Footer() {
         <div>
           <Logo tone="light" />
           <p className="mt-5 max-w-[34ch]">
-            Home repair, carpentry and small renovations across Benton and Washington counties.
+            Interior and exterior repairs, property maintenance and home improvements across Benton and Washington counties.
           </p>
           <Link href={quoteHref} className="mt-5 inline-block font-semibold text-stone-100 underline underline-offset-4 hover:text-white">
             Request an Estimate
@@ -34,7 +35,7 @@ export async function Footer() {
             ))}
             <li>
               <Link href="/trust" className="hover:text-stone-50">
-                Insurance &amp; warranty
+                {trustPageLabel(site)}
               </Link>
             </li>
           </ul>
@@ -78,11 +79,9 @@ export async function Footer() {
 
       <div className="border-t border-navy-800">
         <Container className="flex flex-col gap-2 py-6 text-sm text-navy-400 md:flex-row md:justify-between">
-          <p>
-            {[`${site.licenseStatement}.`, site.licenseNumber && `${site.licenseLabel} ${site.licenseNumber}.`, site.insuranceSummary && `${site.insuranceSummary}.`]
-              .filter(Boolean)
-              .join(" ")}
-          </p>
+          {(site.credentialLine || site.insuranceSummary) && (
+            <p>{[site.credentialLine, site.insuranceSummary && `${site.insuranceSummary}.`].filter(Boolean).join(" ")}</p>
+          )}
           <p>
             © {year} {site.legalName}
           </p>

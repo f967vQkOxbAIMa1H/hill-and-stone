@@ -9,7 +9,7 @@ import { getSite } from "@/lib/settings";
 export const metadata: Metadata = {
   title: "Questions and answers",
   description:
-    "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, payment on completion, payment options, materials and our workmanship warranty.",
+    "Answers about Hill & Stone pricing, free estimates, scheduling, urgent repairs, payment on completion, payment options and materials.",
 };
 
 
@@ -31,7 +31,7 @@ export default async function FaqPage() {
       />
       <PageIntro
         title="Questions and answers"
-        lede="Straight answers about pricing, scheduling, payment and our warranty. Don't see yours? Ask it in your estimate request."
+        lede="Straight answers about pricing, scheduling, payment and materials. Don't see yours? Ask it in your estimate request."
       />
 
       <Container className="grid gap-10 py-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14 lg:py-20">

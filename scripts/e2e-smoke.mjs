@@ -1,6 +1,6 @@
 // Headless browser smoke test against a running server.
 // Usage: BASE_URL=http://localhost:3100 SHOTS=/tmp/shots node scripts/e2e-smoke.mjs
-// The gallery checks use the seed's sample projects, so start the server with SHOW_SAMPLE_CONTENT=1
+// The gallery checks use the seed's sample projects, so seed with SEED_DEMO=true and start the server with SHOW_SAMPLE_CONTENT=1
 // (they're hidden from the public site otherwise).
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";

@@ -26,17 +26,20 @@ export const brand = {
   domain: "hillstone.com",
   domainConfirmed: false,
   tagline: "Reliable Northwest Arkansas home repairs, done right.",
-  /** What the site says about licensing, with or without the details below. */
-  licenseStatement: "Licensed and insured for minor home repair",
-  /** Prefix for the license number, shown only once license details are made public in settings. */
+  /** Prefix for the license number, shown only once a number is entered in settings. */
   licenseLabel: "Arkansas license",
+  /** The co-founders, in the order the About page story introduces them. */
+  founders: [
+    { name: "Aidan Sanders", firstName: "Aidan" },
+    { name: "Tucker Davidson", firstName: "Tucker" },
+  ],
   /**
    * Photos in /public/images. Each missing photo keeps its reserved frame with a brand graphic instead.
-   * founder = Tucker, coFounder = his co-founder (Our Story section on the home and About pages).
+   * founder = Aidan, coFounder = Tucker (About page, in the order of `founders`).
    */
   photos: {
-    founder: null as string | null, // "/images/founder.jpg"
-    coFounder: null as string | null, // "/images/co-founder.jpg"
+    founder: null as string | null, // "/images/founder-aidan.jpg"
+    coFounder: null as string | null, // "/images/founder-tucker.jpg"
     team: null as string | null,
     crew: null as string | null,
   },
@@ -49,7 +52,9 @@ export const defaultSettings: Settings = {
     email: `hello@${brand.domain}`,
     hours: "Mon–Fri 7am–6pm, Sat by appointment",
   },
-  license: { number: null, showPublicly: false },
+  license: { number: null },
+  // Every trust claim stays off the site until the owner turns it on in settings.
+  claims: { insured: false, bonded: false, backgroundChecked: false, warranty: false, satisfactionGuarantee: false },
   insurance: [
     { type: "General liability", detail: null },
     { type: "Workers' compensation", detail: null },
@@ -57,7 +62,6 @@ export const defaultSettings: Settings = {
   ],
   warrantyMonths: 12,
   googleReviewsUrl: null,
-  story: { founderName: "Tucker", coFounderName: null, foundedYear: null, hometown: null, crewSize: null, founderBackground: null },
   policies: { replyBusinessDays: 1, coiBusinessDays: 2, backgroundRecheckYears: 2, confirmed: false },
   quoteDefaults: { tripFee: "75", taxRatePercent: "9.75", validDays: 30, confirmed: false },
 };
@@ -72,12 +76,17 @@ export const isPlaceholderPhone = (phone: string) => /555-?01\d\d$/.test(phone.r
 /** Everything pages, emails and components read, built from the current settings. */
 export function buildSite(settings: Settings) {
   const digits = settings.contact.phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
-  // License numbers and insurer details are hidden until the owner makes them public in settings.
-  const credentialsPublic = settings.license.showPublicly;
-  const insured = credentialsPublic
+  const claims = settings.claims;
+  const licenseNumber = settings.license.number;
+  // Insurer details only show while the "insured" claim is on.
+  const insured = claims.insured
     ? settings.insurance.filter((i): i is { type: Settings["insurance"][number]["type"]; detail: string } => !!i.detail)
     : [];
   const months = settings.warrantyMonths;
+  const coverage = [claims.insured && "insured", claims.bonded && "bonded"].filter(Boolean).join(" and ");
+  const credentialLine = [coverage && `${coverage[0].toUpperCase()}${coverage.slice(1)}.`, licenseNumber && `${brand.licenseLabel} ${licenseNumber}.`]
+    .filter(Boolean)
+    .join(" ");
   return {
     name: brand.name,
     fullName: brand.fullName,
@@ -89,28 +98,45 @@ export function buildSite(settings: Settings) {
     email: settings.contact.email,
     hours: settings.contact.hours,
     domain: brand.domain,
-    licenseStatement: brand.licenseStatement,
     licenseLabel: brand.licenseLabel,
-    /** Null unless a number is saved and license details are public. */
-    licenseNumber: credentialsPublic ? settings.license.number : null,
-    /** Insurance rows that have real details. */
+    /** Null until a license number is entered in settings. */
+    licenseNumber,
+    insured: claims.insured,
+    bonded: claims.bonded,
+    backgroundChecked: claims.backgroundChecked,
+    satisfactionGuarantee: claims.satisfactionGuarantee,
+    /** "12-month workmanship warranty", or null while the warranty claim is off. */
+    warranty: claims.warranty ? `${months % 12 === 0 ? `${months / 12}-year` : `${months}-month`} workmanship warranty` : null,
+    /** Insurance rows that have real details (empty unless insured is on). */
     insurance: insured,
     /** Short line for footers, or null when no details are set. */
     insuranceSummary: insured[0] ? `Insured: ${insured[0].detail} ${insured[0].type.toLowerCase()}` : null,
-    warranty: `${months % 12 === 0 ? `${months / 12}-year` : `${months}-month`} workmanship warranty`,
+    /** "Insured and bonded. Arkansas license 0123." Null when no credential is turned on. */
+    credentialLine: credentialLine || null,
+    /** True when at least one trust claim is on, so trust sections have something to say. */
+    hasTrustClaims: !!(licenseNumber || claims.insured || claims.bonded || claims.backgroundChecked || claims.warranty || claims.satisfactionGuarantee),
     googleReviewsUrl: settings.googleReviewsUrl,
     replyBusinessDays: settings.policies.replyBusinessDays,
     replyWindow: businessDays(settings.policies.replyBusinessDays),
     coiWindow: businessDays(settings.policies.coiBusinessDays),
     backgroundRecheckYears: settings.policies.backgroundRecheckYears,
     policiesConfirmed: settings.policies.confirmed,
-    story: settings.story,
+    founders: brand.founders,
     photos: brand.photos,
     quoteDefaults: settings.quoteDefaults,
   };
 }
 
 export type SiteConfig = ReturnType<typeof buildSite>;
+
+/** Footer and page-title label for /trust: names what it covers, given the claims that are on. */
+export function trustPageLabel(site: SiteConfig) {
+  if (site.insured && site.warranty) return "Insurance & warranty";
+  if (site.insured) return "Insurance";
+  if (site.warranty) return "Warranty & payments";
+  if (site.hasTrustClaims) return "Our standards";
+  return "Secure payments";
+}
 
 /** Defaults only, for the few places that can't load settings (the global error page, the social image). */
 export const defaultSite = buildSite(defaultSettings);
@@ -198,7 +224,7 @@ export const nav = [
   { href: "/services", label: "Services" },
   { href: "/service-areas", label: "Service areas" },
   { href: "/about", label: "About" },
-  { href: "/our-work", label: "Our work" },
+  // Shown only once at least one real review is public (see getNav in src/lib/content.ts).
   { href: "/reviews", label: "Reviews" },
   { href: "/faq", label: "FAQ" },
 ] as const;

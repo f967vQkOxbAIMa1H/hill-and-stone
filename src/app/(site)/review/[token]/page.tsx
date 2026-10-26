@@ -47,7 +47,7 @@ export default async function ReviewInvitePage({ params }: PageProps<"/review/[t
       <div className="slate rounded-panel p-5 sm:p-8">
         <ReviewForm
           token={token}
-          ownerName={site.story.founderName}
+          ownerName={site.founders.map((f) => f.firstName).join(" and ")}
           defaultName={`${firstName} ${lastName.slice(0, 1).toUpperCase()}.`.trim()}
           defaultCity={quote.address?.city ?? ""}
           email={email}

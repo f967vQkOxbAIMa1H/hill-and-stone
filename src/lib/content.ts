@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import { db } from "@/lib/db";
 import { PUBLIC_MIN_RATING } from "@/lib/reviews";
+import { nav } from "@/lib/site";
 
 /**
  * Sample projects (placeholder photos) and sample reviews from `npm run db:seed` stay off the public site
@@ -52,6 +54,19 @@ export function getProjects() {
     [],
   );
 }
+
+/** True once at least one real review is public. Until then the Reviews link and sections stay hidden. */
+export const hasPublicReviews = cache(() =>
+  safe("hasPublicReviews", async () => (await db.testimonial.count({ where: publicReview() })) > 0, false),
+);
+
+/** The main navigation for this request: the Reviews link waits for the first real review. */
+export const getNav = cache(async () => {
+  const reviews = await hasPublicReviews();
+  return nav.filter((item) => item.href !== "/reviews" || reviews);
+});
+
+export type NavItem = (typeof nav)[number];
 
 export type ProjectWithImages = Awaited<ReturnType<typeof getProjects>>[number];
 export type TestimonialWithProject = Awaited<ReturnType<typeof getTestimonials>>[number];

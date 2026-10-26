@@ -64,9 +64,11 @@ export default async function RequestQuotePage({ searchParams }: PageProps<"/req
             </a>
           </div>
         </ScrollReveal>
-        <p className="mt-4 px-1 text-sm text-navy-600">
-          {site.licenseStatement}. {site.warranty} on every job.
-        </p>
+        {(site.credentialLine || site.warranty) && (
+          <p className="mt-4 px-1 text-sm text-navy-600">
+            {[site.credentialLine, site.warranty && `${site.warranty[0].toUpperCase()}${site.warranty.slice(1)} on every job.`].filter(Boolean).join(" ")}
+          </p>
+        )}
       </aside>
     </Container>
   );

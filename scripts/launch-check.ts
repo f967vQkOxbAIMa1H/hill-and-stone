@@ -23,20 +23,16 @@ const warn = (area: string, message: string) =>
 function checkSettings(settings: Settings) {
   if (isPlaceholderPhone(settings.contact.phone))
     block("settings", `Phone ${settings.contact.phone} is a fictional 555-01xx number. Set it at /admin/settings/site.`);
-  if (!settings.license.showPublicly)
-    warn("settings", "License number and insurance details are hidden (waiting on the LLC). Once registered, fill them in and tick “Show license number and insurance details” at /admin/settings/site.");
-  else {
-    if (!settings.license.number) warn("settings", "License details are public but no license number is set (/admin/settings/site).");
-    if (!settings.insurance.some((i) => i.detail))
-      warn("settings", "No insurance details set (/admin/settings/site). The Trust page offers a certificate on request instead.");
-  }
+  const claimsOn = Object.entries(settings.claims).filter(([, on]) => on).map(([k]) => k);
+  if (!claimsOn.length && !settings.license.number)
+    warn("settings", "No trust claims are on (licensed, insured, bonded, background checks, warranty, guarantee). Turn on only the ones you can back up at /admin/settings/site.");
+  if (settings.claims.insured && !settings.insurance.some((i) => i.detail))
+    warn("settings", "“Insured” is on but no insurance details are set (/admin/settings/site). The Trust page offers a certificate on request instead.");
   if (!brand.domainConfirmed)
     warn("brand", `Domain is a placeholder (${brand.domain}). Buy the Hillstone domain, then set brand.domain in src/lib/site.ts and NEXT_PUBLIC_APP_URL.`);
   if (settings.contact.email === defaultSettings.contact.email)
     block("settings", `Contact email is still the default ${settings.contact.email}. Set the business inbox at /admin/settings/site.`);
   if (!settings.googleReviewsUrl) warn("settings", "Google review link isn't set (/admin/settings/site). Review buttons are hidden.");
-  const missingStory = Object.entries(settings.story).filter(([, v]) => v == null).map(([k]) => k);
-  if (missingStory.length) warn("settings", `About page story is missing: ${missingStory.join(", ")} (/admin/settings/site).`);
   const missingPhotos = (["founder", "coFounder"] as const).filter((k) => brand.photos[k] == null);
   if (missingPhotos.length) warn("settings", `Our Story founder photos not set: ${missingPhotos.join(", ")} (brand.photos in src/lib/site.ts). Their frames show a brand graphic until then.`);
   if (!settings.policies.confirmed)

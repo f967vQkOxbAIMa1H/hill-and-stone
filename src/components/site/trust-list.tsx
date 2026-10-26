@@ -4,36 +4,41 @@ import type { SiteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
-// Each commitment carries a specific, checkable detail rather than a slogan.
-export const commitments = (site: SiteConfig) => [
-  {
-    icon: FileCheck2,
-    title: "Licensed and insured",
-    body: [
-      `${site.licenseStatement}.`,
-      site.licenseNumber && `${site.licenseLabel} ${site.licenseNumber}.`,
-      site.insuranceSummary && `${site.insuranceSummary}.`,
-      "We send a certificate of insurance on request.",
-    ]
-      .filter(Boolean)
-      .join(" "),
-  },
-  {
-    icon: UserCheck,
-    title: "Background-checked technicians",
-    body: `Everyone who comes to your house has passed a criminal background check, rechecked every ${site.backgroundRecheckYears} years, and works for us directly.`,
-  },
-  {
-    icon: ShieldCheck,
-    title: "Workmanship warranty",
-    body: `A ${site.warranty.replace(" warranty", "")} on our labor. If something we built or fixed fails, we come back and make it right.`,
-  },
-  {
-    icon: BadgeCheck,
-    title: "Satisfaction guarantee",
-    body: "We walk the job with you before we call it finished. You don't pay the final invoice until you're happy with the work.",
-  },
-];
+// Each commitment carries a specific, checkable detail rather than a slogan, and only appears once the
+// owner turns that claim on in settings. With every claim off the list is empty and callers hide it.
+export const commitments = (site: SiteConfig) =>
+  [
+    (site.insured || site.bonded || site.licenseNumber) && {
+      icon: FileCheck2,
+      title: [site.licenseNumber && "Licensed", site.insured && "insured", site.bonded && "bonded"]
+        .filter(Boolean)
+        .join(", ")
+        .replace(/, ([^,]*)$/, " and $1")
+        .replace(/^./, (c) => c.toUpperCase()),
+      body: [
+        site.credentialLine,
+        site.insuranceSummary && `${site.insuranceSummary}.`,
+        site.insured && "We send a certificate of insurance on request.",
+      ]
+        .filter(Boolean)
+        .join(" "),
+    },
+    site.backgroundChecked && {
+      icon: UserCheck,
+      title: "Background-checked",
+      body: `Everyone who comes to your house has passed a criminal background check, rechecked every ${site.backgroundRecheckYears} years.`,
+    },
+    site.warranty && {
+      icon: ShieldCheck,
+      title: "Workmanship warranty",
+      body: `A ${site.warranty.replace(" warranty", "")} on our labor. If something we built or fixed fails, we come back and make it right.`,
+    },
+    site.satisfactionGuarantee && {
+      icon: BadgeCheck,
+      title: "Satisfaction guarantee",
+      body: "We walk the job with you before we call it finished. You don't pay the final invoice until you're happy with the work.",
+    },
+  ].filter((c): c is { icon: typeof FileCheck2; title: string; body: string } => !!c);
 
 export async function TrustList({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   const site = await getSite();

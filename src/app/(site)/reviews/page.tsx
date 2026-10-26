@@ -4,14 +4,20 @@ import { CtaBand } from "@/components/site/cta-band";
 import { GoogleG, GoogleReviewsLink, Stars } from "@/components/site/review-bits";
 import { Container } from "@/components/ui/container";
 import { Heading, Lede } from "@/components/ui/heading";
-import { getTestimonials } from "@/lib/content";
+import { getTestimonials, hasPublicReviews } from "@/lib/content";
 import { getSite } from "@/lib/settings";
+import { estimateLabel, quoteHref } from "@/lib/site";
+import { ButtonLink } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
-export const metadata: Metadata = {
-  title: "Reviews",
-  description: "What Northwest Arkansas homeowners say about Hill & Stone repairs, carpentry, painting and small renovations.",
-};
+// Out of the nav and search results until the first real review is public.
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Reviews",
+    description: "What Northwest Arkansas homeowners say about Hill & Stone repairs and home improvements.",
+    ...(!(await hasPublicReviews()) && { robots: { index: false } }),
+  };
+}
 
 const dateFmt = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "America/Chicago" });
 
@@ -48,8 +54,13 @@ export default async function ReviewsPage() {
       <Container className="py-16 lg:py-20">
         {reviews.length === 0 ? (
           <div className="max-w-xl">
-            <p className="text-lg font-bold">Reviews are on our Google profile.</p>
-            <p className="mt-2 text-navy-600">We&apos;re moving them onto this page. Until then, read them on Google.</p>
+            <p className="text-lg font-bold">No reviews here yet.</p>
+            <p className="mt-2 text-navy-600">
+              We&apos;re a new company. Reviews from our first customers will appear here as jobs are finished.
+            </p>
+            <ButtonLink href={quoteHref} className="mt-5">
+              {estimateLabel}
+            </ButtonLink>
           </div>
         ) : (
           // CSS columns give a wall where short and long reviews pack together.

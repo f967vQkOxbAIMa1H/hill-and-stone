@@ -190,7 +190,7 @@ try {
   check("staff can't open site settings", tech.url().includes("/admin?denied=1"));
   await go(owner, "/admin/settings/site");
   // Remember the current values so they can be put back through the UI (which refreshes cached pages).
-  const edited = ["phone", "hours", "licenseNumber", "insurance-0", "googleReviewsUrl", "replyBusinessDays", "tripFee", "founderName", "foundedYear"];
+  const edited = ["phone", "hours", "licenseNumber", "insurance-0", "googleReviewsUrl", "replyBusinessDays", "tripFee"];
   originalSettings = Object.fromEntries(await Promise.all(edited.map(async (id) => [id, await owner.$eval(`#${id}`, (el) => el.value)])));
   await fill(owner, "#phone", "12345");
   await owner.click("button::-p-text(Save settings)");
@@ -203,8 +203,6 @@ try {
   await fill(owner, "#googleReviewsUrl", "https://g.page/r/example-hill-stone/review");
   await fill(owner, "#replyBusinessDays", "2");
   await fill(owner, "#tripFee", "89");
-  await fill(owner, "#founderName", "Sam Hill");
-  await fill(owner, "#foundedYear", "2019");
   await owner.click("button::-p-text(Save settings)");
   await owner.waitForFunction(() => document.body.innerText.includes("The site shows the new details now"));
   await shot(owner, "site-settings");
@@ -213,21 +211,24 @@ try {
   const home = strip(await (await fetch(`${BASE}/`)).text());
   check("new phone and hours show site-wide right away", home.includes("(479) 200-4455") && home.includes("tel:+14792004455") && home.includes("Mon–Sat 7am–5pm") && !home.includes("555-0142"));
   check(
-    "license number and insurer stay hidden until made public",
-    home.includes("Licensed and insured for minor home repair") && !home.includes("0123456") && !home.includes("Insured: $2,000,000"),
+    "the license line appears once a number is entered; insurance waits for its claim",
+    home.includes("Arkansas license 0123456") && !home.includes("Insured") && !home.includes("Licensed and insured"),
   );
-  await owner.click("#credentialsPublic");
+  await owner.click("#claim-insured");
   await owner.click("button::-p-text(Save settings)");
   await owner.waitForFunction(() => document.body.innerText.includes("The site shows the new details now"));
   const shown = strip(await (await fetch(`${BASE}/`)).text());
-  check("license and insurance appear in the footer once public", shown.includes("Arkansas license 0123456") && shown.includes("Insured: $2,000,000 per occurrence general liability"));
+  check("insurance appears in the footer once the claim is on", shown.includes("Insured. Arkansas license 0123456.") && shown.includes("Insured: $2,000,000 per occurrence general liability"));
+  await owner.click("#claim-insured");
+  await owner.click("button::-p-text(Save settings)");
+  await owner.waitForFunction(() => document.body.innerText.includes("The site shows the new details now"));
   const ld = JSON.parse(home.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1] ?? "{}");
   check("a real phone number goes into structured data", ld.telephone === "+14792004455" && ld.sameAs?.[0]?.includes("g.page"));
   check("Google review buttons appear once the link is set", strip(await (await fetch(`${BASE}/reviews`)).text()).includes("Read our reviews on Google"));
   const faq = strip(await (await fetch(`${BASE}/faq`)).text());
   check("policies update the FAQ", faq.includes("within two business days"));
   const about = strip(await (await fetch(`${BASE}/about`)).text());
-  check("story facts appear on About", about.includes("Sam Hill") && about.includes("started in 2019"));
+  check("About names both founders", about.includes("Aidan Sanders") && about.includes("Tucker Davidson"));
   if (leadId) {
     await go(owner, `/admin/requests/${leadId}/quote/new`);
     const trip = await owner.$eval("[aria-label='Line 3 unit price in dollars']", (el) => el.value);

@@ -132,7 +132,7 @@ export async function balanceRequest(q: QuoteInfo & { customerFirstName: string;
 ${q.note ? `<p style="margin:0 0 12px;padding:12px 14px;background:#f4f2ed;border-radius:4px">${esc(q.note)}</p>` : ""}
 ${rows(summary)}
 <p style="margin:20px 0"><a href="${esc(q.url)}" style="display:inline-block;background:#10243a;color:#f4f2ed;font-weight:bold;text-decoration:none;padding:14px 22px;border-radius:4px">Pay ${esc(formatCents(q.balanceCents))}</a></p>
-<p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">Your ${esc(site.warranty)} starts today. If anything we did isn't right, reply to this email or call ${esc(site.phone)}.</p>`);
+<p style="margin:0 0 12px;font-size:14px;color:#4f5d6b">${site.warranty ? `Your ${esc(site.warranty)} starts today. ` : ""}If anything we did isn't right, reply to this email or call ${esc(site.phone)}.</p>`);
   const text = `Hi ${q.customerFirstName}, your job is finished.\n\n${q.note ? `${q.note}\n\n` : ""}${summary.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPay online: ${q.url}\n\nQuestions? Reply to this email or call ${site.phone}.`;
   return { subject, html, text };
 }

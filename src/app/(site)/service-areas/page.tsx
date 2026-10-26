@@ -17,7 +17,7 @@ export default function ServiceAreasPage() {
     <>
       <PageIntro
         title="Where we work"
-        lede="We work along the I-49 corridor, from Fayetteville north to Bella Vista, and in the towns on either side. Staying close keeps drive time off your bill and lets us come back quickly for warranty work."
+        lede="We work along the I-49 corridor, from Fayetteville north to Bella Vista, and in the towns on either side. Staying close keeps drive time off your bill and lets us come back quickly if anything needs a second look."
       >
         <ZipCheck areas={serviceAreas} />
       </PageIntro>

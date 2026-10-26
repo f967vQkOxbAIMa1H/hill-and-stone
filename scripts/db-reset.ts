@@ -24,7 +24,8 @@ if (!["localhost", "127.0.0.1", "::1"].includes(host) || process.env.NODE_ENV ==
 
 async function main() {
   console.log(`Resetting ${host}${new URL(url).pathname}…`);
-  execFileSync("npx", ["prisma", "migrate", "reset", "--force"], { stdio: "inherit" }); // also runs the seed
+  // Also runs the seed, with the local demo content.
+  execFileSync("npx", ["prisma", "migrate", "reset", "--force"], { stdio: "inherit", env: { ...process.env, SEED_DEMO: "true" } });
   await rm(path.join(process.cwd(), "storage"), { recursive: true, force: true });
   console.log("\nLocal database reset with sample content. Create a login with: npm run admin:user -- you@example.com \"Name\"");
 }

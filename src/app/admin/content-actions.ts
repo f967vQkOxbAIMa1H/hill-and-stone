@@ -20,7 +20,8 @@ const flatten = (e: z.ZodError) => {
 
 /** Public pages that show portfolio projects or reviews. */
 function refreshPublic() {
-  revalidatePath("/");
+  // The layout too: the header shows the Reviews link once the first real review is public.
+  revalidatePath("/", "layout");
   revalidatePath("/our-work");
   revalidatePath("/reviews");
   revalidatePath("/admin/portfolio");

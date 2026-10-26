@@ -1,6 +1,7 @@
 // FAQ content. Answers are plain strings so they also feed the FAQPage structured data.
 // TODO(owner): these describe business policies (payment on completion, trip fee, warranty terms,
-// scheduling). Confirm or correct every answer before launch.
+// scheduling). Confirm or correct every answer before launch. Warranty answers appear only while the
+// warranty claim is on in settings.
 
 import type { SiteConfig } from "@/lib/site";
 
@@ -96,7 +97,7 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
       },
       {
         q: "When is payment due?",
-        a: "Upon completion, after we walk the finished job together and you're satisfied. We send the invoice with a payment link the same day.",
+        a: "Upon completion, after we walk the finished job together. We send the invoice with a payment link the same day.",
       },
       {
         q: "Is paying online safe?",
@@ -106,7 +107,7 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
   },
   {
     slug: "warranty",
-    title: "Materials and warranty",
+    title: site.warranty ? "Materials and warranty" : "Materials",
     items: [
       {
         q: "Who supplies the materials?",
@@ -116,9 +117,15 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
         q: "Can I choose the materials and finishes?",
         a: "Yes. For anything visible, like paint colors, trim profiles, hardware and flooring, we'll confirm your choice before ordering.",
       },
+      ...(site.warranty ? warrantyItems(site, site.warranty) : []),
+    ],
+  },
+];
+
+const warrantyItems = (site: SiteConfig, warranty: string) => [
       {
         q: "What does your warranty cover?",
-        a: `Our ${site.warranty} covers our labor: if something we built or repaired fails because of how we did it, we come back and fix it at no charge.`,
+        a: `Our ${warranty} covers our labor: if something we built or repaired fails because of how we did it, we come back and fix it at no charge.`,
       },
       {
         q: "What isn't covered?",
@@ -128,6 +135,4 @@ export const buildFaq = (site: SiteConfig): FaqGroup[] => [
         q: "How do I make a warranty claim?",
         a: `Call ${site.phone} or reply to any email from us with photos of the problem. We'll set up a visit to look at it.`,
       },
-    ],
-  },
 ];

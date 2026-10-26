@@ -61,17 +61,17 @@ describe("site settings", () => {
     expect(byPath.googleReviewsUrl).toMatch(/https/);
   });
   it("turns blank optional fields into null", () => {
-    const s = settingsSchema.parse({ ...defaultSettings, license: { number: "  " }, story: { ...defaultSettings.story, foundedYear: "", crewSize: "4" } });
+    const s = settingsSchema.parse({ ...defaultSettings, license: { number: "  " }, googleReviewsUrl: "" });
     expect(s.license.number).toBeNull();
-    expect(s.story.foundedYear).toBeNull();
-    expect(s.story.crewSize).toBe(4);
+    expect(s.googleReviewsUrl).toBeNull();
   });
   it("derives what the site shows", () => {
     const site = buildSite({
       ...defaultSettings,
       contact: { ...defaultSettings.contact, phone: "479.200.1234" },
       insurance: [{ type: "General liability", detail: "$2,000,000" }, ...defaultSettings.insurance.slice(1)],
-      license: { number: null, showPublicly: true },
+      license: { number: null },
+      claims: { ...defaultSettings.claims, insured: true, warranty: true },
       warrantyMonths: 24,
       policies: { ...defaultSettings.policies, replyBusinessDays: 2 },
     });

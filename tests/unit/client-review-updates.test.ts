@@ -63,25 +63,34 @@ describe("service area ZIP lookup", () => {
 });
 
 describe("licensing and branding", () => {
-  it("hides license and insurance details until made public", () => {
+  it("makes no trust claim by default", () => {
+    const site = buildSite(defaultSettings);
+    expect(Object.values(defaultSettings.claims).every((on) => on === false)).toBe(true);
+    expect(site.hasTrustClaims).toBe(false);
+    expect(site.credentialLine).toBeNull();
+    expect(site.warranty).toBeNull();
+    expect(site.licenseNumber).toBeNull();
+  });
+  it("keeps insurer details hidden until the insured claim is on", () => {
     const withDetails = settingsSchema.parse({
       ...defaultSettings,
-      license: { number: "0123456", showPublicly: false },
+      license: { number: "0123456" },
       insurance: defaultSettings.insurance.map((i) => ({ ...i, detail: "$1,000,000" })),
     });
-    const hidden = buildSite(withDetails);
-    expect(hidden.licenseNumber).toBeNull();
-    expect(hidden.insurance).toEqual([]);
-    expect(hidden.insuranceSummary).toBeNull();
-    expect(hidden.licenseStatement).toBe("Licensed and insured for minor home repair");
+    const off = buildSite(withDetails);
+    expect(off.insurance).toEqual([]);
+    expect(off.insuranceSummary).toBeNull();
+    // The license line needs only the number.
+    expect(off.credentialLine).toBe("Arkansas license 0123456.");
 
-    const shown = buildSite({ ...withDetails, license: { number: "0123456", showPublicly: true } });
-    expect(shown.licenseNumber).toBe("0123456");
-    expect(shown.insurance).toHaveLength(3);
+    const on = buildSite({ ...withDetails, claims: { ...withDetails.claims, insured: true, bonded: true } });
+    expect(on.insurance).toHaveLength(3);
+    expect(on.credentialLine).toBe("Insured and bonded. Arkansas license 0123456.");
   });
-  it("defaults to hidden, even for settings saved before the toggle existed", () => {
-    expect(defaultSettings.license.showPublicly).toBe(false);
-    expect(settingsSchema.parse({ ...defaultSettings, license: { number: "9" } }).license.showPublicly).toBe(false);
+  it("turns every claim off for settings saved before the claims existed", () => {
+    const legacy: Record<string, unknown> = { ...defaultSettings, license: { number: null, showPublicly: true } };
+    delete legacy.claims;
+    expect(settingsSchema.parse(legacy).claims).toEqual(defaultSettings.claims);
   });
   it("uses the Hillstone domain and the exact LLC legal name", () => {
     expect(brand.domain).toMatch(/^hillstone/);
@@ -92,11 +101,13 @@ describe("licensing and branding", () => {
 });
 
 describe("origin story", () => {
-  const story = defaultSettings.story;
-  it("names both co-founders when set", () => {
-    expect(storyParagraphs({ ...story, founderName: "Tucker", coFounderName: "Sam" })[0]).toMatch(/^Tucker and Sam have lived/);
-    expect(storyParagraphs({ ...story, founderName: "Tucker", coFounderName: null })[0]).toMatch(/^Tucker has lived/);
-    expect(storyParagraphs({ ...story, founderName: null, coFounderName: null })[0]).toMatch(/^Our founders have lived/);
+  it("names both co-founders", () => {
+    expect(storyParagraphs[0]).toMatch(/^Hill & Stone Home was founded by Aidan Sanders and Tucker Davidson/);
+    expect(brand.founders.map((f) => f.name)).toEqual(["Aidan Sanders", "Tucker Davidson"]);
+  });
+  it("doesn't overclaim for a new business", () => {
+    const text = storyParagraphs.join(" ");
+    expect(text).not.toMatch(/skilled tradesmen|complete bathroom renovation|Built on Experience/);
   });
 });
 

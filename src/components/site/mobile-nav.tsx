@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Logo } from "@/components/brand/logo";
 import { ButtonLink, buttonVariants } from "@/components/ui/button";
-import { estimateLabel, quoteHref } from "@/lib/site";
+import { estimateLabel, quoteHref, type nav } from "@/lib/site";
 import { useSite } from "@/components/site-provider";
 import { cn } from "@/lib/utils";
 import { NavLinks } from "./nav-links";
 
 /** Native <dialog> gives focus trapping, Esc to close and inert background for free. */
-export function MobileNav() {
+export function MobileNav({ items }: { items: readonly (typeof nav)[number][] }) {
   const site = useSite();
   const dialog = useRef<HTMLDialogElement>(null);
   const pathname = usePathname();
@@ -54,6 +54,7 @@ export function MobileNav() {
 
           <nav aria-label="Main" className="mt-8">
             <NavLinks
+              items={items}
               className="flex flex-col"
               linkClassName="block border-b border-navy-200 py-4 font-serif text-2xl text-navy-950 hover:text-accent-700 aria-[current=page]:text-accent-700"
             />
