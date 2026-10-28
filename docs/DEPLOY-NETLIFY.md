@@ -23,8 +23,8 @@ secret ones). Never paste secrets into the repo or a chat.
 | `NEXT_PUBLIC_APP_URL` | `https://www.hillandstonehome.com`. Read at build time for canonical tags and the sitemap, so set it before the first build and redeploy after changing it. | |
 | `RESEND_API_KEY` | From Resend, after verifying `hillandstonehome.com` | yes |
 | `EMAIL_FROM` | `Hill & Stone Home Solutions <quotes@hillandstonehome.com>` | |
-| `EMAIL_REPLY_TO` | The public contact email (currently `tdavidsonmanagement@outlook.com`) | |
-| `ADMIN_NOTIFICATION_EMAIL` | `tdavidsonmanagement@outlook.com`: new requests, accepted quotes, certificate requests, low ratings | |
+| `EMAIL_REPLY_TO` | The public contact email `info@hillandstonehome.com` (forwards to `hillandstone@proton.me` through Cloudflare Email Routing) | |
+| `ADMIN_NOTIFICATION_EMAIL` | `hillandstone@proton.me`: new requests, accepted quotes, certificate requests, low ratings | |
 | `STRIPE_SECRET_KEY` | `sk_test_…` first, `sk_live_…` at launch | yes |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` from the webhook endpoint below | yes |
 | `CRON_SECRET` | `openssl rand -base64 32` | yes |
@@ -44,7 +44,7 @@ hashed in the database.
    such as your own Neon project: set `DATABASE_URL` there and run `npm run db:deploy` before each deploy.)
 3. **Seed** (optional, and safe to skip). The production seed adds no sample projects, reviews or logins, and
    site settings need no rows: until the owner saves `/admin/settings/site`, the site uses the defaults in
-   `src/lib/site.ts` (phone 870-421-1331, email tdavidsonmanagement@outlook.com, hours, $0 trip fee, 9.75% tax,
+   `src/lib/site.ts` (phone 870-421-1331, email info@hillandstonehome.com, hours, $0 trip fee, 9.75% tax,
    30-day quotes). Run it against production like this:
 
    ```bash

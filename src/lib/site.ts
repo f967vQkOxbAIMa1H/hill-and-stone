@@ -51,11 +51,11 @@ export const appUrl = (process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV 
 
 /** Starting values until the owner saves settings in the admin. */
 export const defaultSettings: Settings = {
-  // Carried over from the owner's local admin settings. The public email is the owner's inbox until
-  // info@hillandstonehome.com forwarding is set up; change it at /admin/settings/site.
+  // Carried over from the owner's local admin settings. info@ forwards to the business inbox through
+  // Cloudflare Email Routing; change it at /admin/settings/site.
   contact: {
     phone: "870-421-1331",
-    email: "tdavidsonmanagement@outlook.com",
+    email: "info@hillandstonehome.com",
     hours: "Mon–Fri 8am–12pm, 1pm-5pm",
   },
   license: { number: null },

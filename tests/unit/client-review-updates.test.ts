@@ -99,7 +99,7 @@ describe("licensing and branding", () => {
   });
   it("has no deposit setting", () => expect("depositPercent" in defaultSettings.quoteDefaults).toBe(false));
   it("defaults to the contact details and pricing the owner entered locally", () => {
-    expect(defaultSettings.contact).toEqual({ phone: "870-421-1331", email: "tdavidsonmanagement@outlook.com", hours: "Mon–Fri 8am–12pm, 1pm-5pm" });
+    expect(defaultSettings.contact).toEqual({ phone: "870-421-1331", email: "info@hillandstonehome.com", hours: "Mon–Fri 8am–12pm, 1pm-5pm" });
     expect(defaultSettings.quoteDefaults).toMatchObject({ tripFee: "0", taxRatePercent: "9.75", validDays: 30 });
   });
 });
